@@ -1,14 +1,12 @@
-import './App.css'
-import Navbar from '@/components/Navbar.tsx'
+import "./App.css";
+import AppRoute from "@/routes/Router";
+import { BrowserRouter } from "react-router-dom";
 function App() {
-
-
   return (
-    <div className="text-4xl font-bold underline">
-      <Navbar />
-      Hello World
-    </div>
-  )
+    <BrowserRouter>
+      <AppRoute />
+    </BrowserRouter>
+  );
 }
 
-export default App
+export default App;
