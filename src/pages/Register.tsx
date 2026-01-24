@@ -1,16 +1,37 @@
 import React, { useState } from "react";
-import { Leaf, Mail, Lock, Eye, EyeOff, ArrowRight, ArrowLeft } from "lucide-react";
+import {
+  Leaf,
+  Mail,
+  Lock,
+  Eye,
+  EyeOff,
+  ArrowRight,
+  User,
+  Phone,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import BonSaiImage from "@/assets/image/BonSaiImage.png";
-export default function Login() {
-  const [activeTab, setActiveTab] = useState("login");
+
+export default function Register() {
+  const [activeTab, setActiveTab] = useState("register");
   const [showPassword, setShowPassword] = useState(false);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [formData, setFormData] = useState({
+    fullName: "",
+    email: "",
+    phone: "",
+    password: "",
+  });
   const navigate = useNavigate();
 
+  const handleInputChange = (field: string, value: any) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
   const handleSubmit = () => {
-    console.log("Login submitted:", { email, password });
+    console.log("Register submitted:", formData);
   };
 
   return (
@@ -18,31 +39,21 @@ export default function Login() {
       {/* Left Panel - Green Background */}
       <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-green-500 to-green-700 p-12 flex-col justify-between relative overflow-hidden">
         {/* Decorative leaf pattern */}
-        <div className="absolute inset-0 opacity-10 pointer-events-none z-0">
+        <div className="absolute inset-0 opacity-10">
           <img
             src={BonSaiImage}
             alt="BonSai"
             className="w-full h-full object-cover"
           />
         </div>
-        <div className="relative z-10 flex flex-col gap-4 text-white">
-          {/* Back */}
-          <div
-            className="flex items-center gap-2 cursor-pointer text-white 
-             transition-all duration-200 
-             hover:text-green-200 hover:translate-x-[-2px]"
-            onClick={() => navigate("/")}
-          >
-            <ArrowLeft className="w-6 h-6 transition-transform duration-200 group-hover:-translate-x-1" />
-            <span className="hover:underline underline-offset-4">
-              Quay lại trang chủ
-            </span>
-          </div>
-
-          {/* Logo */}
-          <div className="flex items-center gap-2">
-            <Leaf className="w-6 h-6" />
-            <span className="text-2xl font-bold">Green Space</span>
+        {/* Logo */}
+        <div className="flex items-center gap-3 text-white relative z-10">
+          <div className="flex items-center justify-center"></div>
+          <div>
+            <div className="flex items-center gap-2">
+              <Leaf className="w-6 h-6" />
+              <span className="text-2xl font-bold">Green Space</span>
+            </div>
           </div>
         </div>
 
@@ -60,10 +71,10 @@ export default function Login() {
         </div>
 
         {/* Background Image Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-br from-green-600/50 to-green-800/50 mix-blend-multiply pointer-events-none z-0"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-green-600/50 to-green-800/50 mix-blend-multiply"></div>
       </div>
 
-      {/* Right Panel - Login Form */}
+      {/* Right Panel - Register Form */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-gray-50">
         <div className="w-full max-w-md">
           {/* Mobile Logo */}
@@ -79,7 +90,9 @@ export default function Login() {
           {/* Tabs */}
           <div className="flex border-b border-gray-200 mb-8">
             <button
-              onClick={() => setActiveTab("login")}
+              onClick={() => { setActiveTab("login")
+                navigate("/login");
+              }}
               className={`flex-1 pb-4 text-center font-semibold relative transition-colors
       ${
         activeTab === "login"
@@ -112,18 +125,29 @@ export default function Login() {
             </button>
           </div>
 
-          {/* Welcome Message */}
-          <div className="mb-8">
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">
-              Chào mừng bạn!
-            </h2>
-            <p className="text-gray-500">
-              Vui lòng nhập thông tin để đăng nhập.
-            </p>
-          </div>
+          {/* Register Form */}
+          <div className="space-y-5">
+            {/* Full Name Input */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Họ và tên
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <User className="w-5 h-5 text-gray-400" />
+                </div>
+                <input
+                  type="text"
+                  value={formData.fullName}
+                  onChange={(e) =>
+                    handleInputChange("fullName", e.target.value)
+                  }
+                  placeholder="Nguyễn Văn A"
+                  className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition"
+                />
+              </div>
+            </div>
 
-          {/* Login Form */}
-          <div className="space-y-6">
             {/* Email Input */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -135,9 +159,28 @@ export default function Login() {
                 </div>
                 <input
                   type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  value={formData.email}
+                  onChange={(e) => handleInputChange("email", e.target.value)}
                   placeholder="Nhập email của bạn"
+                  className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition"
+                />
+              </div>
+            </div>
+
+            {/* Phone Input */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Số điện thoại
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <Phone className="w-5 h-5 text-gray-400" />
+                </div>
+                <input
+                  type="tel"
+                  value={formData.phone}
+                  onChange={(e) => handleInputChange("phone", e.target.value)}
+                  placeholder="Nhập số điện thoại của bạn"
                   className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition"
                 />
               </div>
@@ -154,8 +197,10 @@ export default function Login() {
                 </div>
                 <input
                   type={showPassword ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  value={formData.password}
+                  onChange={(e) =>
+                    handleInputChange("password", e.target.value)
+                  }
                   placeholder="Nhập mật khẩu của bạn"
                   className="w-full pl-12 pr-12 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition"
                 />
@@ -176,9 +221,9 @@ export default function Login() {
             {/* Submit Button */}
             <button
               onClick={handleSubmit}
-              className="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2 transition-all transform hover:scale-[1.02] shadow-lg shadow-green-500/30"
+              className="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2 transition-all transform hover:scale-[1.02] shadow-lg shadow-green-500/30 mt-6"
             >
-              Đăng nhập
+              Đăng ký
               <ArrowRight className="w-5 h-5" />
             </button>
           </div>

@@ -78,7 +78,7 @@ export default function GreenSpaceLanding() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 pt-32">
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <div>
             <p className="inline-flex items-center rounded-xl bg-green-200 px-2 py-1 text-xs font-bold text-green-400 inset-ring inset-ring-gray-400/20 mb-4">
@@ -140,7 +140,7 @@ export default function GreenSpaceLanding() {
       </section>
 
       {/* Products Section */}
-      <section className="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section id="products" className="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center mb-12">
           <div>
             <h2 className="text-3xl font-bold text-gray-900 mb-2">
