@@ -1,5 +1,5 @@
 .badge {
-    padding: .5em 1em;
+    padding: 4px;
     border: .1em solid hsl(var(--accent2));
     background-color: hsl(var(--bkg));
     color: hsl(var(--accent2));

@@ -3,7 +3,7 @@ export default function Contact() {
   return (
     <div>
       Contact
-      <Badge className="mt-4 ml-5" items={[{ text: "Contact", filled: false }]} />
+      <Badge className="mt-4 ml-5 text-xm" items={[{ text: "Contact", filled: true }]} />
     </div>
   )
 }
