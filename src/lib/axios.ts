@@ -1,14 +1,13 @@
 import axios, { type AxiosInstance, type InternalAxiosRequestConfig } from "axios";
-import { axiosConfig } from "../config/axios.config.ts";
+import { axiosConfig } from "@/config/axios.config";
 
-const instance: AxiosInstance = axios.create({
-  ...axiosConfig,
-});
+export const axiosInstance: AxiosInstance = axios.create(axiosConfig);
 
-instance.interceptors.request.use(
+axiosInstance.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     const token = localStorage.getItem("token");
     if (token) {
+      config.headers = config.headers || {};
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
@@ -16,4 +15,4 @@ instance.interceptors.request.use(
   (error) => Promise.reject(error),
 );
 
-export default instance;
+export default axiosInstance;
