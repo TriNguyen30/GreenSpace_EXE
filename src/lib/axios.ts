@@ -1,10 +1,8 @@
 import axios, { type AxiosInstance, type InternalAxiosRequestConfig } from "axios";
+import { axiosConfig } from "../config/axios.config.ts";
 
 const instance: AxiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_BASE_API_URL,
-  headers: {
-    "Content-Type": "application/json",
-  },
+  ...axiosConfig,
 });
 
 instance.interceptors.request.use(
