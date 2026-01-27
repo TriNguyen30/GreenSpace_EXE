@@ -1,18 +1,22 @@
-import { useState } from "react";
+import styles from "@/styles/Card.module.css";
+import type { BadgeInterface } from "./Badge.tsx";
 
-export type CardItem = {
-    name: string;
-    title: string;
-    description: string;
-    image: string;
-    price: string;
+export interface CardInterface {
+    indiactor: string,
+    badge?: BadgeInterface,
+    image?: string,
+    title: string,
+    subtitle?: string,
+    body: string,
 }
 
-type CardProps = {
-    title: string;
-    items: CardItem[];
+export type CardProps = {
+    items: CardInterface[];
+    className?: string;
 }
 
-export default function Card() {
-
+export default function Card({ items, className }: CardProps) {
+    return (
+        
+    )
 }
