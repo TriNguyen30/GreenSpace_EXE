@@ -1,6 +1,8 @@
 import { Leaf, ShoppingCart} from "lucide-react";
+import { useNavigate } from "react-router";
 
 export default function Navbar() {
+  
   return (
     <div>
       <header className="bg-white shadow-sm relative z-50">
