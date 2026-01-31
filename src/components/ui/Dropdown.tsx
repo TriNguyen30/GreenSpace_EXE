@@ -21,7 +21,7 @@ export default function DropdownMenu({ label, items }: DropdownMenuProps) {
       onMouseEnter={() => setOpen(true)}
       onMouseLeave={() => setOpen(false)}
     >
-      <button className="flex items-center gap-1 text-gray-600 hover:text-green-500 font-medium">
+      <button className="flex items-center gap-1 text-gray-600 hover:text-green-500 font-medium transition-colors duration-200">
         {label}
         <ChevronDown className="w-4 h-4" />
       </button>

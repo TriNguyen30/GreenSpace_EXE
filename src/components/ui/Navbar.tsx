@@ -1,20 +1,27 @@
 import { Leaf, ShoppingCart } from "lucide-react";
 import { useNavigate, NavLink } from "react-router";
 import DropdownMenu from "@/components/ui/Dropdown";
+import Logo from "@/assets/image/Logo.png";
+
 
 export default function Navbar() {
   const navigate = useNavigate();
 
   return (
     <header className="bg-white shadow-sm fixed top-0 left-0 w-full z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
         <div className="flex items-center justify-between">
           {/* Logo */}
           <div className="flex items-center gap-2">
-            <div className="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center">
-              <Leaf className="w-6 h-6 text-white" />
+            <div className="flex items-center justify-center">
+              <img
+                src={Logo}
+                alt="Logo"
+                className="w-15 h-auto transition-transform hover:scale-110"
+                onClick={() => navigate("/")}
+              />
             </div>
-            <span className="text-xl font-bold text-gray-900">Green Space</span>
+            <span className="text-xm font-bold text-gray-900">Green Space</span>
           </div>
           <nav className="hidden md:flex items-center gap-8">
             <DropdownMenu
@@ -28,7 +35,7 @@ export default function Navbar() {
                 {
                   label: "Loài hoa",
                   value: "flowers",
-                  onClick: () => navigate("/flowers"),
+                  onClick: () => navigate("/product"),
                 },
                 {
                   label: "Kiến thức – mẹo vặt",

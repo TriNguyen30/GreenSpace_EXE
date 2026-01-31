@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Leaf, Mail, Lock, Eye, EyeOff, ArrowRight, ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import BonSaiImage from "@/assets/image/BonSaiImage.png";
+import Logo from "@/assets/image/Logo.png"
 export default function Login() {
   const [activeTab, setActiveTab] = useState("login");
   const [showPassword, setShowPassword] = useState(false);
@@ -40,8 +41,12 @@ export default function Login() {
           </div>
 
           {/* Logo */}
-          <div className="flex items-center gap-2">
-            <Leaf className="w-6 h-6" />
+          <div className="flex items-center">
+            <img
+              src={Logo}
+              alt="Logo"
+              className="w-35 h-auto transition-transform hover:scale-110"
+            />
             <span className="text-2xl font-bold">Green Space</span>
           </div>
         </div>
