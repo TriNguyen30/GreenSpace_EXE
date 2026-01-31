@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import BonSaiImage from "@/assets/image/BonSaiImage.png";
+import Logo from "@/assets/image/Logo.png"
 
 export default function Register() {
   const [activeTab, setActiveTab] = useState("register");
@@ -50,8 +51,12 @@ export default function Register() {
         <div className="flex items-center gap-3 text-white relative z-10">
           <div className="flex items-center justify-center"></div>
           <div>
-            <div className="flex items-center gap-2">
-              <Leaf className="w-6 h-6" />
+            <div className="flex items-center">
+              <img
+                src={Logo}
+                alt="Logo"
+                className="w-35 h-auto transition-transform hover:scale-110"
+              />
               <span className="text-2xl font-bold">Green Space</span>
             </div>
           </div>
@@ -90,7 +95,8 @@ export default function Register() {
           {/* Tabs */}
           <div className="flex border-b border-gray-200 mb-8">
             <button
-              onClick={() => { setActiveTab("login")
+              onClick={() => {
+                setActiveTab("login");
                 navigate("/login");
               }}
               className={`flex-1 pb-4 text-center font-semibold relative transition-colors
@@ -123,6 +129,15 @@ export default function Register() {
                 <span className="absolute left-0 bottom-0 w-full h-1 bg-green-500 rounded-full" />
               )}
             </button>
+          </div>
+
+          <div className="mb-8">
+            <h2 className="text-3xl font-bold text-gray-900 mb-2">
+              Tạo tài khoản mới
+            </h2>
+            <p className="text-gray-500">
+              Vui lòng điền thông tin bên dưới để đăng ký tài khoản.
+            </p>
           </div>
 
           {/* Register Form */}
