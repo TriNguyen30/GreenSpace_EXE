@@ -187,7 +187,7 @@ export default function Product() {
   const paginatedProducts = sortedProducts.slice(startIndex, startIndex + productsPerPage);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 py-19">
       {/* Hero Banner Section */}
       <section className="bg-green-50 py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
