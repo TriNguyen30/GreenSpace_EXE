@@ -7,6 +7,7 @@ import ProductDetail from "@/pages/ProductDetail";
 import Login from "@/pages/Login";
 import Register from "@/pages/Register";
 import Cart from "@/pages/Cart";
+import Checkout from "@/pages/Checkout";
 
 export default function AppRoutes() {
   return (
@@ -16,6 +17,7 @@ export default function AppRoutes() {
         <Route path="/product" element={<Product />} />
         <Route path="/product/:id" element={<ProductDetail />} />
         <Route path="/cart" element={<Cart />} />
+        <Route path="/checkout" element={<Checkout />} />
       </Route>
       <Route path="/contact" element={<Contact />} />
       <Route path="/login" element={<Login />} />
