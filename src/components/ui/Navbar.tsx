@@ -2,7 +2,7 @@ import { Leaf, ShoppingCart } from "lucide-react";
 import { useNavigate, NavLink } from "react-router";
 import DropdownMenu from "@/components/ui/Dropdown";
 import Logo from "@/assets/image/Logo.png";
-
+import CartDropdown from "./CartDropdown";
 
 export default function Navbar() {
   const navigate = useNavigate();
@@ -70,9 +70,7 @@ export default function Navbar() {
             </NavLink>
           </nav>
           <div className="flex items-center gap-6">
-            <button className="p-3 rounded-full hover:bg-gray-100 bg-gray-200">
-              <ShoppingCart className="w-5 h-5 text-gray-400" />
-            </button>
+            <CartDropdown />
             <button
               className="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg"
               onClick={() => navigate("/login")}

@@ -3,8 +3,10 @@ import AppLayout from "@/layouts/AppLayout";
 import Home from "@/pages/Home";
 import Contact from "@/pages/Contact";
 import Product from "@/pages/Product";
+import ProductDetail from "@/pages/ProductDetail";
 import Login from "@/pages/Login";
 import Register from "@/pages/Register";
+import Cart from "@/pages/Cart";
 
 export default function AppRoutes() {
   return (
@@ -12,6 +14,8 @@ export default function AppRoutes() {
       <Route element={<AppLayout />}>
         <Route path="/" element={<Home />} />
         <Route path="/product" element={<Product />} />
+        <Route path="/product/:id" element={<ProductDetail />} />
+        <Route path="/cart" element={<Cart />} />
       </Route>
       <Route path="/contact" element={<Contact />} />
       <Route path="/login" element={<Login />} />

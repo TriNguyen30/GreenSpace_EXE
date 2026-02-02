@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { ChevronLeft, ChevronRight, SlidersHorizontal } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 interface Product {
   id: number;
@@ -340,9 +341,11 @@ export default function Product() {
             {/* Product Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
               {paginatedProducts.map((product) => (
-                <div
+                <Link
                   key={product.id}
-                  className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-shadow"
+                  to={`/product/${product.id}`}
+                  className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-shadow block"
+                  aria-label={`Xem chi tiết ${product.name}`}
                 >
                   <div className="relative">
                     <img
@@ -361,7 +364,7 @@ export default function Product() {
                     <p className="text-sm text-gray-600 mb-2">{product.description}</p>
                     <p className="text-lg font-bold text-green-600">{product.price}</p>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
 
