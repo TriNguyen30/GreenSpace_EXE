@@ -84,9 +84,11 @@ export default function Register() {
         <div className="w-full max-w-md">
           {/* Mobile Logo */}
           <div className="lg:hidden flex items-center justify-center gap-2 mb-8">
-            <div className="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center">
-              <Leaf className="w-6 h-6 text-white" />
-            </div>
+            <img
+              src={Logo}
+              alt="Logo"
+              className="w-24 h-auto transition-transform hover:scale-110"
+            />
             <span className="text-2xl font-bold text-gray-900">
               Green Space
             </span>

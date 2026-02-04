@@ -1,18 +1,45 @@
 import React, { useState } from "react";
-import { Leaf, Mail, Lock, Eye, EyeOff, ArrowRight, ArrowLeft } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, ArrowRight, ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useFormik } from "formik";
+import * as Yup from "yup";
 import BonSaiImage from "@/assets/image/BonSaiImage.png";
-import Logo from "@/assets/image/Logo.png"
+import Logo from "@/assets/image/Logo.png";
+import { useAppDispatch } from "@/store/hooks.ts";
+import { loginThunk } from "@/store/slices/authSlice";
+
+const loginSchema = Yup.object({
+  email: Yup.string()
+    .email("Email không hợp lệ")
+    .required("Vui lòng nhập email"),
+  password: Yup.string()
+    .min(6, "Mật khẩu phải có ít nhất 6 ký tự")
+    .required("Vui lòng nhập mật khẩu"),
+});
+
 export default function Login() {
   const [activeTab, setActiveTab] = useState("login");
   const [showPassword, setShowPassword] = useState(false);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
 
-  const handleSubmit = () => {
-    console.log("Login submitted:", { email, password });
-  };
+  const formik = useFormik({
+    initialValues: {
+      email: "",
+      password: "",
+    },
+    validationSchema: loginSchema,
+    onSubmit: async (values, { setSubmitting }) => {
+      try {
+        await dispatch(loginThunk(values)).unwrap();
+        navigate("/");
+      } catch (err) {
+        console.error("Login failed:", err);
+      } finally {
+        setSubmitting(false);
+      }
+    },
+  });
 
   return (
     <div className="min-h-screen flex">
@@ -73,9 +100,11 @@ export default function Login() {
         <div className="w-full max-w-md">
           {/* Mobile Logo */}
           <div className="lg:hidden flex items-center justify-center gap-2 mb-8">
-            <div className="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center">
-              <Leaf className="w-6 h-6 text-white" />
-            </div>
+            <img
+              src={Logo}
+              alt="Logo"
+              className="w-24 h-auto transition-transform hover:scale-110"
+            />
             <span className="text-2xl font-bold text-gray-900">
               Green Space
             </span>
@@ -128,7 +157,7 @@ export default function Login() {
           </div>
 
           {/* Login Form */}
-          <div className="space-y-6">
+          <form className="space-y-6" onSubmit={formik.handleSubmit}>
             {/* Email Input */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -139,13 +168,21 @@ export default function Login() {
                   <Mail className="w-5 h-5 text-gray-400" />
                 </div>
                 <input
+                  id="email"
+                  name="email"
                   type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  value={formik.values.email}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
                   placeholder="Nhập email của bạn"
                   className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition"
                 />
               </div>
+              {formik.touched.email && formik.errors.email && (
+                <p className="mt-1 text-sm text-red-500">
+                  {formik.errors.email}
+                </p>
+              )}
             </div>
 
             {/* Password Input */}
@@ -158,9 +195,12 @@ export default function Login() {
                   <Lock className="w-5 h-5 text-gray-400" />
                 </div>
                 <input
+                  id="password"
+                  name="password"
                   type={showPassword ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  value={formik.values.password}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
                   placeholder="Nhập mật khẩu của bạn"
                   className="w-full pl-12 pr-12 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition"
                 />
@@ -176,17 +216,23 @@ export default function Login() {
                   )}
                 </button>
               </div>
+              {formik.touched.password && formik.errors.password && (
+                <p className="mt-1 text-sm text-red-500">
+                  {formik.errors.password}
+                </p>
+              )}
             </div>
 
             {/* Submit Button */}
             <button
-              onClick={handleSubmit}
-              className="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2 transition-all transform hover:scale-[1.02] shadow-lg shadow-green-500/30"
+              type="submit"
+              disabled={formik.isSubmitting}
+              className="w-full bg-green-500 hover:bg-green-600 disabled:bg-green-300 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2 transition-all transform hover:scale-[1.02] shadow-lg shadow-green-500/30"
             >
               Đăng nhập
               <ArrowRight className="w-5 h-5" />
             </button>
-          </div>
+          </form>
 
           {/* Divider */}
           <div className="my-8 flex items-center gap-4">
