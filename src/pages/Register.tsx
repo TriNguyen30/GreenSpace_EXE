@@ -166,7 +166,7 @@ export default function Register() {
             </div>
 
             {/* Email Input */}
-            <div>
+            {/* <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Email
               </label>
@@ -182,7 +182,7 @@ export default function Register() {
                   className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition"
                 />
               </div>
-            </div>
+            </div> */}
 
             {/* Phone Input */}
             <div>
