@@ -145,7 +145,7 @@ export default function Register() {
           {/* Register Form */}
           <div className="space-y-5">
             {/* Full Name Input */}
-            <div>
+            {/* <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Họ và tên
               </label>
@@ -163,10 +163,10 @@ export default function Register() {
                   className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition"
                 />
               </div>
-            </div>
+            </div> */}
 
             {/* Email Input */}
-            {/* <div>
+            <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Email
               </label>
@@ -182,10 +182,10 @@ export default function Register() {
                   className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition"
                 />
               </div>
-            </div> */}
+            </div>
 
             {/* Phone Input */}
-            <div>
+            {/* <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Số điện thoại
               </label>
@@ -201,10 +201,10 @@ export default function Register() {
                   className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition"
                 />
               </div>
-            </div>
+            </div> */}
 
             {/* Password Input */}
-            <div>
+            {/* <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Mật khẩu
               </label>
@@ -233,7 +233,7 @@ export default function Register() {
                   )}
                 </button>
               </div>
-            </div>
+            </div> */}
 
             {/* Submit Button */}
             <button
