@@ -22,4 +22,23 @@ export const login = async (payload: LoginPayload) => {
     };
 };
 
+export const registerInitiate = async (payload: RegisterInitiatePayload) => {
+    const res = await axiosInstance.post("/Auth/register/initiate", payload);
+    return res.data;
+}
+
+export const registerVerify = async (payload: RegisterVerifyPayload) => {
+    const res = await axiosInstance.post("/Auth/register/verify", payload);
+    return res.data;
+}
+
+export const registerResend = async (payload: RegisterResendPayload) => {
+    const res = await axiosInstance.post("/Auth/register/resend", payload);
+    return res.data;
+}
+
+export const registerFinalize = async (payload: RegisterFinalizePayload) => {
+    const res = await axiosInstance.post("/Auth/register/finalize", payload);
+    return res.data;
+}
 
