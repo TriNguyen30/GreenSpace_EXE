@@ -84,9 +84,11 @@ export default function Register() {
         <div className="w-full max-w-md">
           {/* Mobile Logo */}
           <div className="lg:hidden flex items-center justify-center gap-2 mb-8">
-            <div className="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center">
-              <Leaf className="w-6 h-6 text-white" />
-            </div>
+            <img
+              src={Logo}
+              alt="Logo"
+              className="w-24 h-auto transition-transform hover:scale-110"
+            />
             <span className="text-2xl font-bold text-gray-900">
               Green Space
             </span>
@@ -143,7 +145,7 @@ export default function Register() {
           {/* Register Form */}
           <div className="space-y-5">
             {/* Full Name Input */}
-            <div>
+            {/* <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Họ và tên
               </label>
@@ -161,7 +163,7 @@ export default function Register() {
                   className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition"
                 />
               </div>
-            </div>
+            </div> */}
 
             {/* Email Input */}
             <div>
@@ -183,7 +185,7 @@ export default function Register() {
             </div>
 
             {/* Phone Input */}
-            <div>
+            {/* <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Số điện thoại
               </label>
@@ -199,10 +201,10 @@ export default function Register() {
                   className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition"
                 />
               </div>
-            </div>
+            </div> */}
 
             {/* Password Input */}
-            <div>
+            {/* <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Mật khẩu
               </label>
@@ -231,7 +233,7 @@ export default function Register() {
                   )}
                 </button>
               </div>
-            </div>
+            </div> */}
 
             {/* Submit Button */}
             <button

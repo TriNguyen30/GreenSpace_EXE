@@ -1,6 +1,23 @@
 import { axiosInstance } from "@/lib/axios";
-import { LoginPayload } from "@/types/api";
+import type { LoginPayload, ApiResponse, LoginResponseData } from "@/types/api";
 
-export const login = (payload: LoginPayload) => {
-    return axiosInstance.post("/auth/login", payload);
+export const login = async (payload: LoginPayload) => {
+    const res = await axiosInstance.post<ApiResponse<LoginResponseData>>(
+        "/Auth/login",
+        payload
+    );
+
+    const data = res.data.data;
+
+    return {
+        token: data.accessToken,
+        refreshToken: data.refreshToken,
+        expiresAt: data.expiresAt,
+        user: {
+            id: data.userId,
+            email: data.email,
+            name: data.fullName,
+            role: data.role,
+        },
+    };
 };
