@@ -86,7 +86,7 @@ export default function Navbar() {
               Mẹo chăm sóc
             </NavLink>
           </nav>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <CartDropdown />
             {token && user ? (
               <div className="relative" ref={userMenuRef}>
