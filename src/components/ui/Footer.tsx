@@ -1,4 +1,4 @@
-import styles from "./styles/Footer.module.css";
+import styles from "../../styles/Footer.module.css";
 import "@/styles/Colors.module.css";
 import { Leaf, Mail, MapPin, Phone } from "lucide-react";
 
