@@ -2,29 +2,34 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { login } from "@/services/auth.service";
 import type { LoginPayload } from "@/types/api";
 
-interface User {
+export interface User {
   id: string;
   email: string;
   name?: string;
-  role: string;
+  role?: string;
 }
 
 interface AuthState {
   token: string | null;
-  refreshToken: string | null;
   user: User | null;
-  expiresAt: string | null;
   loading: boolean;
   error: string | null;
 }
 
+const getStoredUser = (): User | null => {
+  try {
+    const stored = localStorage.getItem("user");
+    if (!stored || stored === "undefined" || stored === "null") return null;
+    return JSON.parse(stored);
+  } catch {
+    localStorage.removeItem("user");
+    return null;
+  }
+};
+
 const initialState: AuthState = {
   token: localStorage.getItem("token"),
-  refreshToken: localStorage.getItem("refreshToken"),
-  user: localStorage.getItem("user")
-    ? JSON.parse(localStorage.getItem("user")!)
-    : null,
-  expiresAt: localStorage.getItem("expiresAt"),
+  user: getStoredUser(),
   loading: false,
   error: null,
 };
@@ -33,12 +38,28 @@ export const loginThunk = createAsyncThunk(
   "auth/login",
   async (payload: LoginPayload, { rejectWithValue }) => {
     try {
-      return await login(payload); // gọi service ở trên
-    } catch (err: any) {
-      return rejectWithValue(err.response?.data?.message || "Login failed");
+      return await login(payload);
+    } catch (err: unknown) {
+      const rawMessage =
+        err && typeof err === "object" && "response" in err
+          ? (err as { response?: { data?: { message?: string } } }).response?.data?.message
+          : null;
+
+      let message = "Đăng nhập thất bại";
+
+      if (rawMessage?.toLowerCase().includes("invalid")) {
+        message = "Email hoặc mật khẩu không đúng";
+      } else if (rawMessage?.toLowerCase().includes("locked")) {
+        message = "Tài khoản đã bị khóa";
+      } else if (rawMessage?.toLowerCase().includes("not verified")) {
+        message = "Tài khoản chưa xác thực email";
+      }
+
+      return rejectWithValue(message);
     }
   }
 );
+
 
 const authSlice = createSlice({
   name: "auth",
@@ -46,10 +67,9 @@ const authSlice = createSlice({
   reducers: {
     logout(state) {
       state.token = null;
-      state.refreshToken = null;
       state.user = null;
-      state.expiresAt = null;
-      localStorage.clear();
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
     },
   },
   extraReducers: (builder) => {
@@ -61,18 +81,13 @@ const authSlice = createSlice({
       .addCase(loginThunk.fulfilled, (state, action) => {
         state.loading = false;
         state.token = action.payload.token;
-        state.refreshToken = action.payload.refreshToken;
         state.user = action.payload.user;
-        state.expiresAt = action.payload.expiresAt;
-
         localStorage.setItem("token", action.payload.token);
-        localStorage.setItem("refreshToken", action.payload.refreshToken);
         localStorage.setItem("user", JSON.stringify(action.payload.user));
-        localStorage.setItem("expiresAt", action.payload.expiresAt);
       })
       .addCase(loginThunk.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload as string;
+        state.error = (action.payload as string) || null;
       });
   },
 });
