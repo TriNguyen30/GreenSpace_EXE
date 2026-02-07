@@ -48,16 +48,16 @@ export default function Register() {
           />
         </div>
         {/* Logo */}
-        <div className="flex items-center gap-3 text-white relative z-10">
+        <div className="relative z-10 flex flex-col gap-4 text-white">
           <div className="flex items-center justify-center"></div>
           <div>
             <div className="flex items-center">
               <img
                 src={Logo}
                 alt="Logo"
-                className="w-35 h-auto transition-transform hover:scale-110"
+                className="w-35 h-auto transition-transform hover:scale-110 -ml-10"
               />
-              <span className="text-2xl font-bold">Green Space</span>
+              <span className="text-2xl font-bold absolute ml-20">Green Space</span>
             </div>
           </div>
         </div>

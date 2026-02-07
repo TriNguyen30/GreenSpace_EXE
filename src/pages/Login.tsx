@@ -71,9 +71,9 @@ export default function Login() {
             <img
               src={Logo}
               alt="Logo"
-              className="w-35 h-auto transition-transform hover:scale-110"
+              className="w-35 h-auto transition-transform hover:scale-110 -ml-10"
             />
-            <span className="text-2xl font-bold">Green Space</span>
+            <span className="text-2xl font-bold absolute ml-20">Green Space</span>
           </div>
         </div>
 
