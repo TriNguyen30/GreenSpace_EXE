@@ -5,7 +5,7 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import BonSaiImage from "@/assets/image/BonSaiImage.png";
 import Logo from "@/assets/image/Logo.png";
-import { useAppDispatch } from "@/store/hooks";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { loginThunk } from "@/store/slices/authSlice";
 import type { LoginPayload } from "@/types/api";
 
@@ -23,6 +23,7 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
+  const { error, loading } = useAppSelector((state) => state.auth);
 
   const formik = useFormik<LoginPayload>({
     initialValues: {
@@ -70,9 +71,9 @@ export default function Login() {
             <img
               src={Logo}
               alt="Logo"
-              className="w-35 h-auto transition-transform hover:scale-110"
+              className="w-35 h-auto transition-transform hover:scale-110 -ml-10"
             />
-            <span className="text-2xl font-bold">Green Space</span>
+            <span className="text-2xl font-bold absolute ml-20">Green Space</span>
           </div>
         </div>
 
@@ -221,6 +222,12 @@ export default function Login() {
               Đăng nhập
               <ArrowRight className="w-5 h-5" />
             </button>
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-2 rounded-lg text-sm">
+                {error}
+              </div>
+            )}
+
           </form>
 
           <div className="my-8 flex items-center gap-4">

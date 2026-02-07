@@ -21,17 +21,24 @@ export interface LoginResponseData {
   expiresAt: string;
 }
 
-export interface RegisterPayload {
+export interface RegisterInitiatePayload {
   email: string;
-  password: string;
 }
 
-export interface RegisterResponseData {
-  userId: string;
+export interface RegisterVerifyPayload {
   email: string;
-  fullName: string;
-  role: string;
-  accessToken: string;
-  refreshToken: string;
-  expiresAt: string;
+  otp: string;
+}
+
+export interface RegisterResendPayload {
+  email: string;
+}
+
+export interface RegisterFinalizePayload {
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+  phoneNumber: string;
+  address: string;
 }
