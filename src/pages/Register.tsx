@@ -10,6 +10,9 @@ import {
   Phone,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { Formik, Form, Field, ErrorMessage } from "formik";
+import * as Yup from "yup";
+
 import BonSaiImage from "@/assets/image/BonSaiImage.png";
 import Logo from "@/assets/image/Logo.png";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
@@ -21,52 +24,66 @@ import {
   resetRegister,
 } from "@/store/slices/authSlice";
 
+/* ================= VALIDATION ================= */
+
+const emailSchema = Yup.object({
+  email: Yup.string().email("Email không hợp lệ").required("Bắt buộc"),
+});
+
+const otpSchema = Yup.object({
+  otp: Yup.string().required("Bắt buộc").length(6, "OTP gồm 6 chữ số"),
+});
+
+const finalSchema = Yup.object({
+  fullName: Yup.string().required("Bắt buộc"),
+  phone: Yup.string()
+    .matches(/^(0|\+84)[0-9]{9}$/, "Số điện thoại không hợp lệ")
+    .required("Bắt buộc"),
+  password: Yup.string().min(6, "Ít nhất 6 ký tự").required("Bắt buộc"),
+});
+
+/* ================= COMPONENT ================= */
+
 export default function Register() {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { loading, error, registerStep, registerMail } = useAppSelector(
-    (state) => state.auth
+    (state) => state.auth,
   );
 
   const [showPassword, setShowPassword] = useState(false);
-  const [otp, setOtp] = useState("");
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-    fullName: "",
-    phone: "",
-  });
 
-  const handleChange = (field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+  /* ================= HANDLERS ================= */
+
+  const handleEmailSubmit = async (values: { email: string }) => {
+    await dispatch(registerInitiateThunk({ email: values.email })).unwrap();
   };
 
-  /* ================= SUBMIT HANDLERS ================= */
-
-  // Step 1: Send email
-  const handleSendEmail = async () => {
-    if (!formData.email) return;
-    await dispatch(registerInitiateThunk({ email: formData.email })).unwrap();
-  };
-
-  // Step 2: Verify OTP
-  const handleVerifyOtp = async () => {
-    if (!otp || !registerMail) return;
-    await dispatch(registerVerifyThunk({ email: registerMail, otp })).unwrap();
-  };
-
-  // Step 3: Finalize register
-  const handleFinalize = async () => {
+  const handleOtpSubmit = async (values: { otp: string }) => {
     if (!registerMail) return;
+    await dispatch(
+      registerVerifyThunk({ email: registerMail, otp: values.otp }),
+    ).unwrap();
+  };
+
+  const handleFinalSubmit = async (values: {
+    fullName: string;
+    phone: string;
+    password: string;
+  }) => {
+    if (!registerMail) return;
+
+    const [firstName, ...rest] = values.fullName.trim().split(" ");
+
     await dispatch(
       registerFinalizeThunk({
         email: registerMail,
-        password: formData.password,
-        firstName: formData.fullName.split(" ")[0] || "",
-        lastName: formData.fullName.split(" ").slice(1).join(" ") || "",
-        phoneNumber: formData.phone,
+        password: values.password,
+        firstName,
+        lastName: rest.join(" "),
+        phoneNumber: values.phone,
         address: "",
-      })
+      }),
     ).unwrap();
 
     navigate("/login");
@@ -106,7 +123,9 @@ export default function Register() {
               alt="Logo"
               className="w-35 h-auto transition-transform hover:scale-110 -ml-10"
             />
-            <span className="text-2xl font-bold absolute ml-20">Green Space</span>
+            <span className="text-2xl font-bold absolute ml-20">
+              Green Space
+            </span>
           </div>
         </div>
 
@@ -160,10 +179,8 @@ export default function Register() {
               Tạo tài khoản mới
             </h2>
             <p className="text-gray-500">
-              {registerStep === "email" &&
-                "Nhập email để nhận mã xác thực"}
-              {registerStep === "otp" &&
-                "Nhập mã OTP đã gửi về email"}
+              {registerStep === "email" && "Nhập email để nhận mã xác thực"}
+              {registerStep === "otp" && "Nhập mã OTP đã gửi về email"}
               {registerStep === "final" &&
                 "Hoàn tất thông tin để tạo tài khoản"}
             </p>
@@ -178,151 +195,196 @@ export default function Register() {
 
           {/* ================= STEP 1: EMAIL ================= */}
           {registerStep === "email" && (
-            <div className="space-y-5">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Email
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <Mail className="w-5 h-5 text-gray-400" />
+            <Formik
+              initialValues={{ email: "" }}
+              validationSchema={emailSchema}
+              onSubmit={handleEmailSubmit}
+            >
+              {({ isSubmitting }) => (
+                <Form className="space-y-5">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Email
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <Mail className="w-5 h-5 text-gray-400" />
+                      </div>
+                      <Field
+                        name="email"
+                        type="email"
+                        placeholder="Nhập email của bạn"
+                        className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition"
+                      />
+                    </div>
+                    <ErrorMessage
+                      name="email"
+                      component="p"
+                      className="text-sm text-red-500 mt-1"
+                    />
                   </div>
-                  <input
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => handleChange("email", e.target.value)}
-                    placeholder="Nhập email của bạn"
-                    className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition"
-                  />
-                </div>
-              </div>
 
-              <button
-                onClick={handleSendEmail}
-                disabled={loading}
-                className="w-full bg-green-500 hover:bg-green-600 disabled:bg-green-300 text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-green-500/30"
-              >
-                Gửi mã xác thực
-                <ArrowRight className="w-5 h-5" />
-              </button>
-            </div>
+                  <button
+                    type="submit"
+                    disabled={loading || isSubmitting}
+                    className="w-full bg-green-500 hover:bg-green-600 disabled:bg-green-300 text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-green-500/30"
+                  >
+                    Gửi mã xác thực
+                    <ArrowRight className="w-5 h-5" />
+                  </button>
+                </Form>
+              )}
+            </Formik>
           )}
 
           {/* ================= STEP 2: OTP ================= */}
           {registerStep === "otp" && (
-            <div className="space-y-5">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Mã OTP
-                </label>
-                <input
-                  type="text"
-                  value={otp}
-                  onChange={(e) => setOtp(e.target.value)}
-                  placeholder="Nhập mã OTP"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition"
-                />
-              </div>
+            <Formik
+              initialValues={{ otp: "" }}
+              validationSchema={otpSchema}
+              onSubmit={handleOtpSubmit}
+            >
+              {({ isSubmitting }) => (
+                <Form className="space-y-5">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Mã OTP
+                    </label>
+                    <Field
+                      name="otp"
+                      type="text"
+                      placeholder="Nhập mã OTP"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition"
+                    />
+                    <ErrorMessage
+                      name="otp"
+                      component="p"
+                      className="text-sm text-red-500 mt-1"
+                    />
+                  </div>
 
-              <button
-                onClick={handleVerifyOtp}
-                disabled={loading}
-                className="w-full bg-green-500 hover:bg-green-600 disabled:bg-green-300 text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-green-500/30"
-              >
-                Xác nhận
-                <ArrowRight className="w-5 h-5" />
-              </button>
+                  <button
+                    type="submit"
+                    disabled={loading || isSubmitting}
+                    className="w-full bg-green-500 hover:bg-green-600 disabled:bg-green-300 text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-green-500/30"
+                  >
+                    Xác nhận
+                    <ArrowRight className="w-5 h-5" />
+                  </button>
 
-              <button
-                onClick={handleResend}
-                disabled={loading}
-                className="w-full text-sm text-green-600 hover:underline"
-              >
-                Gửi lại mã OTP
-              </button>
-            </div>
+                  <button
+                    type="button"
+                    onClick={handleResend}
+                    disabled={loading}
+                    className="w-full text-sm text-green-600 hover:underline"
+                  >
+                    Gửi lại mã OTP
+                  </button>
+                </Form>
+              )}
+            </Formik>
           )}
 
           {/* ================= STEP 3: FINAL ================= */}
           {registerStep === "final" && (
-            <div className="space-y-5">
-              {/* Full name */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Họ và tên
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <User className="w-5 h-5 text-gray-400" />
+            <Formik
+              initialValues={{ fullName: "", phone: "", password: "" }}
+              validationSchema={finalSchema}
+              onSubmit={handleFinalSubmit}
+            >
+              {({ isSubmitting }) => (
+                <Form className="space-y-5">
+                  {/* Full name */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Họ và tên
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <User className="w-5 h-5 text-gray-400" />
+                      </div>
+                      <Field
+                        name="fullName"
+                        type="text"
+                        placeholder="Nguyễn Văn A"
+                        className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition"
+                      />
+                    </div>
+                    <ErrorMessage
+                      name="fullName"
+                      component="p"
+                      className="text-sm text-red-500 mt-1"
+                    />
                   </div>
-                  <input
-                    type="text"
-                    value={formData.fullName}
-                    onChange={(e) => handleChange("fullName", e.target.value)}
-                    placeholder="Nguyễn Văn A"
-                    className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition"
-                  />
-                </div>
-              </div>
 
-              {/* Phone */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Số điện thoại
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <Phone className="w-5 h-5 text-gray-400" />
+                  {/* Phone */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Số điện thoại
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <Phone className="w-5 h-5 text-gray-400" />
+                      </div>
+                      <Field
+                        name="phone"
+                        type="tel"
+                        placeholder="Nhập số điện thoại"
+                        className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition"
+                      />
+                    </div>
+                    <ErrorMessage
+                      name="phone"
+                      component="p"
+                      className="text-sm text-red-500 mt-1"
+                    />
                   </div>
-                  <input
-                    type="tel"
-                    value={formData.phone}
-                    onChange={(e) => handleChange("phone", e.target.value)}
-                    placeholder="Nhập số điện thoại"
-                    className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition"
-                  />
-                </div>
-              </div>
 
-              {/* Password */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Mật khẩu
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <Lock className="w-5 h-5 text-gray-400" />
+                  {/* Password */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Mật khẩu
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <Lock className="w-5 h-5 text-gray-400" />
+                      </div>
+                      <Field
+                        name="password"
+                        type={showPassword ? "text" : "password"}
+                        placeholder="Nhập mật khẩu"
+                        className="w-full pl-12 pr-12 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600"
+                      >
+                        {showPassword ? (
+                          <EyeOff className="w-5 h-5" />
+                        ) : (
+                          <Eye className="w-5 h-5" />
+                        )}
+                      </button>
+                    </div>
+                    <ErrorMessage
+                      name="password"
+                      component="p"
+                      className="text-sm text-red-500 mt-1"
+                    />
                   </div>
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    value={formData.password}
-                    onChange={(e) => handleChange("password", e.target.value)}
-                    placeholder="Nhập mật khẩu"
-                    className="w-full pl-12 pr-12 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition"
-                  />
+
                   <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600"
+                    type="submit"
+                    disabled={loading || isSubmitting}
+                    className="w-full bg-green-500 hover:bg-green-600 disabled:bg-green-300 text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-green-500/30"
                   >
-                    {showPassword ? (
-                      <EyeOff className="w-5 h-5" />
-                    ) : (
-                      <Eye className="w-5 h-5" />
-                    )}
+                    Hoàn tất đăng ký
+                    <ArrowRight className="w-5 h-5" />
                   </button>
-                </div>
-              </div>
-
-              <button
-                onClick={handleFinalize}
-                disabled={loading}
-                className="w-full bg-green-500 hover:bg-green-600 disabled:bg-green-300 text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-green-500/30"
-              >
-                Hoàn tất đăng ký
-                <ArrowRight className="w-5 h-5" />
-              </button>
-            </div>
+                </Form>
+              )}
+            </Formik>
           )}
 
           {/* ================= STEP DONE ================= */}
