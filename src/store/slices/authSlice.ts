@@ -5,7 +5,7 @@ import type { LoginPayload, RegisterInitiatePayload, RegisterVerifyPayload, Regi
 export interface User {
   id: string;
   email: string;
-  name?: string;
+  fullName?: string;
   role?: string;
 }
 
