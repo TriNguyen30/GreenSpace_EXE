@@ -43,6 +43,11 @@ export const refreshToken = async () => {
   };
 };
 
+export const revokeToken = async () => {
+  const refreshToken = localStorage.getItem("refreshToken");
+  await axiosInstance.post("/Auth/revoke", { refreshToken });
+};
+
 export const registerInitiate = async (payload: RegisterInitiatePayload) => {
   const res = await axiosInstance.post("/Auth/register/initiate", payload);
   return res.data;

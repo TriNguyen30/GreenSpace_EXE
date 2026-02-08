@@ -6,7 +6,6 @@ export const axiosInstance = axios.create(axiosConfig);
 axiosInstance.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
   if (token) {
-    config.headers = config.headers || {};
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
@@ -24,7 +23,7 @@ const processQueue = (error: any, token: string | null = null) => {
 };
 
 axiosInstance.interceptors.response.use(
-  (response) => response,
+  (res) => res,
   async (error) => {
     const originalRequest = error.config;
 
@@ -43,7 +42,8 @@ axiosInstance.interceptors.response.use(
 
       try {
         const refreshToken = localStorage.getItem("refreshToken");
-        const res = await axios.post("/api/Auth/refresh", { refreshToken });
+        const res = await axios.post("/Auth/refresh", { refreshToken });
+
         const data = res.data.data;
 
         localStorage.setItem("token", data.accessToken);
