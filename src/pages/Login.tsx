@@ -33,8 +33,12 @@ export default function Login() {
     validationSchema: loginSchema,
     onSubmit: async (values, { setSubmitting }) => {
       try {
-        await dispatch(loginThunk(values)).unwrap();
-        navigate("/");
+        const result = await dispatch(loginThunk(values)).unwrap();
+        if (result.user.role === "ADMIN") {
+          navigate("/admin");
+        } else {
+          navigate("/");
+        }
       } catch (err) {
         console.error("Login failed:", err);
       } finally {
@@ -73,7 +77,9 @@ export default function Login() {
               alt="Logo"
               className="w-35 h-auto transition-transform hover:scale-110 -ml-10"
             />
-            <span className="text-2xl font-bold absolute ml-20">Green Space</span>
+            <span className="text-2xl font-bold absolute ml-20">
+              Green Space
+            </span>
           </div>
         </div>
 
@@ -110,10 +116,11 @@ export default function Login() {
             <button
               onClick={() => setActiveTab("login")}
               className={`flex-1 pb-4 text-center font-semibold relative transition-colors
-      ${activeTab === "login"
-                  ? "text-green-600"
-                  : "text-gray-400 hover:text-gray-600"
-                }`}
+      ${
+        activeTab === "login"
+          ? "text-green-600"
+          : "text-gray-400 hover:text-gray-600"
+      }`}
             >
               Đăng nhập
               {activeTab === "login" && (
@@ -127,10 +134,11 @@ export default function Login() {
                 navigate("/register");
               }}
               className={`flex-1 pb-4 text-center font-semibold relative transition-colors
-      ${activeTab === "register"
-                  ? "text-green-600"
-                  : "text-gray-400 hover:text-gray-600"
-                }`}
+      ${
+        activeTab === "register"
+          ? "text-green-600"
+          : "text-gray-400 hover:text-gray-600"
+      }`}
             >
               Đăng ký
               {activeTab === "register" && (
@@ -227,7 +235,6 @@ export default function Login() {
                 {error}
               </div>
             )}
-
           </form>
 
           <div className="my-8 flex items-center gap-4">

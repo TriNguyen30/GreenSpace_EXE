@@ -1,11 +1,24 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { login, registerInitiate, registerVerify, registerResend, registerFinalize } from "@/services/auth.service";
-import type { LoginPayload, RegisterInitiatePayload, RegisterVerifyPayload, RegisterResendPayload, RegisterFinalizePayload } from "@/types/api";
+import {
+  login,
+  registerInitiate,
+  registerVerify,
+  registerResend,
+  registerFinalize,
+} from "@/services/auth.service";
+import type {
+  LoginPayload,
+  RegisterInitiatePayload,
+  RegisterVerifyPayload,
+  RegisterResendPayload,
+  RegisterFinalizePayload,
+} from "@/types/api";
+import { axiosInstance } from "@/lib/axios";
 
 export interface User {
   id: string;
   email: string;
-  name?: string;
+  fullName?: string;
   role?: string;
 }
 
@@ -47,7 +60,8 @@ export const loginThunk = createAsyncThunk(
     } catch (err: unknown) {
       const rawMessage =
         err && typeof err === "object" && "response" in err
-          ? (err as { response?: { data?: { message?: string } } }).response?.data?.message
+          ? (err as { response?: { data?: { message?: string } } }).response
+              ?.data?.message
           : null;
 
       let message = "Đăng nhập thất bại";
@@ -62,8 +76,14 @@ export const loginThunk = createAsyncThunk(
 
       return rejectWithValue(message);
     }
-  }
+  },
 );
+
+//revoke token
+export const revokeThunk = createAsyncThunk("auth/revoke", async () => {
+  const refreshToken = localStorage.getItem("refreshToken");
+  await axiosInstance.post("/Auth/revoke", { refreshToken });
+});
 
 //register flow
 export const registerInitiateThunk = createAsyncThunk(
@@ -74,7 +94,7 @@ export const registerInitiateThunk = createAsyncThunk(
     } catch {
       return rejectWithValue("Không thể gửi mã OTP");
     }
-  }
+  },
 );
 
 export const registerVerifyThunk = createAsyncThunk(
@@ -85,7 +105,7 @@ export const registerVerifyThunk = createAsyncThunk(
     } catch {
       return rejectWithValue("Mã OTP không hợp lệ");
     }
-  }
+  },
 );
 
 export const registerResendThunk = createAsyncThunk(
@@ -96,7 +116,7 @@ export const registerResendThunk = createAsyncThunk(
     } catch {
       return rejectWithValue("Không thể gửi lại mã OTP");
     }
-  }
+  },
 );
 
 export const registerFinalizeThunk = createAsyncThunk(
@@ -107,7 +127,7 @@ export const registerFinalizeThunk = createAsyncThunk(
     } catch {
       return rejectWithValue("Tạo tài khoản thất bại");
     }
-  }
+  },
 );
 
 const authSlice = createSlice({
@@ -118,6 +138,7 @@ const authSlice = createSlice({
       state.token = null;
       state.user = null;
       localStorage.removeItem("token");
+      localStorage.removeItem("refreshToken");
       localStorage.removeItem("user");
     },
     resetRegister(state) {
@@ -138,6 +159,7 @@ const authSlice = createSlice({
         state.token = action.payload.token;
         state.user = action.payload.user;
         localStorage.setItem("token", action.payload.token);
+        localStorage.setItem("refreshToken", action.payload.refreshToken);
         localStorage.setItem("user", JSON.stringify(action.payload.user));
       })
       .addCase(loginThunk.rejected, (state, action) => {
