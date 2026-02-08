@@ -1,5 +1,5 @@
-import styles from "@/styles/footer.module.css";
-import "@/styles/color.module.css";
+import styles from "./Footer.module.css";
+import "./Color.module.css";
 import { Leaf, Mail, MapPin, Phone } from "lucide-react";
 import Logo from "@/assets/image/Logo.png";
 

@@ -3,7 +3,7 @@ import { User, ChevronDown } from "lucide-react";
 import { useNavigate, NavLink } from "react-router";
 import DropdownMenu from "@/components/ui/Dropdown";
 import Logo from "@/assets/image/Logo.png";
-import CartDropdown from "./CartDropdown";
+import CartDropdown from "../CartDropdown";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import { logout } from "@/store/slices/authSlice";
 
