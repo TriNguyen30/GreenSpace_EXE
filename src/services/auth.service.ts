@@ -30,6 +30,19 @@ export const login = async (payload: LoginPayload) => {
   };
 };
 
+export const refreshToken = async () => {
+  const refreshToken = localStorage.getItem("refreshToken");
+  const res = await axiosInstance.post("/Auth/refresh", { refreshToken });
+
+  const data = res.data.data;
+
+  return {
+    token: data.accessToken,
+    refreshToken: data.refreshToken,
+    expiresAt: data.expiresAt,
+  };
+};
+
 export const registerInitiate = async (payload: RegisterInitiatePayload) => {
   const res = await axiosInstance.post("/Auth/register/initiate", payload);
   return res.data;
