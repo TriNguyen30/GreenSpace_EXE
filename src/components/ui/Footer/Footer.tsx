@@ -1,6 +1,7 @@
-import styles from "@/styles/footer.module.css";
-import "@/styles/Color.module.css";
+import styles from "./Footer.module.css";
+import "./Color.css";
 import { Leaf, Mail, MapPin, Phone } from "lucide-react";
+import Logo from "@/assets/image/Logo.png";
 
 export default function Footer() {
   return (
@@ -10,10 +11,14 @@ export default function Footer() {
           <div className="grid md:grid-cols-4 gap-8">
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center">
-                  <Leaf className="w-5 h-5 text-white" />
+                <div className="w-15 h-15 flex items-center justify-center absolute -ml-5">
+                  <img
+                    src={Logo}
+                    alt="Logo"
+                    className="w-24 h-auto transition-transform hover:scale-110"
+                  />
                 </div>
-                <span className="text-lg font-bold">Green Space</span>
+                <span className="text-lg font-bold ml-10">Green Space</span>
               </div>
               <p className="text-gray-400 text-sm">
                 Kiến tạo không gian sống xanh, thân thiện với thiên nhiên, mỗi
@@ -90,8 +95,7 @@ export default function Footer() {
           </div>
           <div className="border-t border-gray-200 opacity-20 mt-8 pt-8 "></div>
           <p className="text-center text-gray text-sm opacity-50">
-            © 2025 Green Space Store. Bảo lưu mọi quyền. Designed for Zen
-            living
+            © 2025 Green Space Store. Bảo lưu mọi quyền. Designed for Zen living
           </p>
         </div>
       </footer>

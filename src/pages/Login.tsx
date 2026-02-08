@@ -8,6 +8,7 @@ import Logo from "@/assets/image/Logo.png";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { loginThunk } from "@/store/slices/authSlice";
 import type { LoginPayload } from "@/types/api";
+import { FcGoogle } from "react-icons/fc";
 
 const loginSchema = Yup.object({
   email: Yup.string()
@@ -243,14 +244,10 @@ export default function Login() {
             <div className="flex-1 h-px bg-gray-200"></div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <button className="flex items-center justify-center gap-3 px-4 py-3 border border-gray-300 rounded-xl hover:bg-gray-50 transition">
-              <span className="text-sm font-medium text-gray-700">Google</span>
-            </button>
-            <button className="flex items-center justify-center gap-3 px-4 py-3 border border-gray-300 rounded-xl hover:bg-gray-50 transition">
-              <span className="text-sm font-medium text-gray-700">
-                Facebook
-              </span>
+          <div className="grid">
+            <button className="flex items-center justify-center gap-3 px-4 py-3 border border-gray-300 rounded-xl transition-all duration-200 hover:bg-gray-100 hover:border-gray-400 hover:shadow-md hover:scale-[1.02] active:scale-[0.98]">
+              <FcGoogle className="w-5 h-5" />
+              <span className="text-sm font-medium text-gray-700">Đăng nhập với Google</span>
             </button>
           </div>
         </div>
