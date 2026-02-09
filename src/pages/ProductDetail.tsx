@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   ChevronLeft,
@@ -11,6 +11,8 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { useCart } from "@/context/CartContext";
+import { getProductById } from "@/services/product.service";
+import type { Product as ApiProduct } from "@/types/api";
 
 type Product = {
   id: number;
@@ -97,9 +99,61 @@ export default function ProductDetail() {
     [productId],
   );
 
+  const [apiProduct, setApiProduct] = useState<ApiProduct | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
   const [mainImage, setMainImage] = useState(product.image);
   const [quantity, setQuantity] = useState(1);
   const [liked, setLiked] = useState(false);
+
+  useEffect(() => {
+    if (!id) {
+      setError("Không tìm thấy sản phẩm");
+      return;
+    }
+
+    let cancelled = false;
+
+    const load = async () => {
+      try {
+        setLoading(true);
+        const result = await getProductById(id);
+        if (cancelled) return;
+
+        if (!result) {
+          setError("Không tìm thấy sản phẩm");
+          return;
+        }
+
+        setApiProduct(result);
+        setMainImage(result.thumbnailUrl || product.image);
+      } catch {
+        if (!cancelled) {
+          setError("Không thể tải sản phẩm");
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    };
+
+    load();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [id, product.image]);
+
+  const displayedName = apiProduct?.name ?? product.name;
+  const displayedDescription = apiProduct?.description ?? product.description;
+  const displayedPrice = apiProduct
+    ? `${apiProduct.basePrice.toLocaleString()} đ`
+    : product.price;
+  const displayedCategory = apiProduct?.categoryName ?? product.type;
+  const displayedBrand = apiProduct?.brandName ?? "Đang cập nhật";
+  const skuSource = apiProduct?.productId ?? product.id;
 
   const related = useMemo(
     () =>
@@ -114,18 +168,27 @@ export default function ProductDetail() {
   }
 
   function handleAddToCart() {
-    addToCart(
-      {
-        id: product.id,
-        name: product.name,
-        price: product.price,
-        image: product.image,
-      },
-      quantity,
-    );
+    const cartItem = apiProduct
+      ? {
+          id: Array.from(apiProduct.productId)
+            .slice(0, 8)
+            .reduce((sum, ch) => sum + ch.charCodeAt(0), 0),
+          name: apiProduct.name,
+          price: `${apiProduct.basePrice.toLocaleString()} đ`,
+          image: apiProduct.thumbnailUrl,
+        }
+      : {
+          id: product.id,
+          name: product.name,
+          price: product.price,
+          image: product.image,
+        };
+
+    addToCart(cartItem, quantity);
 
     // Show success message
-    const message = `Đã thêm ${quantity} ${product.name} vào giỏ hàng!`;
+    const productName = apiProduct?.name ?? product.name;
+    const message = `Đã thêm ${quantity} ${productName} vào giỏ hàng!`;
 
     // Create toast notification (optional - you can use a toast library)
     const toast = document.createElement("div");
@@ -139,9 +202,34 @@ export default function ProductDetail() {
     }, 3000);
   }
 
+  if (loading && !apiProduct) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <p className="text-gray-700">Đang tải sản phẩm...</p>
+      </div>
+    );
+  }
+
+  if ((error && !apiProduct) || !product) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50">
+        <p className="text-gray-700 mb-4">
+          {error ?? "Không tìm thấy sản phẩm"}
+        </p>
+        <button
+          onClick={() => navigate(-1)}
+          className="px-4 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700"
+        >
+          Quay lại
+        </button>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-green-50/30 to-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <React.Fragment>
+      <div className="min-h-screen bg-gradient-to-b from-green-50/30 to-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Breadcrumb */}
         <div className="mb-8">
           <button
@@ -154,8 +242,8 @@ export default function ProductDetail() {
           </button>
         </div>
 
-        <div className="bg-white rounded-3xl shadow-lg overflow-hidden">
-          <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 p-6 lg:p-10">
+          <div className="bg-white rounded-3xl shadow-lg overflow-hidden">
+            <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 p-6 lg:p-10">
             {/* Gallery Section */}
             <div className="space-y-4">
               {/* Main Image */}
@@ -231,10 +319,10 @@ export default function ProductDetail() {
               <div className="flex items-start justify-between gap-4 mb-6">
                 <div className="flex-1">
                   <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 leading-tight mb-3">
-                    {product.name}
+                    {displayedName}
                   </h1>
                   <p className="text-base text-gray-600 leading-relaxed">
-                    {product.description}
+                    {displayedDescription}
                   </p>
 
                   {/* Rating */}
@@ -255,7 +343,6 @@ export default function ProductDetail() {
 
                 <button
                   onClick={() => setLiked((s) => !s)}
-                  aria-pressed={liked}
                   className={`p-3 rounded-xl transition-all shadow-sm ${
                     liked
                       ? "bg-pink-100 text-pink-600 scale-110"
@@ -273,7 +360,7 @@ export default function ProductDetail() {
                   <div>
                     <div className="text-sm text-gray-600 mb-1">Giá bán</div>
                     <div className="text-4xl font-black text-green-700">
-                      {product.price}
+                      {displayedPrice}
                     </div>
                   </div>
                   <div className="text-right">
@@ -366,13 +453,13 @@ export default function ProductDetail() {
                     <li className="flex justify-between">
                       <span className="text-gray-600">Loại:</span>
                       <span className="font-semibold text-gray-900">
-                        {product.type}
+                        {displayedCategory}
                       </span>
                     </li>
                     <li className="flex justify-between">
-                      <span className="text-gray-600">Kích thước:</span>
+                      <span className="text-gray-600">Thương hiệu:</span>
                       <span className="font-semibold text-gray-900">
-                        {product.size}
+                        {displayedBrand}
                       </span>
                     </li>
                     <li className="flex justify-between">
@@ -384,7 +471,7 @@ export default function ProductDetail() {
                     <li className="flex justify-between">
                       <span className="text-gray-600">SKU:</span>
                       <span className="font-semibold text-gray-900">
-                        GS-{product.id.toString().padStart(4, "0")}
+                        GS-{String(skuSource).padStart(4, "0")}
                       </span>
                     </li>
                   </ul>
@@ -418,7 +505,7 @@ export default function ProductDetail() {
                     Mô tả sản phẩm
                   </h3>
                   <p className="text-gray-700 leading-relaxed">
-                    {product.description}
+                    {displayedDescription}
                   </p>
                 </div>
 
@@ -506,9 +593,10 @@ export default function ProductDetail() {
                 </div>
               )}
             </div>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </React.Fragment>
   );
 }
