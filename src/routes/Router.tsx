@@ -20,15 +20,15 @@ export default function AppRoutes() {
         <Route path="/product/:id" element={<ProductDetail />} />
         <Route path="/cart" element={<Cart />} />
         <Route path="/checkout" element={<Checkout />} />
-        <Route
-          path="/admin"
-          element={
-            <ProtectedRoute requireAdmin>
-              <AdminDashboard />
-            </ProtectedRoute>
-          }
-        />
       </Route>
+      <Route
+        path="/admin"
+        element={
+          <ProtectedRoute requireAdmin>
+            <AdminDashboard />
+          </ProtectedRoute>
+        }
+      />
       <Route path="/contact" element={<Contact />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
