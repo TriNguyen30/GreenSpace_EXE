@@ -143,10 +143,20 @@ export default function AdminDashboard() {
 
 // Categories Content Component
 function CategoriesContent() {
+  const navigate = useNavigate();
+  
   return (
     <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">Quản lý danh mục</h3>
-      <p className="text-gray-500">Tính năng quản lý danh mục sẽ được triển khai sau.</p>
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-lg font-semibold text-gray-900">Quản lý danh mục</h3>
+        <button
+          onClick={() => navigate("/admin/categories")}
+          className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
+        >
+          Quản lý danh mục
+        </button>
+      </div>
+      <p className="text-gray-500">Nhấn vào nút trên để truy cập trang quản lý danh mục đầy đủ.</p>
     </div>
   );
 }

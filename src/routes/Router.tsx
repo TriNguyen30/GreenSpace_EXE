@@ -10,6 +10,7 @@ import Cart from "@/pages/Cart";
 import Checkout from "@/pages/Checkout";
 import ProtectedRoute from "./ProtectedRoute";
 import AdminDashboard from "@/pages/AdminDashboard";
+import CategoryManagement from "@/pages/CategoryManagement";
 
 export default function AppRoutes() {
   return (
@@ -26,6 +27,14 @@ export default function AppRoutes() {
         element={
           <ProtectedRoute requireAdmin>
             <AdminDashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/categories"
+        element={
+          <ProtectedRoute requireAdmin>
+            <CategoryManagement />
           </ProtectedRoute>
         }
       />
