@@ -102,13 +102,13 @@ export default function Login() {
       {/* Right Panel */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-gray-50">
         <div className="w-full max-w-md">
-          <div className="lg:hidden flex items-center justify-center gap-2 mb-8">
+          <div className="lg:hidden flex items-center justify-center mb-8">
             <img
               src={Logo}
               alt="Logo"
-              className="w-24 h-auto transition-transform hover:scale-110"
+              className="w-24 h-auto transition-transform hover:scale-110 absolute -ml-40"
             />
-            <span className="text-2xl font-bold text-gray-900">
+            <span className="text-2xl font-bold text-gray-900 ml-10">
               Green Space
             </span>
           </div>

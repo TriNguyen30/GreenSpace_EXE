@@ -108,9 +108,9 @@ export default function Navbar() {
                   <div className="absolute right-0 top-full mt-2 w-48 py-1 bg-white rounded-xl shadow-lg border border-gray-100 z-50">
                     <div className="px-4 py-2 border-b border-gray-100">
                       <p className="text-sm font-medium text-gray-900 truncate">
-                        {user.fullName || user.email}
+                        {user?.fullName || user.email}
                       </p>
-                      <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                      <p className="text-xs text-gray-500 truncate">{user?.fullName || "Khách hàng"}</p>
                     </div>
                     <button
                       type="button"
