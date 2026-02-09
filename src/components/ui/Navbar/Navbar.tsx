@@ -30,12 +30,13 @@ export default function Navbar() {
         <div className="flex items-center justify-between">
           {/* Logo */}
           <div className="flex items-center cursor-pointer" onClick={() => navigate("/")}>
-            <div className="flex items-center justify-center">
+            <div className="flex items-center justify-center" onClick={() => {
+              document.getElementById("home")?.scrollIntoView({ behavior: "smooth" });
+            }}>
               <img
                 src={Logo}
                 alt="Logo"
                 className="w-15 h-auto transition-transform hover:scale-110"
-                onClick={() => navigate("/")}
               />
             </div>
             <span className="text-xm font-bold text-gray-900">Green Space</span>
