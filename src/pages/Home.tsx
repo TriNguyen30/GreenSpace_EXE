@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import { Leaf, MapPin, Recycle, Truck, CircleCheck } from "lucide-react";
+import { useNavigate } from "react-router";
 
 export default function GreenSpaceLanding() {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const navigate = useNavigate();
 
   const products = [
     {
@@ -150,7 +152,7 @@ export default function GreenSpaceLanding() {
               Những bộ phận mới nhất sống dộng được ưa chuộng nhất
             </p>
           </div>
-          <button className="text-green-600 hover:text-green-700 font-semibold">
+          <button className="text-green-600 hover:text-green-700 font-semibold cursor-pointer" onClick={() => navigate('/product')}>
             Xem tất cả →
           </button>
         </div>
