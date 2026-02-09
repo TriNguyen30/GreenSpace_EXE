@@ -39,7 +39,7 @@ export default function Navbar() {
                 className="w-15 h-auto transition-transform hover:scale-110"
               />
             </div>
-            <span className="text-xm font-bold text-gray-900">Green Space</span>
+            <span className="text-xm font-light text-gray-900">Green Space</span>
           </div>
           <nav className="hidden md:flex items-center gap-8">
             <DropdownMenu
