@@ -112,7 +112,6 @@ export default function Login() {
               Green Space
             </span>
           </div>
-
           <div className="flex border-b border-gray-200 mb-8">
             <button
               onClick={() => setActiveTab("login")}

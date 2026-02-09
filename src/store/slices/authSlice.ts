@@ -14,6 +14,7 @@ import type {
   RegisterFinalizePayload,
 } from "@/types/api";
 import { axiosInstance } from "@/lib/axios";
+import axios from "axios";
 
 export interface User {
   id: string;
@@ -57,21 +58,32 @@ export const loginThunk = createAsyncThunk(
   async (payload: LoginPayload, { rejectWithValue }) => {
     try {
       return await login(payload);
-    } catch (err: unknown) {
-      const rawMessage =
-        err && typeof err === "object" && "response" in err
-          ? (err as { response?: { data?: { message?: string } } }).response
-              ?.data?.message
-          : null;
-
+    } catch (err) {
       let message = "Đăng nhập thất bại";
 
-      if (rawMessage?.toLowerCase().includes("invalid")) {
-        message = "Email hoặc mật khẩu không đúng";
-      } else if (rawMessage?.toLowerCase().includes("locked")) {
-        message = "Tài khoản đã bị khóa";
-      } else if (rawMessage?.toLowerCase().includes("not verified")) {
-        message = "Tài khoản chưa xác thực email";
+      if (axios.isAxiosError(err)) {
+        const rawMessage =
+          err.response?.data?.message ||
+          err.response?.data?.error ||
+          err.message;
+
+        if (rawMessage) {
+          const lower = rawMessage.toLowerCase();
+          if (
+            lower.includes("invalid") ||
+            lower.includes("wrong email") ||
+            lower.includes("wrong password") ||
+            lower.includes("credentials")
+          ) {
+            message = "Email hoặc mật khẩu không đúng";
+          } else if (lower.includes("locked")) {
+            message = "Tài khoản đã bị khóa";
+          } else if (lower.includes("not verified")) {
+            message = "Tài khoản chưa xác thực email";
+          } else {
+            message = rawMessage;
+          }
+        }
       }
 
       return rejectWithValue(message);
