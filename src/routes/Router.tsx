@@ -10,6 +10,7 @@ import Cart from "@/pages/Cart";
 import Checkout from "@/pages/Checkout";
 import ProtectedRoute from "./ProtectedRoute";
 import AdminDashboard from "@/pages/AdminDashboard";
+import CategoryManagement from "@/pages/CategoryManagement";
 
 export default function AppRoutes() {
   return (
@@ -20,15 +21,23 @@ export default function AppRoutes() {
         <Route path="/product/:id" element={<ProductDetail />} />
         <Route path="/cart" element={<Cart />} />
         <Route path="/checkout" element={<Checkout />} />
-        <Route
-          path="/admin"
-          element={
-            <ProtectedRoute requireAdmin>
-              <AdminDashboard />
-            </ProtectedRoute>
-          }
-        />
       </Route>
+      <Route
+        path="/admin"
+        element={
+          <ProtectedRoute requireAdmin>
+            <AdminDashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/categories"
+        element={
+          <ProtectedRoute requireAdmin>
+            <CategoryManagement />
+          </ProtectedRoute>
+        }
+      />
       <Route path="/contact" element={<Contact />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
