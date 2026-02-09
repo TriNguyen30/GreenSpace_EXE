@@ -42,3 +42,22 @@ export interface RegisterFinalizePayload {
   phoneNumber: string;
   address: string;
 }
+
+// Product
+export interface ProductVariant {
+  variantId: string;
+  name: string;
+  price: number;
+  stockQuantity: number;
+}
+
+export interface Product {
+  productId: string;
+  name: string;
+  description: string;
+  basePrice: number;
+  thumbnailUrl: string;
+  categoryName: string;
+  brandName?: string | null;
+  variants: ProductVariant[];
+}
