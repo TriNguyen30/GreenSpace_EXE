@@ -1,7 +1,23 @@
 import { useState, useEffect } from "react";
-import { getCategories, createCategory, updateCategory, deleteCategory, getCategoryById } from "@/services/category.service";
+import {
+  getCategories,
+  createCategory,
+  updateCategory,
+  deleteCategory,
+  getCategoryById
+} from "@/services/category.service";
 import type { Category, CreateCategoryPayload, UpdateCategoryPayload } from "@/types/category";
 import Notification, { NotificationType } from "@/components/ui/Notification";
+import {
+  Plus,
+  Search,
+  Edit2,
+  Trash2,
+  Eye,
+  X,
+  ChevronRight,
+  FolderTree
+} from "lucide-react";
 
 export default function CategoryManagement() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -11,6 +27,7 @@ export default function CategoryManagement() {
   const [notification, setNotification] = useState<{ type: NotificationType; message: string } | null>(null);
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [viewCategory, setViewCategory] = useState<Category | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
   const [formData, setFormData] = useState<CreateCategoryPayload>({
     name: "",
     slug: "",
@@ -105,12 +122,13 @@ export default function CategoryManagement() {
     return (categories || []).filter(cat => cat.parentId === null);
   };
 
-  if (loading) {
-    return <div className="flex justify-center items-center h-64">Loading...</div>;
-  }
+  const filteredCategories = categories.filter(cat =>
+    cat.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    cat.slug.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
-    <div className="container mx-auto p-6">
+    <div className="min-h-screen bg-gray-50/50 p-6 space-y-6">
       {notification && (
         <Notification
           type={notification.type}
@@ -118,125 +136,183 @@ export default function CategoryManagement() {
           onClose={() => setNotification(null)}
         />
       )}
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Category Management</h1>
+
+      {/* Header Section */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 tracking-tight flex items-center gap-2">
+            <FolderTree className="w-8 h-8 text-blue-600" />
+            Category Management
+          </h1>
+          <p className="text-gray-500 text-sm mt-1">Manage your product categories and hierarchy.</p>
+        </div>
         <button
           onClick={() => setIsModalOpen(true)}
-          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-medium shadow-lg shadow-blue-600/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
         >
+          <Plus className="w-5 h-5" />
           Add Category
         </button>
       </div>
 
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <table className="min-w-full">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                STT
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Name
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Slug
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Parent
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {categories?.length > 0 ? (
-              categories.map((category, index) => (
-                <tr key={category.categoryId}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {index + 1}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {category.name}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {category.slug}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {category.parentName || "-"}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <button
-                      onClick={() => handleView(category.categoryId)}
-                      className="text-blue-600 hover:text-blue-900 mr-4"
-                    >
-                      View
-                    </button>
-                    <button
-                      onClick={() => handleEdit(category)}
-                      className="text-indigo-600 hover:text-indigo-900 mr-4"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDelete(category.categoryId)}
-                      className="text-red-600 hover:text-red-900"
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan={4} className="px-6 py-4 text-center text-gray-500">
-                  No categories found. Add your first category!
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+      {/* Search and Filters */}
+      <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+        <div className="relative max-w-md">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+          <input
+            type="text"
+            placeholder="Search categories..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-10 pr-4 py-2 bg-gray-50 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+          />
+        </div>
       </div>
 
+      {/* Categories Table */}
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        {loading ? (
+          <div className="flex justify-center items-center h-64">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50/50 border-b border-gray-100">
+                <tr>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">STT</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Name</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Slug</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Parent Class</th>
+                  <th className="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {filteredCategories.length > 0 ? (
+                  filteredCategories.map((category, index) => (
+                    <tr
+                      key={category.categoryId}
+                      className="group hover:bg-gray-50/50 transition-colors"
+                    >
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        #{index + 1}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600 font-bold text-xs">
+                            {category.name.charAt(0).toUpperCase()}
+                          </div>
+                          <span className="font-medium text-gray-900">{category.name}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <span className="px-2.5 py-1 rounded-md bg-gray-100 text-gray-600 font-mono text-xs">
+                          {category.slug}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {category.parentName ? (
+                          <span className="flex items-center gap-1.5 text-blue-600 bg-blue-50 px-2.5 py-1 rounded-full text-xs font-medium w-fit">
+                            <ChevronRight className="w-3 h-3" />
+                            {category.parentName}
+                          </span>
+                        ) : (
+                          <span className="text-gray-400 italic">Root</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
+                        <div className="flex justify-end items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button
+                            onClick={() => handleView(category.categoryId)}
+                            className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                            title="View Details"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleEdit(category)}
+                            className="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                            title="Edit Category"
+                          >
+                            <Edit2 className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(category.categoryId)}
+                            className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            title="Delete Category"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={5} className="px-6 py-12 text-center">
+                      <div className="flex flex-col items-center justify-center gap-3">
+                        <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center">
+                          <Search className="w-6 h-6 text-gray-400" />
+                        </div>
+                        <p className="text-gray-500 font-medium">No categories found</p>
+                        <p className="text-gray-400 text-sm">Try adjusting your search or add a new category.</p>
+                      </div>
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* Create/Edit Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
-          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-            <h3 className="text-lg font-bold text-gray-900 mb-4">
-              {editingCategory ? "Edit Category" : "Add Category"}
-            </h3>
-            <form onSubmit={handleSubmit}>
-              <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-bold mb-2">
-                  Name
-                </label>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+              <h3 className="text-lg font-bold text-gray-900">
+                {editingCategory ? "Edit Category" : "Add New Category"}
+              </h3>
+              <button
+                onClick={handleCloseModal}
+                className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-2 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmit} className="p-6 space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-gray-700">Name</label>
                 <input
                   type="text"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                  placeholder="e.g. Electronics"
                   required
                 />
               </div>
-              <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-bold mb-2">
-                  Slug
-                </label>
+
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-gray-700">Slug</label>
                 <input
                   type="text"
                   value={formData.slug}
                   onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-mono text-sm"
+                  placeholder="e.g. electronics"
                   required
                 />
               </div>
-              <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-bold mb-2">
-                  Parent Category
-                </label>
+
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-gray-700">Parent Category</label>
                 <select
                   value={formData.parentId}
                   onChange={(e) => setFormData({ ...formData, parentId: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
                 >
                   <option value="">None (Root Category)</option>
                   {getParentOptions().map((category) => (
@@ -246,19 +322,20 @@ export default function CategoryManagement() {
                   ))}
                 </select>
               </div>
-              <div className="flex justify-end">
+
+              <div className="pt-4 flex justify-end gap-3">
                 <button
                   type="button"
                   onClick={handleCloseModal}
-                  className="mr-4 px-4 py-2 text-gray-500 border border-gray-300 rounded hover:bg-gray-100"
+                  className="px-4 py-2 text-gray-600 font-medium hover:bg-gray-100 rounded-xl transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                  className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl shadow-lg shadow-blue-600/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
                 >
-                  {editingCategory ? "Update" : "Create"}
+                  {editingCategory ? "Update Changes" : "Create Category"}
                 </button>
               </div>
             </form>
@@ -266,31 +343,48 @@ export default function CategoryManagement() {
         </div>
       )}
 
+      {/* View Detail Modal */}
       {viewModalOpen && viewCategory && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-            <h3 className="text-lg font-bold text-gray-900 mb-4">Category Details</h3>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-bold text-gray-700">Name</label>
-                <p className="mt-1 text-gray-900">{viewCategory.name}</p>
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-gray-700">Slug</label>
-                <p className="mt-1 text-gray-900">{viewCategory.slug}</p>
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-gray-700">Parent Category</label>
-                <p className="mt-1 text-gray-900">{viewCategory.parentName || "None"}</p>
-              </div>
-            </div>
-            <div className="mt-6 flex justify-end">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="relative h-24 bg-gradient-to-r from-blue-500 to-indigo-600">
               <button
                 onClick={closeViewModal}
-                className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+                className="absolute top-4 right-4 text-white/80 hover:text-white hover:bg-white/20 p-2 rounded-lg transition-colors"
               >
-                Close
+                <X className="w-5 h-5" />
               </button>
+              <div className="absolute -bottom-8 left-6">
+                <div className="w-16 h-16 rounded-2xl bg-white p-1 shadow-lg">
+                  <div className="w-full h-full rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 text-2xl font-bold">
+                    {viewCategory.name.charAt(0).toUpperCase()}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-10 px-6 pb-6">
+              <h3 className="text-xl font-bold text-gray-900">{viewCategory.name}</h3>
+              <p className="text-gray-500 text-sm font-mono mt-1">{viewCategory.slug}</p>
+
+              <div className="mt-6 space-y-4">
+                <div className="p-3 bg-gray-50 rounded-xl border border-gray-100">
+                  <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-1">Parent Category</span>
+                  <div className="flex items-center gap-2 text-gray-900 font-medium">
+                    <FolderTree className="w-4 h-4 text-gray-400" />
+                    {viewCategory.parentName || "None (Root)"}
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-6">
+                <button
+                  onClick={closeViewModal}
+                  className="w-full py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-xl transition-colors"
+                >
+                  Close
+                </button>
+              </div>
             </div>
           </div>
         </div>
