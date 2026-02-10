@@ -274,11 +274,10 @@ export default function CheckoutPage() {
                 <div className="space-y-3">
                   {/* COD */}
                   <label
-                    className={`flex items-start gap-4 p-4 border-2 rounded-xl cursor-pointer transition-all ${
-                      paymentMethod === "cod"
-                        ? "border-green-500 bg-green-50"
-                        : "border-gray-200 hover:border-green-300"
-                    }`}
+                    className={`flex items-start gap-4 p-4 border-2 rounded-xl cursor-pointer transition-all ${paymentMethod === "cod"
+                      ? "border-green-500 bg-green-50"
+                      : "border-gray-200 hover:border-green-300"
+                      }`}
                   >
                     <input
                       type="radio"
@@ -300,69 +299,13 @@ export default function CheckoutPage() {
                     </div>
                   </label>
 
-                  {/* Bank Transfer */}
-                  <label
-                    className={`flex items-start gap-4 p-4 border-2 rounded-xl cursor-pointer transition-all ${
-                      paymentMethod === "bank"
-                        ? "border-green-500 bg-green-50"
-                        : "border-gray-200 hover:border-green-300"
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      name="payment"
-                      value="bank"
-                      checked={paymentMethod === "bank"}
-                      onChange={(e) =>
-                        setPaymentMethod(e.target.value as PaymentMethod)
-                      }
-                      className="mt-1"
-                    />
-                    <div className="flex-1">
-                      <div className="font-semibold text-gray-900 mb-1">
-                        Chuyển khoản ngân hàng
-                      </div>
-                      <div className="text-sm text-gray-600">
-                        Chuyển khoản qua tài khoản ngân hàng
-                      </div>
-                    </div>
-                  </label>
-
-                  {/* MoMo */}
-                  <label
-                    className={`flex items-start gap-4 p-4 border-2 rounded-xl cursor-pointer transition-all ${
-                      paymentMethod === "momo"
-                        ? "border-green-500 bg-green-50"
-                        : "border-gray-200 hover:border-green-300"
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      name="payment"
-                      value="momo"
-                      checked={paymentMethod === "momo"}
-                      onChange={(e) =>
-                        setPaymentMethod(e.target.value as PaymentMethod)
-                      }
-                      className="mt-1"
-                    />
-                    <div className="flex-1">
-                      <div className="font-semibold text-gray-900 mb-1">
-                        Ví MoMo
-                      </div>
-                      <div className="text-sm text-gray-600">
-                        Thanh toán qua ví điện tử MoMo
-                      </div>
-                    </div>
-                  </label>
 
                   {/* VNPay */}
                   <label
-                    className={`flex items-start gap-4 p-4 border-2 rounded-xl cursor-pointer transition-all ${
-                      paymentMethod === "vnpay"
-                        ? "border-green-500 bg-green-50"
-                        : "border-gray-200 hover:border-green-300"
-                    }`}
+                    className={`flex items-start gap-4 p-4 border-2 rounded-xl cursor-pointer transition-all ${paymentMethod === "vnpay"
+                      ? "border-green-500 bg-green-50"
+                      : "border-gray-200 hover:border-green-300"
+                      }`}
                   >
                     <input
                       type="radio"
@@ -461,11 +404,10 @@ export default function CheckoutPage() {
                 <button
                   type="submit"
                   disabled={isProcessing}
-                  className={`w-full py-4 rounded-xl font-bold text-lg shadow-lg transition-all ${
-                    isProcessing
-                      ? "bg-gray-400 cursor-not-allowed"
-                      : "bg-green-600 hover:bg-green-700 hover:shadow-xl"
-                  } text-white`}
+                  className={`w-full py-4 rounded-xl font-bold text-lg shadow-lg transition-all ${isProcessing
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-green-600 hover:bg-green-700 hover:shadow-xl"
+                    } text-white`}
                 >
                   {isProcessing ? (
                     <span className="flex items-center justify-center gap-2">

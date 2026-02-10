@@ -3,6 +3,8 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { getProducts } from '@/services/product.service';
 import type { Product as ApiProduct } from '@/types/api';
+import { useSearch } from "@/context/SearchContext";
+import SearchBox from "@/components/ui/Search";
 
 type ProductItem = ApiProduct & { isNew?: boolean };
 
@@ -12,6 +14,7 @@ export default function Product() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const productsPerPage = 20;
+  const { keyword } = useSearch();
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -38,13 +41,30 @@ export default function Product() {
     void fetchProducts();
   }, []);
 
-  // Danh sách sản phẩm giữ nguyên thứ tự trả về từ API
-  const sortedProducts = useMemo(() => [...products], [products]);
+
+  /* ================= SEARCH FILTER ================= */
+  const filteredProducts = useMemo(() => {
+    if (!keyword.trim()) return products;
+
+    const q = keyword.toLowerCase();
+    return products.filter(
+      (p) =>
+        p.name?.toLowerCase().includes(q) ||
+        p.description?.toLowerCase().includes(q),
+    );
+  }, [products, keyword]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [keyword]);
 
   // Pagination
-  const totalPages = Math.ceil(sortedProducts.length / productsPerPage);
+  const totalPages = Math.ceil(filteredProducts.length / productsPerPage) || 1;
   const startIndex = (currentPage - 1) * productsPerPage;
-  const paginatedProducts = sortedProducts.slice(startIndex, startIndex + productsPerPage);
+  const paginatedProducts = filteredProducts.slice(
+    startIndex,
+    startIndex + productsPerPage,
+  );
 
   return (
     <div className="min-h-screen bg-gray-50 py-19">
@@ -68,8 +88,12 @@ export default function Product() {
             {/* Info Bar */}
             <div className="flex justify-between items-center mb-6">
               <p className="text-gray-700">
-                Hiển thị {paginatedProducts.length} / {products.length} sản phẩm
+                Hiển thị {paginatedProducts.length} / {filteredProducts.length}{" "} sản phẩm
               </p>
+            </div>
+
+            <div className="mb-6">
+              <SearchBox />
             </div>
 
             {/* Product Grid */}
@@ -160,11 +184,10 @@ export default function Product() {
                   <button
                     key={pageNum}
                     onClick={() => setCurrentPage(pageNum)}
-                    className={`px-4 py-2 rounded-lg border ${
-                      currentPage === pageNum
-                        ? 'bg-green-800 text-white border-green-800'
-                        : 'border-gray-300 hover:bg-gray-100'
-                    }`}
+                    className={`px-4 py-2 rounded-lg border ${currentPage === pageNum
+                      ? 'bg-green-800 text-white border-green-800'
+                      : 'border-gray-300 hover:bg-gray-100'
+                      }`}
                   >
                     {pageNum}
                   </button>
