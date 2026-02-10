@@ -110,10 +110,7 @@ export default function CartPage() {
             {/* Cart Items */}
             <div className="lg:col-span-2 space-y-4">
               {items.map((item) => {
-                const itemPrice =
-                  Number(
-                    item.price.replace(/[^.\d]/g, "").replace(/\./g, ""),
-                  ) || 0;
+                const itemPrice = item.price;
                 const subtotal = itemPrice * item.quantity;
 
                 return (
