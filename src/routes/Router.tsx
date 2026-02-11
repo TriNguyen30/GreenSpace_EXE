@@ -12,6 +12,9 @@ import ProtectedRoute from "./ProtectedRoute";
 import AdminDashboard from "@/pages/AdminDashboard";
 import CategoryManagement from "@/pages/CategoryManagement";
 import ForgotPassword from "@/pages/ForgotPassword";
+import OrderList from "@/pages/OrderList";
+import OrderDetail from "@/pages/OrderDetail";
+import PaymentResult from "@/pages/PaymentResult";
 
 export default function AppRoutes() {
   return (
@@ -23,6 +26,9 @@ export default function AppRoutes() {
         <Route path="/product/:id" element={<ProductDetail />} />
         <Route path="/cart" element={<Cart />} />
         <Route path="/checkout" element={<Checkout />} />
+        <Route path="/orders" element={<OrderList />} />
+        <Route path="/orders/:id" element={<OrderDetail />} />
+        <Route path="/payment/result" element={<PaymentResult />} />
       </Route>
       <Route
         path="/admin"

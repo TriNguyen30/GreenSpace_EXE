@@ -8,17 +8,21 @@ import {
   Phone,
   Mail,
   User,
-  MessageSquare,
   CheckCircle,
   ShoppingBag,
 } from "lucide-react";
 import { useCart } from "@/context/CartContext";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { createOrderThunk } from "@/store/slices/orderSlice";
+import { createVNPayPayment } from "@/services/payment.service";
 
-type PaymentMethod = "cod" | "bank" | "momo" | "vnpay";
+type PaymentMethod = "cod" | "vnpay";
 
 export default function CheckoutPage() {
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
   const { items, getTotalPrice, clearCart } = useCart();
+  const { loading } = useAppSelector((state) => state.orders);
 
   const [formData, setFormData] = useState({
     fullName: "",
@@ -32,30 +36,37 @@ export default function CheckoutPage() {
   });
 
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("cod");
-  const [isProcessing, setIsProcessing] = useState(false);
 
   const totalPrice = getTotalPrice();
   const shippingFee = totalPrice > 500000 ? 0 : 30000;
   const discount = 0;
   const finalTotal = totalPrice + shippingFee - discount;
 
-  const formatPrice = (price: number) => {
-    return price.toLocaleString("vi-VN") + " ₫";
-  };
+  const formatPrice = (price: number) =>
+    price.toLocaleString("vi-VN") + " ₫";
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
-    setFormData({
-      ...formData,
+    setFormData((prev) => ({
+      ...prev,
       [e.target.name]: e.target.value,
-    });
+    }));
+  };
+
+  const buildShippingAddress = () => {
+    const parts = [
+      formData.address,
+      formData.ward,
+      formData.district,
+      formData.city,
+    ].filter(Boolean);
+    return parts.join(", ");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validation
     if (!formData.fullName || !formData.phone || !formData.address) {
       alert("Vui lòng điền đầy đủ thông tin bắt buộc!");
       return;
@@ -66,18 +77,45 @@ export default function CheckoutPage() {
       return;
     }
 
-    setIsProcessing(true);
+    try {
+      // 1️⃣ Create Order
+      const orderRes = await dispatch(
+        createOrderThunk({
+          shippingAddress: buildShippingAddress(),
+          items: items.map((item) => ({
+            productId: item.id.toString(),
+            quantity: item.quantity,
+          })),
+        }),
+      ).unwrap();
 
-    // Simulate API call
-    setTimeout(() => {
-      // Clear cart
-      clearCart();
+      const orderId = orderRes.orderId;
 
-      // Navigate to success page or show success message
-      alert("Đặt hàng thành công! Cảm ơn bạn đã mua hàng.");
-      setIsProcessing(false);
-      navigate("/order-success");
-    }, 2000);
+      // 2️⃣ Payment Flow
+      if (paymentMethod === "cod") {
+        clearCart();
+        // Điều hướng về trang chi tiết đơn hàng thay vì route không tồn tại
+        navigate(`/orders/${orderId}`);
+        return;
+      }
+
+      // VNPay
+      const paymentRes = await createVNPayPayment({
+        orderId,
+        amount: finalTotal,
+        orderDescription: `Thanh toán đơn hàng ${orderId}`,
+        bankCode: "",
+      });
+
+      if (paymentRes.paymentUrl) {
+        window.location.href = paymentRes.paymentUrl;
+      } else {
+        throw new Error("Không nhận được URL thanh toán");
+      }
+    } catch (err: any) {
+      console.error(err);
+      alert(err?.message || "Có lỗi xảy ra khi đặt hàng");
+    }
   };
 
   if (items.length === 0) {
@@ -113,8 +151,10 @@ export default function CheckoutPage() {
             onClick={() => navigate("/cart")}
             className="inline-flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-green-700 transition-colors group mb-4"
           >
-            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-            Quay lại giỏ hàng
+            <div className="inline-flex items-center leading-none gap-2 cursor-pointer group text-gray-700 hover:text-green-600 transition">
+              <ArrowLeft className="w-4 h-4 relative bottom-[1px] group-hover:-translate-x-1 transition-transform" />
+              <span className="text-sm font-medium">Quay lại giỏ hàng</span>
+            </div>
           </button>
 
           <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-2">
@@ -125,9 +165,9 @@ export default function CheckoutPage() {
 
         <form onSubmit={handleSubmit}>
           <div className="grid lg:grid-cols-3 gap-8">
-            {/* Left Column - Forms */}
+            {/* Left Column */}
             <div className="lg:col-span-2 space-y-6">
-              {/* Contact Information */}
+              {/* Contact */}
               <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
                 <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
                   <User className="w-5 h-5 text-green-600" />
@@ -181,7 +221,7 @@ export default function CheckoutPage() {
                 </div>
               </div>
 
-              {/* Shipping Address */}
+              {/* Shipping */}
               <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
                 <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
                   <MapPin className="w-5 h-5 text-green-600" />
@@ -247,24 +287,10 @@ export default function CheckoutPage() {
                       />
                     </div>
                   </div>
-
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Ghi chú đơn hàng (tùy chọn)
-                    </label>
-                    <textarea
-                      name="note"
-                      value={formData.note}
-                      onChange={handleInputChange}
-                      rows={3}
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-green-500 focus:outline-none transition-colors resize-none"
-                      placeholder="Ghi chú thêm về đơn hàng, ví dụ: giao hàng giờ hành chính..."
-                    />
-                  </div>
                 </div>
               </div>
 
-              {/* Payment Method */}
+              {/* Payment */}
               <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
                 <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
                   <CreditCard className="w-5 h-5 text-green-600" />
@@ -275,8 +301,8 @@ export default function CheckoutPage() {
                   {/* COD */}
                   <label
                     className={`flex items-start gap-4 p-4 border-2 rounded-xl cursor-pointer transition-all ${paymentMethod === "cod"
-                      ? "border-green-500 bg-green-50"
-                      : "border-gray-200 hover:border-green-300"
+                        ? "border-green-500 bg-green-50"
+                        : "border-gray-200 hover:border-green-300"
                       }`}
                   >
                     <input
@@ -299,12 +325,11 @@ export default function CheckoutPage() {
                     </div>
                   </label>
 
-
                   {/* VNPay */}
                   <label
                     className={`flex items-start gap-4 p-4 border-2 rounded-xl cursor-pointer transition-all ${paymentMethod === "vnpay"
-                      ? "border-green-500 bg-green-50"
-                      : "border-gray-200 hover:border-green-300"
+                        ? "border-green-500 bg-green-50"
+                        : "border-gray-200 hover:border-green-300"
                       }`}
                   >
                     <input
@@ -330,7 +355,7 @@ export default function CheckoutPage() {
               </div>
             </div>
 
-            {/* Right Column - Order Summary */}
+            {/* Right Column */}
             <div className="lg:col-span-1">
               <div className="bg-white rounded-2xl shadow-lg p-6 sticky top-24 border border-gray-100">
                 <h2 className="text-xl font-bold text-gray-900 mb-6">
@@ -342,8 +367,11 @@ export default function CheckoutPage() {
                   {items.map((item) => {
                     const itemPrice =
                       Number(
-                        item.price.replace(/[^.\d]/g, "").replace(/\./g, ""),
+                        item.price
+                          .replace(/[^.\d]/g, "")
+                          .replace(/\./g, ""),
                       ) || 0;
+
                     return (
                       <div key={item.id} className="flex gap-3">
                         <img
@@ -400,26 +428,19 @@ export default function CheckoutPage() {
                   </span>
                 </div>
 
-                {/* Submit Button */}
+                {/* Submit */}
                 <button
                   type="submit"
-                  disabled={isProcessing}
-                  className={`w-full py-4 rounded-xl font-bold text-lg shadow-lg transition-all ${isProcessing
-                    ? "bg-gray-400 cursor-not-allowed"
-                    : "bg-green-600 hover:bg-green-700 hover:shadow-xl"
+                  disabled={loading}
+                  className={`w-full py-4 rounded-xl font-bold text-lg shadow-lg transition-all ${loading
+                      ? "bg-gray-400 cursor-not-allowed"
+                      : "bg-green-600 hover:bg-green-700 hover:shadow-xl"
                     } text-white`}
                 >
-                  {isProcessing ? (
-                    <span className="flex items-center justify-center gap-2">
-                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      Đang xử lý...
-                    </span>
-                  ) : (
-                    "Đặt hàng"
-                  )}
+                  {loading ? "Đang xử lý..." : "Đặt hàng"}
                 </button>
 
-                {/* Trust Info */}
+                {/* Trust */}
                 <div className="mt-6 pt-6 border-t border-gray-200 space-y-3">
                   <div className="flex items-center gap-2 text-sm text-gray-600">
                     <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
