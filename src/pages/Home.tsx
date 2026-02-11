@@ -282,7 +282,14 @@ export default function GreenSpaceLanding() {
               placeholder="Nhập email của bạn"
               className="flex-1 px-6 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-white bg-white text-gray-900"
             />
-            <button className="bg-white text-green-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100">
+            <button
+              className="bg-white text-green-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100"
+              onClick={() =>
+                navigate("/register", {
+                  state: { prefillEmail: email },
+                })
+              }
+            >
               Đăng ký ngay
             </button>
           </div>

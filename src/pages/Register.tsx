@@ -6,10 +6,10 @@ import {
   EyeOff,
   ArrowRight,
   ArrowLeft,
-  User,
+  User, 
   Phone,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 
@@ -46,6 +46,7 @@ const finalSchema = Yup.object({
 
 export default function Register() {
   const navigate = useNavigate();
+  const location = useLocation();
   const dispatch = useAppDispatch();
   const { loading, error, registerStep, registerMail } = useAppSelector(
     (state) => state.auth,
@@ -196,7 +197,12 @@ export default function Register() {
           {/* ================= STEP 1: EMAIL ================= */}
           {registerStep === "email" && (
             <Formik
-              initialValues={{ email: "" }}
+              initialValues={{
+                email:
+                  // Ưu tiên email truyền từ Home (state)
+                  (location.state as { prefillEmail?: string } | null)
+                    ?.prefillEmail || "",
+              }}
               validationSchema={emailSchema}
               onSubmit={handleEmailSubmit}
             >

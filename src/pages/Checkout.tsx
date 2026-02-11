@@ -151,8 +151,10 @@ export default function CheckoutPage() {
             onClick={() => navigate("/cart")}
             className="inline-flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-green-700 transition-colors group mb-4"
           >
-            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-            Quay lại giỏ hàng
+            <div className="inline-flex items-center leading-none gap-2 cursor-pointer group text-gray-700 hover:text-green-600 transition">
+              <ArrowLeft className="w-4 h-4 relative bottom-[1px] group-hover:-translate-x-1 transition-transform" />
+              <span className="text-sm font-medium">Quay lại giỏ hàng</span>
+            </div>
           </button>
 
           <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-2">

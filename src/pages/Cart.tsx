@@ -51,8 +51,10 @@ export default function CartPage() {
             onClick={() => navigate("/product")}
             className="inline-flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-green-700 transition-colors group mb-4"
           >
-            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-            Tiếp tục mua sắm
+            <div className="inline-flex items-center leading-none gap-2 cursor-pointer group text-gray-700 hover:text-green-600 transition">
+              <ArrowLeft className="w-4 h-4 relative bottom-[1px] group-hover:-translate-x-1 transition-transform" />
+              <span className="text-sm font-medium">Tiếp tục mua sắm</span>
+            </div>
           </button>
 
           <div className="flex items-center justify-between">
