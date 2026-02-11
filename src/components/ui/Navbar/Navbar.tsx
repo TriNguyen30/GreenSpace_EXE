@@ -30,15 +30,16 @@ export default function Navbar() {
         <div className="flex items-center justify-between">
           {/* Logo */}
           <div className="flex items-center cursor-pointer" onClick={() => navigate("/")}>
-            <div className="flex items-center justify-center">
+            <div className="flex items-center justify-center" onClick={() => {
+              document.getElementById("home")?.scrollIntoView({ behavior: "smooth" });
+            }}>
               <img
                 src={Logo}
                 alt="Logo"
                 className="w-15 h-auto transition-transform hover:scale-110"
-                onClick={() => navigate("/")}
               />
             </div>
-            <span className="text-xm font-bold text-gray-900">Green Space</span>
+            <span className="text-xm font-light text-gray-900">Green Space</span>
           </div>
           <nav className="hidden md:flex items-center gap-8">
             <DropdownMenu
@@ -108,9 +109,9 @@ export default function Navbar() {
                   <div className="absolute right-0 top-full mt-2 w-48 py-1 bg-white rounded-xl shadow-lg border border-gray-100 z-50">
                     <div className="px-4 py-2 border-b border-gray-100">
                       <p className="text-sm font-medium text-gray-900 truncate">
-                        {user.fullName || user.email}
+                        {user?.fullName || user.email}
                       </p>
-                      <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                      <p className="text-xs text-gray-500 truncate">{user?.fullName || "Khách hàng"}</p>
                     </div>
                     <button
                       type="button"
@@ -127,7 +128,7 @@ export default function Navbar() {
                       onClick={() => {
                         dispatch(logout());
                         setUserMenuOpen(false);
-                        navigate("/");
+                        navigate("/login");
                       }}
                       className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 transition-colors"
                     >

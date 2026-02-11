@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import { Leaf, MapPin, Recycle, Truck, CircleCheck } from "lucide-react";
+import { useNavigate } from "react-router";
 
 export default function GreenSpaceLanding() {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const navigate = useNavigate();
 
   const products = [
     {
@@ -76,7 +78,7 @@ export default function GreenSpaceLanding() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div id="home" className="min-h-screen bg-gray-50">
       {/* Hero Section */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 pt-32">
         <div className="grid md:grid-cols-2 gap-12 items-center">
@@ -150,7 +152,7 @@ export default function GreenSpaceLanding() {
               Những bộ phận mới nhất sống dộng được ưa chuộng nhất
             </p>
           </div>
-          <button className="text-green-600 hover:text-green-700 font-semibold">
+          <button className="text-green-600 hover:text-green-700 font-semibold cursor-pointer" onClick={() => navigate('/product')}>
             Xem tất cả →
           </button>
         </div>

@@ -34,6 +34,25 @@ export interface RegisterResendPayload {
   email: string;
 }
 
+export interface PasswordForgotPayload {
+  email: string;
+}
+
+export interface PasswordResendPayload {
+  email: string;
+}
+
+export interface PasswordVerifyPayload {
+  email: string;
+  otp: string;
+}
+
+export interface PasswordResetPayload {
+  email: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
 export interface RegisterFinalizePayload {
   email: string;
   password: string;
@@ -41,4 +60,23 @@ export interface RegisterFinalizePayload {
   lastName: string;
   phoneNumber: string;
   address: string;
+}
+
+// Product
+export interface ProductVariant {
+  variantId: string;
+  name: string;
+  price: number;
+  stockQuantity: number;
+}
+
+export interface Product {
+  productId: string;
+  name: string;
+  description: string;
+  basePrice: number;
+  thumbnailUrl: string;
+  categoryName: string;
+  brandName?: string | null;
+  variants: ProductVariant[];
 }

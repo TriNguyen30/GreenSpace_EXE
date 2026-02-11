@@ -1,0 +1,10 @@
+Vì sao mở trực tiếp là JSON nhưng FE lại ra HTML?
+Đúng là đang response về HTML trong FE (Network thấy content-type: text/html). Trường hợp này rất hay gặp với ngrok: khi request từ app/browser, ngrok đôi khi trả về trang warning/interstitial HTML thay vì forward thẳng JSON.
+
+Mình đã sửa gì?
+Mình đã thêm header mặc định cho Axios để bỏ qua warning page của ngrok:
+
+File: src/config/axios.config.ts
+Thêm header:
+ngrok-skip-browser-warning: true
+Mình cũng đã dọn bớt log trong src/services/category.service.ts để đỡ spam.
