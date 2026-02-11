@@ -48,7 +48,7 @@ export default function CartPage() {
         {/* Header */}
         <div className="mb-8">
           <button
-            onClick={() => navigate(-1)}
+            onClick={() => navigate("/product")}
             className="inline-flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-green-700 transition-colors group mb-4"
           >
             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />

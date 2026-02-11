@@ -83,7 +83,7 @@ export default function CheckoutPage() {
         createOrderThunk({
           shippingAddress: buildShippingAddress(),
           items: items.map((item) => ({
-            productId: item.id,
+            productId: item.id.toString(),
             quantity: item.quantity,
           })),
         }),
