@@ -112,16 +112,14 @@ export default function Login() {
               Green Space
             </span>
           </div>
-
           <div className="flex border-b border-gray-200 mb-8">
             <button
               onClick={() => setActiveTab("login")}
               className={`flex-1 pb-4 text-center font-semibold relative transition-colors
-      ${
-        activeTab === "login"
-          ? "text-green-600"
-          : "text-gray-400 hover:text-gray-600"
-      }`}
+      ${activeTab === "login"
+                  ? "text-green-600"
+                  : "text-gray-400 hover:text-gray-600"
+                }`}
             >
               Đăng nhập
               {activeTab === "login" && (
@@ -135,11 +133,10 @@ export default function Login() {
                 navigate("/register");
               }}
               className={`flex-1 pb-4 text-center font-semibold relative transition-colors
-      ${
-        activeTab === "register"
-          ? "text-green-600"
-          : "text-gray-400 hover:text-gray-600"
-      }`}
+      ${activeTab === "register"
+                  ? "text-green-600"
+                  : "text-gray-400 hover:text-gray-600"
+                }`}
             >
               Đăng ký
               {activeTab === "register" && (
@@ -236,6 +233,16 @@ export default function Login() {
                 {error}
               </div>
             )}
+
+            <div className="text-right">
+              <button
+                type="button"
+                onClick={() => navigate("/forgot-password")}
+                className="text-sm text-green-600 hover:text-green-700 hover:underline"
+              >
+                Quên mật khẩu?
+              </button>
+            </div>
           </form>
 
           <div className="my-8 flex items-center gap-4">

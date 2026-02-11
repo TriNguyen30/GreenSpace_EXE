@@ -11,6 +11,7 @@ import Checkout from "@/pages/Checkout";
 import ProtectedRoute from "./ProtectedRoute";
 import AdminDashboard from "@/pages/AdminDashboard";
 import CategoryManagement from "@/pages/CategoryManagement";
+import ForgotPassword from "@/pages/ForgotPassword";
 
 export default function AppRoutes() {
   return (
@@ -41,6 +42,7 @@ export default function AppRoutes() {
       <Route path="/contact" element={<Contact />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
     </Routes>
   );
 }

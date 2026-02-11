@@ -34,6 +34,25 @@ export interface RegisterResendPayload {
   email: string;
 }
 
+export interface PasswordForgotPayload {
+  email: string;
+}
+
+export interface PasswordResendPayload {
+  email: string;
+}
+
+export interface PasswordVerifyPayload {
+  email: string;
+  otp: string;
+}
+
+export interface PasswordResetPayload {
+  email: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
 export interface RegisterFinalizePayload {
   email: string;
   password: string;

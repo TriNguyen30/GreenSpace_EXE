@@ -7,6 +7,10 @@ import type {
   RegisterInitiatePayload,
   RegisterVerifyPayload,
   RegisterResendPayload,
+  PasswordForgotPayload,
+  PasswordResendPayload,
+  PasswordVerifyPayload,
+  PasswordResetPayload,
 } from "@/types/api";
 
 export const login = async (payload: LoginPayload) => {
@@ -67,3 +71,23 @@ export const registerFinalize = async (payload: RegisterFinalizePayload) => {
   const res = await axiosInstance.post("/Auth/register/finalize", payload);
   return res.data;
 };
+
+export const passwordForgot = async (payload: PasswordForgotPayload) => {
+  const res = await axiosInstance.post("/Auth/password/forgot", payload);
+  return res.data;
+}
+
+export const passwordResend = async (payload: PasswordResendPayload) => {
+  const res = await axiosInstance.post("/Auth/password/resend", payload);
+  return res.data;
+}
+
+export const passwordVerify = async (payload: PasswordVerifyPayload) => {
+  const res = await axiosInstance.post("/Auth/password/verify", payload);
+  return res.data;
+}
+
+export const passwordReset = async (payload: PasswordResetPayload) => {
+  const res = await axiosInstance.post("/Auth/password/reset", payload);
+  return res.data;
+}
