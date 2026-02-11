@@ -1,10 +1,16 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import axios from "axios";
+import { axiosInstance } from "@/lib/axios";
 import {
   login,
   registerInitiate,
   registerVerify,
   registerResend,
   registerFinalize,
+  passwordForgot,
+  passwordResend,
+  passwordVerify,
+  passwordReset,
 } from "@/services/auth.service";
 import type {
   LoginPayload,
@@ -12,9 +18,15 @@ import type {
   RegisterVerifyPayload,
   RegisterResendPayload,
   RegisterFinalizePayload,
+  PasswordForgotPayload,
+  PasswordResendPayload,
+  PasswordVerifyPayload,
+  PasswordResetPayload,
 } from "@/types/api";
-import { axiosInstance } from "@/lib/axios";
-import axios from "axios";
+
+/* =======================
+   Types
+======================= */
 
 export interface User {
   id: string;
@@ -23,14 +35,25 @@ export interface User {
   role?: string;
 }
 
+type RegisterStep = "email" | "otp" | "final" | "done";
+type PasswordStep = "email" | "otp" | "reset" | "done";
+
 interface AuthState {
   token: string | null;
   user: User | null;
   loading: boolean;
   error: string | null;
-  registerStep: "email" | "otp" | "final" | "done";
+
+  registerStep: RegisterStep;
   registerMail: string | null;
+
+  passwordStep: PasswordStep;
+  passwordMail: string | null;
 }
+
+/* =======================
+   Helpers
+======================= */
 
 const getStoredUser = (): User | null => {
   try {
@@ -43,16 +66,28 @@ const getStoredUser = (): User | null => {
   }
 };
 
+/* =======================
+   Initial State
+======================= */
+
 const initialState: AuthState = {
   token: localStorage.getItem("token"),
   user: getStoredUser(),
   loading: false,
   error: null,
+
   registerStep: "email",
   registerMail: null,
+
+  passwordStep: "email",
+  passwordMail: null,
 };
 
-//login flow
+/* =======================
+   Thunks
+======================= */
+
+// ---------- LOGIN ----------
 export const loginThunk = createAsyncThunk(
   "auth/login",
   async (payload: LoginPayload, { rejectWithValue }) => {
@@ -91,13 +126,13 @@ export const loginThunk = createAsyncThunk(
   },
 );
 
-//revoke token
+// ---------- REVOKE TOKEN ----------
 export const revokeThunk = createAsyncThunk("auth/revoke", async () => {
   const refreshToken = localStorage.getItem("refreshToken");
   await axiosInstance.post("/Auth/revoke", { refreshToken });
 });
 
-//register flow
+// ---------- REGISTER FLOW ----------
 export const registerInitiateThunk = createAsyncThunk(
   "auth/register/initiate",
   async (payload: RegisterInitiatePayload, { rejectWithValue }) => {
@@ -142,6 +177,55 @@ export const registerFinalizeThunk = createAsyncThunk(
   },
 );
 
+// ---------- PASSWORD RESET FLOW ----------
+export const passwordForgotThunk = createAsyncThunk(
+  "auth/password/forgot",
+  async (payload: PasswordForgotPayload, { rejectWithValue }) => {
+    try {
+      return await passwordForgot(payload);
+    } catch {
+      return rejectWithValue("Không thể gửi email đặt lại mật khẩu");
+    }
+  },
+);
+
+export const passwordResendThunk = createAsyncThunk(
+  "auth/password/resend",
+  async (payload: PasswordResendPayload, { rejectWithValue }) => {
+    try {
+      return await passwordResend(payload);
+    } catch {
+      return rejectWithValue("Không thể gửi lại mã OTP");
+    }
+  },
+);
+
+export const passwordVerifyThunk = createAsyncThunk(
+  "auth/password/verify",
+  async (payload: PasswordVerifyPayload, { rejectWithValue }) => {
+    try {
+      return await passwordVerify(payload);
+    } catch {
+      return rejectWithValue("Mã OTP không hợp lệ");
+    }
+  },
+);
+
+export const passwordResetThunk = createAsyncThunk(
+  "auth/password/reset",
+  async (payload: PasswordResetPayload, { rejectWithValue }) => {
+    try {
+      return await passwordReset(payload);
+    } catch {
+      return rejectWithValue("Đặt lại mật khẩu thất bại");
+    }
+  },
+);
+
+/* =======================
+   Slice
+======================= */
+
 const authSlice = createSlice({
   name: "auth",
   initialState,
@@ -158,10 +242,15 @@ const authSlice = createSlice({
       state.registerMail = null;
       state.error = null;
     },
+    resetPassword(state) {
+      state.passwordStep = "email";
+      state.passwordMail = null;
+      state.error = null;
+    },
   },
   extraReducers: (builder) => {
     builder
-      // ---------- LOGIN ----------
+      // ================= LOGIN =================
       .addCase(loginThunk.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -179,7 +268,7 @@ const authSlice = createSlice({
         state.error = (action.payload as string) || null;
       })
 
-      // ---------- REGISTER INITIATE ----------
+      // ================= REGISTER INITIATE =================
       .addCase(registerInitiateThunk.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -194,7 +283,7 @@ const authSlice = createSlice({
         state.error = action.payload as string;
       })
 
-      // ---------- REGISTER VERIFY ----------
+      // ================= REGISTER VERIFY =================
       .addCase(registerVerifyThunk.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -208,7 +297,7 @@ const authSlice = createSlice({
         state.error = action.payload as string;
       })
 
-      // ---------- REGISTER RESEND ----------
+      // ================= REGISTER RESEND =================
       .addCase(registerResendThunk.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -221,7 +310,7 @@ const authSlice = createSlice({
         state.error = action.payload as string;
       })
 
-      // ---------- REGISTER FINALIZE ----------
+      // ================= REGISTER FINALIZE =================
       .addCase(registerFinalizeThunk.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -233,9 +322,65 @@ const authSlice = createSlice({
       .addCase(registerFinalizeThunk.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
+      })
+
+      // ================= PASSWORD FORGOT =================
+      .addCase(passwordForgotThunk.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(passwordForgotThunk.fulfilled, (state, action) => {
+        state.loading = false;
+        state.passwordStep = "otp";
+        state.passwordMail = action.meta.arg.email;
+      })
+      .addCase(passwordForgotThunk.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+
+      // ================= PASSWORD RESEND =================
+      .addCase(passwordResendThunk.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(passwordResendThunk.fulfilled, (state) => {
+        state.loading = false;
+      })
+      .addCase(passwordResendThunk.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+
+      // ================= PASSWORD VERIFY =================
+      .addCase(passwordVerifyThunk.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(passwordVerifyThunk.fulfilled, (state) => {
+        state.loading = false;
+        state.passwordStep = "reset";
+      })
+      .addCase(passwordVerifyThunk.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+
+      // ================= PASSWORD RESET =================
+      .addCase(passwordResetThunk.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(passwordResetThunk.fulfilled, (state) => {
+        state.loading = false;
+        state.passwordStep = "done";
+      })
+      .addCase(passwordResetThunk.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
       });
   },
 });
 
-export const { logout, resetRegister } = authSlice.actions;
+export const { logout, resetRegister, resetPassword } = authSlice.actions;
 export default authSlice.reducer;
