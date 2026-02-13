@@ -11,16 +11,24 @@ import Checkout from "@/pages/Checkout";
 import ProtectedRoute from "./ProtectedRoute";
 import AdminDashboard from "@/pages/AdminDashboard";
 import CategoryManagement from "@/pages/CategoryManagement";
+import ForgotPassword from "@/pages/ForgotPassword";
+import OrderList from "@/pages/OrderList";
+import OrderDetail from "@/pages/OrderDetail";
+import PaymentResult from "@/pages/PaymentResult";
 
 export default function AppRoutes() {
   return (
     <Routes>
       <Route element={<AppLayout />}>
         <Route path="/" element={<Home />} />
+        <Route path="/contact" element={<Contact />} />
         <Route path="/product" element={<Product />} />
         <Route path="/product/:id" element={<ProductDetail />} />
         <Route path="/cart" element={<Cart />} />
         <Route path="/checkout" element={<Checkout />} />
+        <Route path="/orders" element={<OrderList />} />
+        <Route path="/orders/:id" element={<OrderDetail />} />
+        <Route path="/payment/result" element={<PaymentResult />} />
       </Route>
       <Route
         path="/admin"
@@ -38,9 +46,9 @@ export default function AppRoutes() {
           </ProtectedRoute>
         }
       />
-      <Route path="/contact" element={<Contact />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
     </Routes>
   );
 }

@@ -1,38 +1,58 @@
-import React, { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Leaf, MapPin, Recycle, Truck, CircleCheck } from "lucide-react";
 import { useNavigate } from "react-router";
+import { getProducts } from "@/services/product.service";
+import type { Product as ApiProduct } from "@/types/api";
 
 export default function GreenSpaceLanding() {
   const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
   const navigate = useNavigate();
 
-  const products = [
-    {
-      name: "Cây A",
-      price: "425.000 đ",
-      image:
-        "https://images.unsplash.com/photo-1463320726281-696a485928c7?w=400&h=300&fit=crop",
-    },
-    {
-      name: "Cây B",
-      price: "220.000 đ",
-      image:
-        "https://images.unsplash.com/photo-1466781783364-36c955e42a7f?w=400&h=300&fit=crop",
-    },
-    {
-      name: "Cây C",
-      price: "780.000 đ",
-      image:
-        "https://images.unsplash.com/photo-1459411552884-841db9b3cc2a?w=400&h=300&fit=crop",
-    },
-    {
-      name: "Cây D",
-      price: "620.000 đ",
-      image:
-        "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=400&h=300&fit=crop",
-    },
-  ];
+  type FeaturedProduct = ApiProduct & { isNew?: boolean };
+  const [products, setProducts] = useState<FeaturedProduct[]>([]);
+  const [loadingProducts, setLoadingProducts] = useState(false);
+  const [productsError, setProductsError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const load = async () => {
+      try {
+        setLoadingProducts(true);
+        setProductsError(null);
+        const apiProducts = await getProducts();
+        if (cancelled) return;
+
+        const safeProducts = Array.isArray(apiProducts) ? apiProducts : [];
+        const mapped: FeaturedProduct[] = safeProducts
+          .slice(0, 8)
+          .map((p: ApiProduct, idx: number) => ({
+            ...p,
+            isNew: idx < 4,
+          }));
+        setProducts(mapped);
+      } catch (e) {
+        if (!cancelled) {
+          console.error(e);
+          setProductsError(
+            "Không tải được sản phẩm nổi bật. Vui lòng thử lại sau.",
+          );
+        }
+      } finally {
+        if (!cancelled) setLoadingProducts(false);
+      }
+    };
+
+    void load();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const formatPrice = useMemo(
+    () => (price: number) => `${price.toLocaleString("vi-VN")} ₫`,
+    [],
+  );
 
   const benefits = [
     {
@@ -157,24 +177,53 @@ export default function GreenSpaceLanding() {
           </button>
         </div>
         <div className="grid md:grid-cols-4 gap-6">
-          {products.map((product, index) => (
-            <div
-              key={index}
-              className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition"
-            >
-              <img
-                src={product.image}
-                alt={product.name}
-                className="w-full h-48 object-cover"
-              />
-              <div className="p-4">
-                <h3 className="font-semibold text-gray-900 mb-2">
-                  {product.name}
-                </h3>
-                <p className="text-green-600 font-bold">{product.price}</p>
-              </div>
+          {loadingProducts && (
+            <div className="col-span-full text-center text-gray-600">
+              Đang tải sản phẩm...
             </div>
-          ))}
+          )}
+
+          {!loadingProducts && productsError && (
+            <div className="col-span-full text-center text-red-600">
+              {productsError}
+            </div>
+          )}
+
+          {!loadingProducts &&
+            !productsError &&
+            products.map((product) => (
+              <button
+                key={product.productId}
+                type="button"
+                onClick={() => navigate(`/product/${product.productId}`)}
+                className="text-left bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition"
+                aria-label={`Xem chi tiết ${product.name}`}
+              >
+                <div className="relative">
+                  <img
+                    src={
+                      product.thumbnailUrl ||
+                      "https://images.unsplash.com/photo-1463320726281-696a485928c7?w=400&h=300&fit=crop"
+                    }
+                    alt={product.name}
+                    className="w-full h-48 object-cover"
+                  />
+                  {product.isNew && (
+                    <div className="absolute top-2 left-2 bg-green-600 text-white text-xs font-bold px-2 py-1 rounded">
+                      MỚI
+                    </div>
+                  )}
+                </div>
+                <div className="p-4">
+                  <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">
+                    {product.name}
+                  </h3>
+                  <p className="text-green-600 font-bold">
+                    {formatPrice(product.basePrice)}
+                  </p>
+                </div>
+              </button>
+            ))}
         </div>
       </section>
 
@@ -233,7 +282,14 @@ export default function GreenSpaceLanding() {
               placeholder="Nhập email của bạn"
               className="flex-1 px-6 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-white bg-white text-gray-900"
             />
-            <button className="bg-white text-green-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100">
+            <button
+              className="bg-white text-green-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100"
+              onClick={() =>
+                navigate("/register", {
+                  state: { prefillEmail: email },
+                })
+              }
+            >
               Đăng ký ngay
             </button>
           </div>

@@ -3,6 +3,8 @@ import { ChevronLeft, ChevronRight, SlidersHorizontal } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { getProducts } from '@/services/product.service';
 import type { Product as ApiProduct } from '@/types/api';
+import { useSearch } from "@/context/SearchContext";
+import SearchBox from "@/components/ui/Search";
 
 type ProductItem = ApiProduct & { isNew?: boolean };
 
@@ -14,6 +16,7 @@ export default function Product() {
   const [error, setError] = useState<string | null>(null);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const productsPerPage = 20;
+  const { keyword } = useSearch();
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -54,16 +57,30 @@ export default function Product() {
   );
 
   // Lọc theo loại cây (categoryName)
-  const filteredProducts = useMemo(() => {
+  const categoryFilteredProducts = useMemo(() => {
     if (selectedCategories.length === 0) return products;
     return products.filter((product) =>
       selectedCategories.includes(product.categoryName),
     );
   }, [products, selectedCategories]);
 
+  /* ================= SEARCH FILTER ================= */
+  const searchedProducts = useMemo(() => {
+    const base = categoryFilteredProducts;
+
+    if (!keyword.trim()) return base;
+
+    const q = keyword.toLowerCase();
+    return base.filter(
+      (p) =>
+        p.name?.toLowerCase().includes(q) ||
+        p.description?.toLowerCase().includes(q),
+    );
+  }, [categoryFilteredProducts, keyword]);
+
   // Sắp xếp theo giá / mặc định
   const sortedProducts = useMemo(() => {
-    const cloned = [...filteredProducts];
+    const cloned = [...searchedProducts];
 
     if (sortBy === 'price-low') {
       return cloned.sort((a, b) => a.basePrice - b.basePrice);
@@ -75,12 +92,19 @@ export default function Product() {
 
     // 'newest' hoặc giá trị khác: giữ nguyên thứ tự API
     return cloned;
-  }, [filteredProducts, sortBy]);
+  }, [searchedProducts, sortBy]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [keyword]);
 
   // Pagination
-  const totalPages = Math.ceil(sortedProducts.length / productsPerPage);
+  const totalPages = Math.ceil(sortedProducts.length / productsPerPage) || 1;
   const startIndex = (currentPage - 1) * productsPerPage;
-  const paginatedProducts = sortedProducts.slice(startIndex, startIndex + productsPerPage);
+  const paginatedProducts = sortedProducts.slice(
+    startIndex,
+    startIndex + productsPerPage,
+  );
 
   return (
     <div className="min-h-screen bg-gray-50 py-19">
@@ -167,8 +191,12 @@ export default function Product() {
             {/* Info Bar */}
             <div className="flex justify-between items-center mb-6">
               <p className="text-gray-700">
-                Hiển thị {paginatedProducts.length} / {products.length} sản phẩm
+                Hiển thị {paginatedProducts.length} / {sortedProducts.length} sản phẩm
               </p>
+            </div>
+
+            <div className="mb-6">
+              <SearchBox />
             </div>
 
             {/* Product Grid */}
@@ -259,11 +287,10 @@ export default function Product() {
                   <button
                     key={pageNum}
                     onClick={() => setCurrentPage(pageNum)}
-                    className={`px-4 py-2 rounded-lg border ${
-                      currentPage === pageNum
-                        ? 'bg-green-800 text-white border-green-800'
-                        : 'border-gray-300 hover:bg-gray-100'
-                    }`}
+                    className={`px-4 py-2 rounded-lg border ${currentPage === pageNum
+                      ? 'bg-green-800 text-white border-green-800'
+                      : 'border-gray-300 hover:bg-gray-100'
+                      }`}
                   >
                     {pageNum}
                   </button>
