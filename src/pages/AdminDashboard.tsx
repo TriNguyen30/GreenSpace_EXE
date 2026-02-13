@@ -1,11 +1,12 @@
 import React, { useState } from "react";
-import { 
-  Package, 
+import {
   LogOut,
+  Boxes,
+  Package,
+  User,
   Menu,
   X,
   Store,
-  Boxes
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
@@ -49,6 +50,7 @@ export default function AdminDashboard() {
   const menuItems = [
     { id: "categories", label: "Danh mục", icon: <Boxes className="w-5 h-5" /> },
     { id: "products", label: "Sản phẩm", icon: <Package className="w-5 h-5" /> },
+    { id: "users", label: "Người dùng", icon: <User className="w-5 h-5" /> },
   ];
 
   const renderContent = () => {
@@ -57,6 +59,8 @@ export default function AdminDashboard() {
         return <CategoriesContent />;
       case "products":
         return <ProductsContent />;
+      case "users":
+        return <UsersContent />;
       default:
         return <CategoriesContent />;
     }
@@ -163,10 +167,40 @@ function CategoriesContent() {
 
 // Products Content Component
 function ProductsContent() {
+  const navigate = useNavigate();
+  
   return (
     <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">Quản lý sản phẩm</h3>
-      <p className="text-gray-500">Tính năng quản lý sản phẩm sẽ được triển khai sau.</p>
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-lg font-semibold text-gray-900">Quản lý sản phẩm</h3>
+        <button
+          onClick={() => navigate("/admin/products")}
+          className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
+        >
+          Quản lý sản phẩm
+        </button>
+      </div>
+      <p className="text-gray-500">Nhấn vào nút trên để truy cập trang quản lý sản phẩm đầy đủ.</p>
+    </div>
+  );
+}
+
+// Users Content Component
+function UsersContent() {
+  const navigate = useNavigate();
+  
+  return (
+    <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-lg font-semibold text-gray-900">Quản lý người dùng</h3>
+        <button
+          onClick={() => navigate("/admin/users")}
+          className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
+        >
+          Quản lý người dùng
+        </button>
+      </div>
+      <p className="text-gray-500">Nhấn vào nút trên để truy cập trang quản lý người dùng đầy đủ.</p>
     </div>
   );
 }

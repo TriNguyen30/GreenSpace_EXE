@@ -1,5 +1,10 @@
 import { axiosInstance } from "@/lib/axios";
-import type { ApiResponse, Product } from "@/types/api";
+import type {
+  Product,
+  CreateProductPayload,
+  UpdateProductPayload,
+  ApiResponse,
+} from "@/types/product";
 
 /**
  * Lấy danh sách tất cả sản phẩm
@@ -57,4 +62,40 @@ export const getProductById = async (
 
   console.warn("getProductById: unexpected response shape", body);
   return null;
+};
+
+/**
+ * Tạo sản phẩm mới
+ * API: POST /Products
+ */
+export const createProduct = async (payload: CreateProductPayload): Promise<Product> => {
+  const res = await axiosInstance.post("/Products", payload);
+  const body = res.data;
+  
+  if (body && typeof body === "object" && "data" in body) {
+    return body.data;
+  }
+  return body as Product;
+};
+
+/**
+ * Cập nhật sản phẩm
+ * API: PUT /Products/{id}
+ */
+export const updateProduct = async (id: string, payload: UpdateProductPayload): Promise<Product> => {
+  const res = await axiosInstance.put(`/Products/${id}`, payload);
+  const body = res.data;
+  
+  if (body && typeof body === "object" && "data" in body) {
+    return body.data;
+  }
+  return body as Product;
+};
+
+/**
+ * Xóa sản phẩm
+ * API: DELETE /Products/{id}
+ */
+export const deleteProduct = async (id: string): Promise<void> => {
+  await axiosInstance.delete(`/Products/${id}`);
 };
