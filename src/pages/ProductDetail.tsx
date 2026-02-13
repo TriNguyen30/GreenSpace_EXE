@@ -107,6 +107,7 @@ export default function ProductDetail() {
 
   const [mainImage, setMainImage] = useState(product.image);
   const [quantity, setQuantity] = useState(1);
+  const [quantityInput, setQuantityInput] = useState("1");
   const [liked, setLiked] = useState(false);
   const [promotions, setPromotions] = useState<Promotion[]>([]);
 
@@ -198,7 +199,11 @@ export default function ProductDetail() {
   );
 
   function changeQuantity(delta: number) {
-    setQuantity((q) => Math.max(1, q + delta));
+    setQuantity((q) => {
+      const next = Math.max(1, q + delta);
+      setQuantityInput(String(next));
+      return next;
+    });
   }
 
   useEffect(() => {
@@ -441,17 +446,43 @@ export default function ProductDetail() {
                   <div className="flex items-center border-2 border-gray-200 rounded-xl overflow-hidden bg-white">
                     <button
                       onClick={() => changeQuantity(-1)}
-                      className="px-5 py-3 text-gray-600 hover:bg-gray-50 transition-colors font-medium"
+                      className="px-4 py-3 text-gray-600 hover:bg-gray-50 transition-colors font-medium"
                       aria-label="Giảm số lượng"
                     >
                       −
                     </button>
-                    <div className="px-6 py-3 bg-gray-50 text-base font-bold min-w-[60px] text-center">
-                      {quantity}
-                    </div>
+                    <input
+                      type="number"
+                      min={1}
+                      value={quantityInput}
+                      onChange={(e) => {
+                        const raw = e.target.value;
+                        if (!/^\d*$/.test(raw)) return;
+                        setQuantityInput(raw);
+
+                        if (raw === "") return;
+
+                        const next = Number(raw);
+                        if (Number.isNaN(next)) return;
+
+                        const safe = Math.max(1, next);
+                        setQuantity(safe);
+                      }}
+                      onBlur={() => {
+                        setQuantityInput((current) => {
+                          if (current && Number(current) >= 1) {
+                            return current;
+                          }
+                          const fallback = String(Math.max(1, quantity));
+                          return fallback;
+                        });
+                      }}
+                      className="w-16 px-2 py-3 bg-gray-50 text-base font-bold text-center border-0 focus:outline-none focus:ring-0 appearance-none [-moz-appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                      aria-label="Số lượng"
+                    />
                     <button
                       onClick={() => changeQuantity(1)}
-                      className="px-5 py-3 text-gray-600 hover:bg-gray-50 transition-colors font-medium"
+                      className="px-4 py-3 text-gray-600 hover:bg-gray-50 transition-colors font-medium"
                       aria-label="Tăng số lượng"
                     >
                       +
