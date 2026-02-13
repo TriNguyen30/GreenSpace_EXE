@@ -25,22 +25,47 @@ const initialState: OrderState = {
 
 export const fetchMyOrdersThunk = createAsyncThunk<Order[]>(
     "orders/fetchMyOrders",
-    async () => await getMyOrders(),
+    async (_, { rejectWithValue }) => {
+        try {
+            return await getMyOrders();
+        } catch (err: any) {
+            return rejectWithValue(err?.response?.data ?? err?.message);
+        }
+    },
 );
 
 export const fetchOrderByIdThunk = createAsyncThunk<Order, string>(
     "orders/fetchById",
-    async (id) => await getOrderById(id),
+    async (id, { rejectWithValue }) => {
+        try {
+            return await getOrderById(id);
+        } catch (err: any) {
+            return rejectWithValue(err?.response?.data ?? err?.message);
+        }
+    },
 );
 
 export const createOrderThunk = createAsyncThunk<Order, CreateOrderPayload>(
     "orders/create",
-    async (payload) => await createOrder(payload),
+    async (payload, { rejectWithValue }) => {
+        try {
+            return await createOrder(payload);
+        } catch (err: any) {
+            // Giữ nguyên response data từ BE để FE đọc message
+            return rejectWithValue(err?.response?.data ?? err?.message);
+        }
+    },
 );
 
 export const cancelOrderThunk = createAsyncThunk<Order, string>(
     "orders/cancel",
-    async (orderId) => await cancelOrder(orderId),
+    async (orderId, { rejectWithValue }) => {
+        try {
+            return await cancelOrder(orderId);
+        } catch (err: any) {
+            return rejectWithValue(err?.response?.data ?? err?.message);
+        }
+    },
 );
 
 /* ================= Slice ================= */

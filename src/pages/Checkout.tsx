@@ -72,7 +72,7 @@ export default function CheckoutPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
+    console.log("🛒 CART ITEMS:", JSON.stringify(items, null, 2));
     if (!formData.fullName || !formData.phone || !formData.address) {
       alert("Vui lòng nhập đầy đủ thông tin bắt buộc");
       return;
@@ -83,11 +83,9 @@ export default function CheckoutPage() {
       return;
     }
 
-    const invalidItem = items.find((item) => !item.productId);
+    const invalidItem = items.find((item) => !item.variantId);
     if (invalidItem) {
-      alert(
-        "Một số sản phẩm trong giỏ hàng không hợp lệ. Vui lòng xoá và thêm lại.",
-      );
+      alert(`"${invalidItem.name}" chưa có variant hợp lệ. Vui lòng xoá và thêm lại.`);
       return;
     }
     try {
@@ -99,29 +97,19 @@ export default function CheckoutPage() {
         paymentMethod,
         voucherCode: selectedPromotion?.code || undefined,
         note: formData.note,
-        items: items.map((item) => {
-          // Chuẩn hoá variantId: bỏ qua Guid rỗng (0000...) nếu có
-          const rawVariantId = item.variantId ?? null;
-          const safeVariantId =
-            rawVariantId === "00000000-0000-0000-0000-000000000000"
-              ? null
-              : rawVariantId;
-
-          if (!safeVariantId) {
-            throw new Error(`Sản phẩm "${item.name}" chưa có variant hợp lệ`);
-          }
-          return {
-            variantId: safeVariantId,
-            quantity: item.quantity,
-          };
-        }),
+        items: items.map((item) => ({
+          productId: item.productId,
+          variantId: item.variantId,   // không check null nữa
+          quantity: item.quantity,
+        })),
       };
 
       console.log("📦 ORDER PAYLOAD:", JSON.stringify(payload, null, 2));
 
       const order = await dispatch(createOrderThunk(payload)).unwrap();
-
-
+      console.log("✅ ORDER RESPONSE:", order);
+      console.log("🆔 orderId:", order.orderId); // nếu undefined → đúng là parse sai
+      console.log("🆔 order.orderId:", order?.orderId);
 
 
       /* ========= 2. Payment Flow ========= */
@@ -139,17 +127,14 @@ export default function CheckoutPage() {
 
       window.location.href = payRes.paymentUrl;
     } catch (err: any) {
-      const axiosErr = err as AxiosError<any>;
-      console.error("Checkout error:", axiosErr);
-
-      const status = axiosErr.response?.status;
-      const data = axiosErr.response?.data;
+      console.error("❌ err:", err);
+      // err bây giờ là { data: null, isSuccess: false, message: "...", statusCode: 400 }
 
       const apiMessage =
-        data?.message ||
-        (Array.isArray(data?.errors) ? data.errors.join(", ") : undefined);
+        err?.message ||
+        (Array.isArray(err?.errors) ? err.errors.join(", ") : undefined);
 
-      alert(apiMessage || `Đặt hàng thất bại (status ${status ?? "unknown"})`);
+      alert(apiMessage || "Đặt hàng thất bại");
     }
   };
 
