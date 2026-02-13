@@ -20,7 +20,21 @@ export const getUsers = async (): Promise<User[]> => {
     // Helper function to map API response to User interface
     const mapToUser = (item: any): User => ({
       ...item,
-      id: item.id || item.userId || item.UserId || "", // Handle variations
+      id: item.userId || item.id || item.UserId || "",
+      userId: item.userId || item.id || "",
+      firstName: item.firstName || "",
+      lastName: item.lastName || "",
+      fullName: item.fullName || `${item.firstName || ""} ${item.lastName || ""}`.trim() || item.email?.split("@")[0] || "Unknown",
+      phoneNumber: item.phoneNumber || null,
+      address: item.address || null,
+      editAddress: item.address || item.editAddress || "",
+      additionalAddress: item.additionalAddress || "",
+      role: item.role || "CUSTOMER",
+      createdAt: item.createdAt || null,
+      updatedAt: item.updatedAt || null,
+      birthday: item.birthday || null,
+      status: item.status || null,
+      isActive: item.isActive ?? true,
     });
 
     // Case 1: API trả về chuẩn { data: User[] }
@@ -63,7 +77,21 @@ export const getUserById = async (
   // Helper function to map API response to User interface
   const mapToUser = (item: any): User => ({
     ...item,
-    id: item.id || item.userId || item.UserId || "",
+    id: item.userId || item.id || item.UserId || "",
+    userId: item.userId || item.id || "",
+    firstName: item.firstName || "",
+    lastName: item.lastName || "",
+    fullName: item.fullName || `${item.firstName || ""} ${item.lastName || ""}`.trim() || "Unknown",
+    phoneNumber: item.phoneNumber || null,
+    address: item.address || null,
+    editAddress: item.address || item.editAddress || "",
+    additionalAddress: item.additionalAddress || "",
+    role: item.role || "CUSTOMER",
+    createdAt: item.createdAt || null,
+    updatedAt: item.updatedAt || null,
+    birthday: item.birthday || null,
+    status: item.status || null,
+    isActive: item.isActive ?? true,
   });
 
   // Case 1: { data: User }
@@ -93,10 +121,30 @@ export const createUser = async (payload: CreateUserPayload): Promise<User> => {
   const res = await axiosInstance.post("/Users", payload);
   const body = res.data;
 
+  // Helper function to map API response to User interface
+  const mapToUser = (item: any): User => ({
+    ...item,
+    id: item.userId || item.id || item.UserId || "",
+    userId: item.userId || item.id || "",
+    firstName: item.firstName || "",
+    lastName: item.lastName || "",
+    fullName: item.fullName || `${item.firstName || ""} ${item.lastName || ""}`.trim() || "Unknown",
+    phoneNumber: item.phoneNumber || null,
+    address: item.address || null,
+    editAddress: item.address || item.editAddress || "",
+    additionalAddress: item.additionalAddress || "",
+    role: item.role || "CUSTOMER",
+    createdAt: item.createdAt || null,
+    updatedAt: item.updatedAt || null,
+    birthday: item.birthday || null,
+    status: item.status || null,
+    isActive: item.isActive ?? true,
+  });
+
   if (body && typeof body === "object" && "data" in body) {
-    return body.data;
+    return mapToUser(body.data);
   }
-  return body as User;
+  return mapToUser(body);
 };
 
 /**
@@ -107,10 +155,30 @@ export const updateUser = async (id: string, payload: UpdateUserPayload): Promis
   const res = await axiosInstance.put(`/Users/${id}`, payload);
   const body = res.data;
 
+  // Helper function to map API response to User interface
+  const mapToUser = (item: any): User => ({
+    ...item,
+    id: item.userId || item.id || item.UserId || "",
+    userId: item.userId || item.id || "",
+    firstName: item.firstName || "",
+    lastName: item.lastName || "",
+    fullName: item.fullName || `${item.firstName || ""} ${item.lastName || ""}`.trim() || "Unknown",
+    phoneNumber: item.phoneNumber || null,
+    address: item.address || null,
+    editAddress: item.address || item.editAddress || "",
+    additionalAddress: item.additionalAddress || "",
+    role: item.role || "CUSTOMER",
+    createdAt: item.createdAt || null,
+    updatedAt: item.updatedAt || null,
+    birthday: item.birthday || null,
+    status: item.status || null,
+    isActive: item.isActive ?? true,
+  });
+
   if (body && typeof body === "object" && "data" in body) {
-    return body.data;
+    return mapToUser(body.data);
   }
-  return body as User;
+  return mapToUser(body);
 };
 
 /**

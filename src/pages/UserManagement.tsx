@@ -37,9 +37,25 @@ export default function UserManagement() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const payload: any = { ...formData };
+
+    // Use null for empty optional fields instead of deleting them
+    // Swagger schema suggests all fields should be present
+    if (!payload.phoneNumber) payload.phoneNumber = null;
+    if (!payload.editAddress) payload.editAddress = null;
+    if (!payload.additionalAddress) payload.additionalAddress = null;
+    if (!payload.status) payload.status = null;
+
+    // Explicitly delete ID from body if it exists, as it is a Path param
+    delete payload.id;
+    delete payload.userId;
+
+    console.log("Submitting sanitized payload:", payload);
+
     try {
       if (editingUser) {
-        await updateUser(editingUser.id, formData as UpdateUserPayload);
+        console.log("Updating user with ID:", editingUser.id);
+        await updateUser(editingUser.id, payload as UpdateUserPayload);
         alert("Cập nhật user thành công!");
       } else {
         await createUser(formData);
@@ -47,21 +63,27 @@ export default function UserManagement() {
       }
       await fetchUsers();
       handleCloseModal();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to save user:", error);
-      alert("Thao tác thất bại!");
+      console.error("Error response data:", error.response?.data);
+      console.error("Error validation errors:", error.response?.data?.errors);
+      alert(`Thao tác thất bại: ${error.response?.data?.message || "Lỗi không xác định"}`);
     }
   };
 
   const handleEdit = (user: User) => {
+    console.log("Editing user:", user);
+    console.log("User ID for Swagger:", user.id);
+    console.log("Original User ID (userId):", user.userId);
+
     setEditingUser(user);
     setFormData({
       email: user.email,
       fullName: user.fullName,
-      phoneNumber: user.phoneNumber,
-      editAddress: user.editAddress,
-      additionalAddress: user.additionalAddress,
-      status: user.status,
+      phoneNumber: user.phoneNumber || "",
+      editAddress: user.editAddress || "",
+      additionalAddress: user.additionalAddress || "",
+      status: user.status || "",
       isActive: user.isActive,
     });
     setIsModalOpen(true);
@@ -397,7 +419,7 @@ export default function UserManagement() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium text-gray-500">User ID</label>
-                  <p className="text-gray-900 font-medium">{viewingUser.id}</p>
+                  <p className="text-gray-900 font-medium text-sm break-all">{viewingUser.userId || viewingUser.id}</p>
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-500">Status</label>
@@ -416,30 +438,48 @@ export default function UserManagement() {
                   <p className="text-gray-900 font-medium">{viewingUser.fullName}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Email</label>
-                  <p className="text-gray-900 font-medium">{viewingUser.email}</p>
+                  <label className="text-sm font-medium text-gray-500">Role</label>
+                  <p className="text-gray-900 font-medium">{viewingUser.role}</p>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Phone Number</label>
-                  <p className="text-gray-900 font-medium">{viewingUser.phoneNumber}</p>
+                  <label className="text-sm font-medium text-gray-500">Email</label>
+                  <p className="text-gray-900 font-medium">{viewingUser.email}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">User Status</label>
-                  <p className="text-gray-900 font-medium">{viewingUser.status}</p>
+                  <label className="text-sm font-medium text-gray-500">Phone Number</label>
+                  <p className="text-gray-900 font-medium">{viewingUser.phoneNumber || "N/A"}</p>
                 </div>
               </div>
 
-              <div>
-                <label className="text-sm font-medium text-gray-500">Address</label>
-                <p className="text-gray-900">{viewingUser.editAddress}</p>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium text-gray-500">Address</label>
+                  <p className="text-gray-900">{viewingUser.address || viewingUser.editAddress || "N/A"}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">Birthday</label>
+                  <p className="text-gray-900 font-medium">
+                    {viewingUser.birthday ? new Date(viewingUser.birthday).toLocaleDateString() : "N/A"}
+                  </p>
+                </div>
               </div>
 
-              <div>
-                <label className="text-sm font-medium text-gray-500">Additional Address</label>
-                <p className="text-gray-900">{viewingUser.additionalAddress}</p>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium text-gray-500">Created At</label>
+                  <p className="text-gray-900 font-medium">
+                    {viewingUser.createdAt ? new Date(viewingUser.createdAt).toLocaleDateString() : "N/A"}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">Updated At</label>
+                  <p className="text-gray-900 font-medium">
+                    {viewingUser.updatedAt ? new Date(viewingUser.updatedAt).toLocaleDateString() : "N/A"}
+                  </p>
+                </div>
               </div>
             </div>
 
