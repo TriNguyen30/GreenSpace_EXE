@@ -12,6 +12,11 @@ export type CartItem = {
   price: string;
   image: string;
   quantity: number;
+  // Id nội bộ trong FE (dùng cho key & localStorage)
+  // Ngoài ra lưu thêm id thật từ backend:
+  productId?: string;
+  // Optional: real variant id from backend, used when creating orders.
+  variantId?: string | null;
 };
 
 type CartContextType = {

@@ -7,7 +7,7 @@ export type OrderStatus =
   | "CANCELLED";
 
 export interface OrderItem {
-  productId: string;
+  variantId: string;
   productName: string;
   thumbnailUrl: string;
   unitPrice: number;
@@ -21,18 +21,35 @@ export interface Order {
   status: OrderStatus;
   totalAmount: number;
   shippingAddress: string;
+  recipientName: string;
+  recipientPhone: string;
+  paymentMethod: string;
+  note?: string;
   items: OrderItem[];
 }
 
 /* ===== Payload ===== */
 
 export interface CreateOrderItemPayload {
+  // BE có thể chấp nhận productId (sản phẩm đơn giản)
+  // và/hoặc variantId (khi có nhiều biến thể). FE sẽ luôn gửi productId,
+  // và chỉ gửi variantId nếu thực sự có.
   productId: string;
+  variantId?: string | null;
   quantity: number;
 }
 
 export interface CreateOrderPayload {
+  // Optional for now because we don't có luồng chọn địa chỉ chi tiết.
+  // Khi backend yêu cầu addressId, chúng ta sẽ truyền id thật từ sổ địa chỉ,
+  // còn hiện tại thì để optional để tránh gửi "default" gây lỗi 400.
+  addressId?: string | null;
   shippingAddress: string;
+  recipientName: string;
+  recipientPhone: string;
+  paymentMethod: string;
+  voucherCode?: string;
+  note?: string;
   items: CreateOrderItemPayload[];
 }
 

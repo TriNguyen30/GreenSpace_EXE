@@ -1,137 +1,123 @@
-import { useEffect } from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
-import { CheckCircle, XCircle, Loader2, ShoppingBag } from "lucide-react";
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import React, { useEffect, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import {
+    CheckCircle,
+    XCircle,
+    Loader2,
+    ArrowRight,
+    ShoppingBag,
+} from "lucide-react";
+import { useAppDispatch } from "@/store/hooks";
 import { fetchOrderByIdThunk } from "@/store/slices/orderSlice";
 
+type PaymentStatus = "success" | "failed" | "cancelled" | "pending";
+
 export default function PaymentResultPage() {
-    const [searchParams] = useSearchParams();
     const navigate = useNavigate();
     const dispatch = useAppDispatch();
+    const [params] = useSearchParams();
 
-    const orderId = searchParams.get("orderId");
+    const orderId = params.get("orderId");
+    const status = (params.get("status") as PaymentStatus) || "pending";
 
-    const { currentOrder, loading } = useAppSelector((state) => state.orders);
+    const [loading, setLoading] = useState(true);
+    const [orderStatus, setOrderStatus] = useState<PaymentStatus>("pending");
 
     useEffect(() => {
-        if (orderId) {
-            dispatch(fetchOrderByIdThunk(orderId));
+        if (!orderId) {
+            setOrderStatus("failed");
+            setLoading(false);
+            return;
         }
-    }, [orderId, dispatch]);
 
-    if (!orderId) {
+        const loadOrder = async () => {
+            try {
+                // Backend webhook đã update order rồi → chỉ cần fetch lại
+                await dispatch(fetchOrderByIdThunk(orderId)).unwrap();
+                setOrderStatus(status);
+            } catch {
+                setOrderStatus("failed");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        loadOrder();
+    }, [dispatch, orderId, status]);
+
+    /* ================= UI ================= */
+
+    if (loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-                <div className="bg-white p-8 rounded-2xl shadow-lg text-center max-w-md w-full">
-                    <XCircle className="w-14 h-14 text-red-500 mx-auto mb-4" />
-                    <h2 className="text-xl font-bold text-gray-900 mb-2">
-                        Không tìm thấy đơn hàng
-                    </h2>
-                    <p className="text-gray-600 mb-6">
-                        Thiếu mã đơn hàng trong đường dẫn thanh toán.
-                    </p>
-                    <button
-                        onClick={() => navigate("/")}
-                        className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl font-semibold"
-                    >
-                        Về trang chủ
-                    </button>
-                </div>
+            <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-green-50/30 to-white">
+                <Loader2 className="w-12 h-12 text-green-600 animate-spin mb-4" />
+                <p className="text-gray-600 font-medium">Đang xác nhận thanh toán...</p>
             </div>
         );
     }
 
-    if (loading || !currentOrder) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-                <div className="bg-white p-8 rounded-2xl shadow-lg text-center max-w-md w-full">
-                    <Loader2 className="w-10 h-10 animate-spin text-green-600 mx-auto mb-4" />
-                    <p className="text-gray-700 font-medium">Đang xác nhận thanh toán...</p>
-                </div>
-            </div>
-        );
-    }
-
-    const isSuccess =
-        currentOrder.status === "CONFIRMED" ||
-        currentOrder.status === "PROCESSING" ||
-        currentOrder.status === "SHIPPED" ||
-        currentOrder.status === "COMPLETED";
+    const isSuccess = orderStatus === "success";
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-green-50/40 to-white flex items-center justify-center px-4">
-            <div className="bg-white rounded-3xl shadow-xl p-8 max-w-lg w-full text-center">
+        <div className="min-h-screen bg-gradient-to-b from-green-50/30 to-white flex items-center justify-center px-4">
+            <div className="max-w-lg w-full bg-white rounded-3xl shadow-xl p-10 text-center border border-gray-100">
                 {isSuccess ? (
                     <>
-                        <CheckCircle className="w-20 h-20 text-green-600 mx-auto mb-5" />
-                        <h1 className="text-2xl font-bold text-gray-900 mb-2">
+                        <CheckCircle className="w-20 h-20 text-green-600 mx-auto mb-6" />
+                        <h1 className="text-2xl font-bold text-gray-900 mb-3">
                             Thanh toán thành công 🎉
                         </h1>
-                        <p className="text-gray-600 mb-6">
-                            Đơn hàng của bạn đã được ghi nhận và đang được xử lý.
+                        <p className="text-gray-600 mb-8">
+                            Đơn hàng của bạn đã được xác nhận và đang được xử lý.
                         </p>
+
+                        <div className="space-y-3">
+                            <button
+                                onClick={() => navigate(`/orders/${orderId}`)}
+                                className="w-full py-3 rounded-xl font-semibold bg-green-600 hover:bg-green-700 text-white transition"
+                            >
+                                Xem chi tiết đơn hàng
+                            </button>
+
+                            <button
+                                onClick={() => navigate("/products")}
+                                className="w-full py-3 rounded-xl font-semibold bg-gray-100 hover:bg-gray-200 text-gray-800 transition flex items-center justify-center gap-2"
+                            >
+                                <ShoppingBag className="w-4 h-4" />
+                                Tiếp tục mua sắm
+                            </button>
+                        </div>
                     </>
                 ) : (
                     <>
-                        <XCircle className="w-20 h-20 text-red-500 mx-auto mb-5" />
-                        <h1 className="text-2xl font-bold text-gray-900 mb-2">
+                        <XCircle className="w-20 h-20 text-red-500 mx-auto mb-6" />
+                        <h1 className="text-2xl font-bold text-gray-900 mb-3">
                             Thanh toán thất bại ❌
                         </h1>
-                        <p className="text-gray-600 mb-6">
-                            Giao dịch không thành công hoặc đã bị hủy.
+                        <p className="text-gray-600 mb-8">
+                            Thanh toán không thành công hoặc đã bị huỷ. Bạn có thể thử lại.
                         </p>
+
+                        <div className="space-y-3">
+                            {orderId && (
+                                <button
+                                    onClick={() => navigate(`/checkout?retryOrderId=${orderId}`)}
+                                    className="w-full py-3 rounded-xl font-semibold bg-green-600 hover:bg-green-700 text-white transition flex items-center justify-center gap-2"
+                                >
+                                    Thử thanh toán lại
+                                    <ArrowRight className="w-4 h-4" />
+                                </button>
+                            )}
+
+                            <button
+                                onClick={() => navigate("/cart")}
+                                className="w-full py-3 rounded-xl font-semibold bg-gray-100 hover:bg-gray-200 text-gray-800 transition"
+                            >
+                                Quay lại giỏ hàng
+                            </button>
+                        </div>
                     </>
                 )}
-
-                {/* Order Summary */}
-                <div className="bg-gray-50 rounded-xl p-4 mb-6 text-left">
-                    <div className="flex justify-between text-sm mb-2">
-                        <span className="text-gray-600">Mã đơn hàng</span>
-                        <span className="font-semibold text-gray-900">
-                            {currentOrder.orderId}
-                        </span>
-                    </div>
-                    <div className="flex justify-between text-sm mb-2">
-                        <span className="text-gray-600">Trạng thái</span>
-                        <span
-                            className={`font-semibold ${isSuccess ? "text-green-600" : "text-red-500"
-                                }`}
-                        >
-                            {currentOrder.status}
-                        </span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                        <span className="text-gray-600">Tổng tiền</span>
-                        <span className="font-bold text-gray-900">
-                            {currentOrder.totalAmount.toLocaleString("vi-VN")} ₫
-                        </span>
-                    </div>
-                </div>
-
-                {/* Actions */}
-                <div className="space-y-3">
-                    <button
-                        onClick={() => navigate(`/orders/${currentOrder.orderId}`)}
-                        className="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl font-semibold transition"
-                    >
-                        Xem chi tiết đơn hàng
-                    </button>
-
-                    <button
-                        onClick={() => navigate("/orders")}
-                        className="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 py-3 rounded-xl font-semibold transition"
-                    >
-                        Danh sách đơn hàng
-                    </button>
-
-                    <button
-                        onClick={() => navigate("/")}
-                        className="w-full flex items-center justify-center gap-2 text-gray-600 hover:text-green-700 font-medium py-2"
-                    >
-                        <ShoppingBag className="w-5 h-5" />
-                        Tiếp tục mua sắm
-                    </button>
-                </div>
             </div>
         </div>
     );

@@ -21,25 +21,29 @@ const initialState: OrderState = {
     error: null,
 };
 
-export const fetchMyOrdersThunk = createAsyncThunk(
+/* ================= Thunks ================= */
+
+export const fetchMyOrdersThunk = createAsyncThunk<Order[]>(
     "orders/fetchMyOrders",
     async () => await getMyOrders(),
 );
 
-export const fetchOrderByIdThunk = createAsyncThunk(
+export const fetchOrderByIdThunk = createAsyncThunk<Order, string>(
     "orders/fetchById",
-    async (id: string) => await getOrderById(id),
+    async (id) => await getOrderById(id),
 );
 
-export const createOrderThunk = createAsyncThunk(
+export const createOrderThunk = createAsyncThunk<Order, CreateOrderPayload>(
     "orders/create",
-    async (payload: CreateOrderPayload) => await createOrder(payload),
+    async (payload) => await createOrder(payload),
 );
 
-export const cancelOrderThunk = createAsyncThunk(
+export const cancelOrderThunk = createAsyncThunk<Order, string>(
     "orders/cancel",
-    async (orderId: string) => await cancelOrder(orderId),
+    async (orderId) => await cancelOrder(orderId),
 );
+
+/* ================= Slice ================= */
 
 const orderSlice = createSlice({
     name: "orders",
@@ -51,9 +55,10 @@ const orderSlice = createSlice({
     },
     extraReducers: (builder) => {
         builder
-            // fetch my orders
+            // ===== Fetch my orders =====
             .addCase(fetchMyOrdersThunk.pending, (state) => {
                 state.loading = true;
+                state.error = null;
             })
             .addCase(fetchMyOrdersThunk.fulfilled, (state, action) => {
                 state.loading = false;
@@ -64,9 +69,10 @@ const orderSlice = createSlice({
                 state.error = action.error.message || "Fetch orders failed";
             })
 
-            // fetch by id
+            // ===== Fetch order by id =====
             .addCase(fetchOrderByIdThunk.pending, (state) => {
                 state.loading = true;
+                state.error = null;
             })
             .addCase(fetchOrderByIdThunk.fulfilled, (state, action) => {
                 state.loading = false;
@@ -77,9 +83,10 @@ const orderSlice = createSlice({
                 state.error = action.error.message || "Fetch order failed";
             })
 
-            // create
+            // ===== Create order =====
             .addCase(createOrderThunk.pending, (state) => {
                 state.loading = true;
+                state.error = null;
             })
             .addCase(createOrderThunk.fulfilled, (state, action) => {
                 state.loading = false;
@@ -91,9 +98,10 @@ const orderSlice = createSlice({
                 state.error = action.error.message || "Create order failed";
             })
 
-            // cancel
+            // ===== Cancel order =====
             .addCase(cancelOrderThunk.pending, (state) => {
                 state.loading = true;
+                state.error = null;
             })
             .addCase(cancelOrderThunk.fulfilled, (state, action) => {
                 state.loading = false;
