@@ -19,21 +19,21 @@ export interface User {
 
 export interface CreateUserPayload {
   email: string;
-  fullName: string;
+  firstName: string;
+  lastName: string;
   phoneNumber: string;
   editAddress: string;
   additionalAddress: string;
-  status: string;
   isActive: boolean;
 }
 
 export interface UpdateUserPayload {
   email: string;
-  fullName: string;
+  firstName: string;
+  lastName: string;
   phoneNumber: string;
   editAddress: string;
   additionalAddress: string;
-  status: string;
   isActive: boolean;
 }
 

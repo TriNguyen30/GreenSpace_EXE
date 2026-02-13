@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { notification } from "antd";
 import { getUsers, createUser, updateUser, deleteUser, getUserById } from "@/services/user.service";
 import type { User, CreateUserPayload, UpdateUserPayload } from "@/types/user";
 
@@ -11,11 +12,11 @@ export default function UserManagement() {
   const [viewingUser, setViewingUser] = useState<User | null>(null);
   const [formData, setFormData] = useState<CreateUserPayload>({
     email: "",
-    fullName: "",
+    firstName: "",
+    lastName: "",
     phoneNumber: "",
     editAddress: "",
     additionalAddress: "",
-    status: "",
     isActive: true,
   });
 
@@ -56,10 +57,10 @@ export default function UserManagement() {
       if (editingUser) {
         console.log("Updating user with ID:", editingUser.id);
         await updateUser(editingUser.id, payload as UpdateUserPayload);
-        alert("Cập nhật user thành công!");
+        notification.success({ message: "Cập nhật user thành công!" });
       } else {
         await createUser(formData);
-        alert("Tạo user thành công!");
+        notification.success({ message: "Tạo user thành công!" });
       }
       await fetchUsers();
       handleCloseModal();
@@ -67,7 +68,10 @@ export default function UserManagement() {
       console.error("Failed to save user:", error);
       console.error("Error response data:", error.response?.data);
       console.error("Error validation errors:", error.response?.data?.errors);
-      alert(`Thao tác thất bại: ${error.response?.data?.message || "Lỗi không xác định"}`);
+      notification.error({
+        message: "Thao tác thất bại",
+        description: error.response?.data?.message || "Lỗi không xác định"
+      });
     }
   };
 
@@ -79,11 +83,11 @@ export default function UserManagement() {
     setEditingUser(user);
     setFormData({
       email: user.email,
-      fullName: user.fullName,
+      firstName: user.firstName,
+      lastName: user.lastName,
       phoneNumber: user.phoneNumber || "",
       editAddress: user.editAddress || "",
       additionalAddress: user.additionalAddress || "",
-      status: user.status || "",
       isActive: user.isActive,
     });
     setIsModalOpen(true);
@@ -94,11 +98,11 @@ export default function UserManagement() {
       try {
         console.log("Deleting user with ID:", id);
         await deleteUser(id);
-        alert("Xóa user thành công!");
+        notification.success({ message: "Xóa user thành công!" });
         await fetchUsers();
       } catch (error) {
         console.error("Failed to delete user:", error);
-        alert("Xóa user thất bại!");
+        notification.error({ message: "Xóa user thất bại!" });
       }
     }
   };
@@ -110,7 +114,7 @@ export default function UserManagement() {
       setIsDetailModalOpen(true);
     } catch (error) {
       console.error("Failed to fetch user details:", error);
-      alert("Không thể tải chi tiết user!");
+      notification.error({ message: "Không thể tải chi tiết user!" });
     }
   };
 
@@ -119,11 +123,11 @@ export default function UserManagement() {
     setEditingUser(null);
     setFormData({
       email: "",
-      fullName: "",
+      firstName: "",
+      lastName: "",
       phoneNumber: "",
       editAddress: "",
       additionalAddress: "",
-      status: "",
       isActive: true,
     });
   };
@@ -144,15 +148,6 @@ export default function UserManagement() {
           <h1 className="text-3xl font-bold">User Management</h1>
           <p className="text-gray-600">Manage your users and their information.</p>
         </div>
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-blue-700 transition-colors flex items-center"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-            <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
-          </svg>
-          Add User
-        </button>
       </div>
 
       <div className="mb-6">
@@ -176,7 +171,10 @@ export default function UserManagement() {
                 STT
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                NAME
+                FIRST NAME
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                LAST NAME
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 EMAIL
@@ -203,15 +201,18 @@ export default function UserManagement() {
                     <div className="flex items-center">
                       <div className="flex-shrink-0 h-10 w-10 flex items-center justify-center bg-blue-100 rounded-full">
                         <span className="text-blue-600 font-medium">
-                          {user.fullName ? user.fullName.charAt(0).toUpperCase() : "U"}
+                          {user.firstName ? user.firstName.charAt(0).toUpperCase() : "U"}
                         </span>
                       </div>
                       <div className="ml-4">
                         <div className="text-sm font-medium text-gray-900">
-                          {user.fullName}
+                          {user.firstName}
                         </div>
                       </div>
                     </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {user.lastName}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {user.email || "N/A"}
@@ -288,16 +289,31 @@ export default function UserManagement() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-gray-700 text-sm font-medium mb-2">
-                    Full Name
+                    First Name
                   </label>
                   <input
                     type="text"
-                    value={formData.fullName}
-                    onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                    value={formData.firstName}
+                    onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     required
                   />
                 </div>
+                <div>
+                  <label className="block text-gray-700 text-sm font-medium mb-2">
+                    Last Name
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.lastName}
+                    onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-gray-700 text-sm font-medium mb-2">
                     Email
@@ -310,9 +326,6 @@ export default function UserManagement() {
                     required
                   />
                 </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-gray-700 text-sm font-medium mb-2">
                     Phone Number
@@ -322,19 +335,6 @@ export default function UserManagement() {
                     value={formData.phoneNumber}
                     onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-gray-700 text-sm font-medium mb-2">
-                    Status
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.status}
-                    onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required
                   />
                 </div>
               </div>
@@ -348,7 +348,6 @@ export default function UserManagement() {
                   value={formData.editAddress}
                   onChange={(e) => setFormData({ ...formData, editAddress: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  required
                 />
               </div>
 
@@ -434,23 +433,36 @@ export default function UserManagement() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Full Name</label>
-                  <p className="text-gray-900 font-medium">{viewingUser.fullName}</p>
+                  <label className="text-sm font-medium text-gray-500">First Name</label>
+                  <p className="text-gray-900 font-medium">{viewingUser.firstName}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500">Role</label>
-                  <p className="text-gray-900 font-medium">{viewingUser.role}</p>
+                  <label className="text-sm font-medium text-gray-500">Last Name</label>
+                  <p className="text-gray-900 font-medium">{viewingUser.lastName}</p>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
+                  <label className="text-sm font-medium text-gray-500">Role</label>
+                  <p className="text-gray-900 font-medium">{viewingUser.role}</p>
+                </div>
+                <div>
                   <label className="text-sm font-medium text-gray-500">Email</label>
                   <p className="text-gray-900 font-medium">{viewingUser.email}</p>
                 </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium text-gray-500">Phone Number</label>
                   <p className="text-gray-900 font-medium">{viewingUser.phoneNumber || "N/A"}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">Birthday</label>
+                  <p className="text-gray-900 font-medium">
+                    {viewingUser.birthday ? new Date(viewingUser.birthday).toLocaleDateString() : "N/A"}
+                  </p>
                 </div>
               </div>
 
@@ -458,12 +470,6 @@ export default function UserManagement() {
                 <div>
                   <label className="text-sm font-medium text-gray-500">Address</label>
                   <p className="text-gray-900">{viewingUser.address || viewingUser.editAddress || "N/A"}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Birthday</label>
-                  <p className="text-gray-900 font-medium">
-                    {viewingUser.birthday ? new Date(viewingUser.birthday).toLocaleDateString() : "N/A"}
-                  </p>
                 </div>
               </div>
 

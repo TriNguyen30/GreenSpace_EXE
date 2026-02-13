@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { notification } from "antd";
 import {
   getCategories,
   createCategory,
@@ -7,7 +8,6 @@ import {
   getCategoryById
 } from "@/services/category.service";
 import type { Category, CreateCategoryPayload, UpdateCategoryPayload } from "@/types/category";
-import Notification, { NotificationType } from "@/components/ui/Notification";
 import {
   Plus,
   Search,
@@ -24,7 +24,6 @@ export default function CategoryManagement() {
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
-  const [notification, setNotification] = useState<{ type: NotificationType; message: string } | null>(null);
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [viewCategory, setViewCategory] = useState<Category | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -60,16 +59,16 @@ export default function CategoryManagement() {
 
       if (editingCategory) {
         await updateCategory(editingCategory.categoryId, payload as UpdateCategoryPayload);
-        setNotification({ type: "success", message: "Category updated successfully!" });
+        notification.success({ message: "Category updated successfully!" });
       } else {
         await createCategory(payload);
-        setNotification({ type: "success", message: "Category created successfully!" });
+        notification.success({ message: "Category created successfully!" });
       }
       await fetchCategories();
       handleCloseModal();
     } catch (error) {
       console.error("Failed to save category:", error);
-      setNotification({ type: "error", message: "Failed to save category." });
+      notification.error({ message: "Failed to save category." });
     }
   };
 
@@ -87,11 +86,11 @@ export default function CategoryManagement() {
     if (window.confirm("Are you sure you want to delete this category?")) {
       try {
         await deleteCategory(id);
-        setNotification({ type: "success", message: "Category deleted successfully!" });
+        notification.success({ message: "Category deleted successfully!" });
         await fetchCategories();
       } catch (error) {
         console.error("Failed to delete category:", error);
-        setNotification({ type: "error", message: "Failed to delete category." });
+        notification.error({ message: "Failed to delete category." });
       }
     }
   };

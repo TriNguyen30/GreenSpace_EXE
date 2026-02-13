@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { notification } from "antd";
 import { getProducts, createProduct, updateProduct, deleteProduct, getProductById } from "@/services/product.service";
 import { getCategories } from "@/services/category.service";
 import type { Product, CreateProductPayload, UpdateProductPayload } from "@/types/product";
@@ -52,16 +53,16 @@ export default function ProductManagement() {
     try {
       if (editingProduct) {
         await updateProduct(editingProduct.productId, formData as UpdateProductPayload);
-        alert("Cập nhật sản phẩm thành công!");
+        notification.success({ message: "Cập nhật sản phẩm thành công!" });
       } else {
         await createProduct(formData);
-        alert("Tạo sản phẩm thành công!");
+        notification.success({ message: "Tạo sản phẩm thành công!" });
       }
       await fetchProducts();
       handleCloseModal();
     } catch (error) {
       console.error("Failed to save product:", error);
-      alert("Thao tác thất bại!");
+      notification.error({ message: "Thao tác thất bại!" });
     }
   };
 
@@ -82,11 +83,11 @@ export default function ProductManagement() {
     if (window.confirm("Bạn có chắc chắn muốn xóa sản phẩm này?")) {
       try {
         await deleteProduct(id);
-        alert("Xóa sản phẩm thành công!");
+        notification.success({ message: "Xóa sản phẩm thành công!" });
         await fetchProducts();
       } catch (error) {
         console.error("Failed to delete product:", error);
-        alert("Xóa sản phẩm thất bại!");
+        notification.error({ message: "Xóa sản phẩm thất bại!" });
       }
     }
   };
@@ -98,7 +99,7 @@ export default function ProductManagement() {
       setIsDetailModalOpen(true);
     } catch (error) {
       console.error("Failed to fetch product details:", error);
-      alert("Không thể tải chi tiết sản phẩm!");
+      notification.error({ message: "Không thể tải chi tiết sản phẩm!" });
     }
   };
 
@@ -304,7 +305,7 @@ export default function ProductManagement() {
                   />
                 </div>
               </div>
-              
+
               <div>
                 <label className="block text-gray-700 text-sm font-medium mb-2">
                   Description
@@ -317,7 +318,7 @@ export default function ProductManagement() {
                   required
                 />
               </div>
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-gray-700 text-sm font-medium mb-2">
@@ -344,7 +345,7 @@ export default function ProductManagement() {
                   />
                 </div>
               </div>
-              
+
               <div>
                 <label className="block text-gray-700 text-sm font-medium mb-2">
                   Category
@@ -366,7 +367,7 @@ export default function ProductManagement() {
                   ))}
                 </select>
               </div>
-              
+
               <div className="flex justify-end pt-4 border-t">
                 <button
                   type="button"
@@ -404,7 +405,7 @@ export default function ProductManagement() {
                 </svg>
               </button>
             </div>
-            
+
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -416,17 +417,17 @@ export default function ProductManagement() {
                   <p className="text-gray-900 font-medium text-lg">{viewingProduct.basePrice.toLocaleString()}đ</p>
                 </div>
               </div>
-              
+
               <div>
                 <label className="text-sm font-medium text-gray-500">Product Name</label>
                 <p className="text-gray-900 font-medium">{viewingProduct.name}</p>
               </div>
-              
+
               <div>
                 <label className="text-sm font-medium text-gray-500">Description</label>
                 <p className="text-gray-900">{viewingProduct.description}</p>
               </div>
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium text-gray-500">Category</label>
@@ -437,19 +438,19 @@ export default function ProductManagement() {
                   <p className="text-gray-900 font-medium">{viewingProduct.brandId}</p>
                 </div>
               </div>
-              
+
               {viewingProduct.thumbnailUrl && (
                 <div>
                   <label className="text-sm font-medium text-gray-500">Product Image</label>
-                  <img 
-                    src={viewingProduct.thumbnailUrl} 
+                  <img
+                    src={viewingProduct.thumbnailUrl}
                     alt={viewingProduct.name}
                     className="mt-2 w-full h-48 object-cover rounded-lg border border-gray-200"
                   />
                 </div>
               )}
             </div>
-            
+
             <div className="flex justify-end mt-6 pt-4 border-t">
               <button
                 onClick={handleCloseDetailModal}
