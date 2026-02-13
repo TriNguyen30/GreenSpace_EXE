@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   ShoppingCart,
@@ -18,6 +18,9 @@ export default function CartPage() {
   const navigate = useNavigate();
   const { items, removeFromCart, updateQuantity, getTotalPrice, clearCart } =
     useCart();
+  const [quantityInputs, setQuantityInputs] = useState<Record<number, string>>(
+    {},
+  );
 
   const totalPrice = getTotalPrice();
   const shippingFee = totalPrice > 500000 ? 0 : 30000;
@@ -172,40 +175,74 @@ export default function CartPage() {
 
                           {/* Quantity Controls */}
                           <div className="flex items-center gap-3">
-                          <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden bg-white text-sm">
-                            <button
-                              onClick={() =>
-                                updateQuantity(item.id, item.quantity - 1)
-                              }
-                              className="px-2.5 py-1.5 hover:bg-gray-100 transition-colors"
-                              aria-label="Giảm số lượng"
-                            >
-                              <Minus className="w-3 h-3 text-gray-600" />
-                            </button>
-                            <input
-                              type="number"
-                              min={1}
-                              value={item.quantity}
-                              onChange={(e) => {
-                                const raw = e.target.value.trim();
-                                const next = Number(raw);
-                                if (!raw) return;
-                                if (Number.isNaN(next)) return;
-                                updateQuantity(item.id, Math.max(1, next));
-                              }}
-                              className="w-14 px-1.5 py-1.5 bg-gray-50 font-semibold text-center border-0 focus:outline-none focus:ring-0"
-                              aria-label="Số lượng"
-                            />
-                            <button
-                              onClick={() =>
-                                updateQuantity(item.id, item.quantity + 1)
-                              }
-                              className="px-2.5 py-1.5 hover:bg-gray-100 transition-colors"
-                              aria-label="Tăng số lượng"
-                            >
-                              <Plus className="w-3 h-3 text-gray-600" />
-                            </button>
-                          </div>
+                            <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden bg-white text-sm">
+                              <button
+                                onClick={() => {
+                                  const nextQty = Math.max(1, item.quantity - 1);
+                                  updateQuantity(item.id, nextQty);
+                                  setQuantityInputs((prev) => ({
+                                    ...prev,
+                                    [item.id]: String(nextQty),
+                                  }));
+                                }}
+                                className="px-2.5 py-1.5 hover:bg-gray-100 transition-colors"
+                                aria-label="Giảm số lượng"
+                              >
+                                <Minus className="w-3 h-3 text-gray-600" />
+                              </button>
+                              <input
+                                type="number"
+                                min={1}
+                                value={
+                                  quantityInputs[item.id] ??
+                                  String(item.quantity)
+                                }
+                                onChange={(e) => {
+                                  const raw = e.target.value;
+                                  if (!/^\d*$/.test(raw)) return;
+                                  setQuantityInputs((prev) => ({
+                                    ...prev,
+                                    [item.id]: raw,
+                                  }));
+
+                                  if (raw === "") return;
+
+                                  const next = Number(raw);
+                                  if (Number.isNaN(next)) return;
+
+                                  const safe = Math.max(1, next);
+                                  updateQuantity(item.id, safe);
+                                }}
+                                onBlur={() => {
+                                  setQuantityInputs((prev) => {
+                                    const current = prev[item.id];
+                                    if (current && Number(current) >= 1) {
+                                      return prev;
+                                    }
+                                    const fallback = String(
+                                      Math.max(1, item.quantity),
+                                    );
+                                    return { ...prev, [item.id]: fallback };
+                                  });
+                                }}
+                                className="w-14 px-1.5 py-1.5 bg-gray-50 font-semibold text-center border-0 focus:outline-none focus:ring-0 appearance-none [-moz-appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                                aria-label="Số lượng"
+                              />
+                              <button
+                                onClick={() => {
+                                  const nextQty = item.quantity + 1;
+                                  updateQuantity(item.id, nextQty);
+                                  setQuantityInputs((prev) => ({
+                                    ...prev,
+                                    [item.id]: String(nextQty),
+                                  }));
+                                }}
+                                className="px-2.5 py-1.5 hover:bg-gray-100 transition-colors"
+                                aria-label="Tăng số lượng"
+                              >
+                                <Plus className="w-3 h-3 text-gray-600" />
+                              </button>
+                            </div>
                           </div>
                         </div>
 
