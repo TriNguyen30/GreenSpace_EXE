@@ -6,19 +6,19 @@ import type {
 } from "@/types/order";
 
 export const getMyOrders = async (): Promise<Order[]> => {
-    const res = await axiosInstance.get("/api/Orders/my-orders");
+    const res = await axiosInstance.get("/Orders/my-orders");
     return res.data;
 };
 
 export const getOrderById = async (id: string): Promise<Order> => {
-    const res = await axiosInstance.get(`/api/Orders/${id}`);
+    const res = await axiosInstance.get(`/Orders/${id}`);
     return res.data;
 };
 
 export const createOrder = async (
     payload: CreateOrderPayload,
 ): Promise<Order> => {
-    const res = await axiosInstance.post("/api/Orders", payload);
+    const res = await axiosInstance.post("/Orders", payload);
     return res.data;
 };
 
@@ -27,14 +27,14 @@ export const updateOrderStatus = async (
     payload: UpdateOrderStatusPayload,
 ): Promise<Order> => {
     const res = await axiosInstance.patch(
-        `/api/Orders/${orderId}/status`,
+        `/Orders/${orderId}/status`,
         payload,
     );
     return res.data;
 };
 
 export const cancelOrder = async (orderId: string): Promise<Order> => {
-    const res = await axiosInstance.patch(`/api/Orders/${orderId}/status`, {
+    const res = await axiosInstance.patch(`/Orders/${orderId}/status`, {
         status: "CANCELLED",
     });
     return res.data;

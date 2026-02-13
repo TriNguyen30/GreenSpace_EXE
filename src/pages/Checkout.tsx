@@ -1,33 +1,39 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
   CreditCard,
   Truck,
   MapPin,
-  Phone,
-  Mail,
-  User,
   CheckCircle,
   ShoppingBag,
+  User,
 } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { createOrderThunk } from "@/store/slices/orderSlice";
-import { createVNPayPayment } from "@/services/payment.service";
+import { createPayOSPayment } from "@/services/payment.service";
+import type { AxiosError } from "axios";
+import { getActivePromotions } from "@/services/promotion.service";
+import type { Promotion } from "@/types/promotion";
 
-type PaymentMethod = "cod" | "vnpay";
+type PaymentMethod = "COD" | "PAYOS";
 
 export default function CheckoutPage() {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { items, getTotalPrice, clearCart } = useCart();
   const { loading } = useAppSelector((state) => state.orders);
+  const authUser = useAppSelector((state) => state.auth.user);
+  const [promotions, setPromotions] = useState<Promotion[]>([]);
+  const [selectedPromotion, setSelectedPromotion] = useState<Promotion | null>(null);
 
+
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("COD");
   const [formData, setFormData] = useState({
     fullName: "",
-    email: "",
     phone: "",
+    email: "",
     address: "",
     city: "",
     district: "",
@@ -35,88 +41,153 @@ export default function CheckoutPage() {
     note: "",
   });
 
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("cod");
+  /* ================= Prefill ================= */
+
+  useEffect(() => {
+    if (!authUser) return;
+    setFormData((prev) => ({
+      ...prev,
+      fullName: prev.fullName || authUser.fullName || "",
+      email: prev.email || authUser.email || "",
+    }));
+  }, [authUser]);
+
+  /* ================= Helpers ================= */
 
   const totalPrice = getTotalPrice();
-  const shippingFee = totalPrice > 500000 ? 0 : 30000;
-  const discount = 0;
-  const finalTotal = totalPrice + shippingFee - discount;
+  const shippingFee = totalPrice > 500_000 ? 0 : 30_000;
+
+  let discountAmount = 0;
+
+  if (
+    selectedPromotion &&
+    totalPrice >= selectedPromotion.minOrderValue
+  ) {
+    if (selectedPromotion.discountType === "Fixed") {
+      discountAmount = selectedPromotion.discountValue;
+    } else {
+      discountAmount =
+        (totalPrice * selectedPromotion.discountValue) / 100;
+
+      if (
+        selectedPromotion.maxDiscount &&
+        discountAmount > selectedPromotion.maxDiscount
+      ) {
+        discountAmount = selectedPromotion.maxDiscount;
+      }
+    }
+  }
+
+  const finalTotal = totalPrice + shippingFee - discountAmount;
 
   const formatPrice = (price: number) =>
     price.toLocaleString("vi-VN") + " ₫";
 
+  const buildShippingAddress = () =>
+    [formData.address, formData.ward, formData.district, formData.city]
+      .filter(Boolean)
+      .join(", ");
+
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
-    setFormData((prev) => ({
-      ...prev,
-      [e.target.name]: e.target.value,
-    }));
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const buildShippingAddress = () => {
-    const parts = [
-      formData.address,
-      formData.ward,
-      formData.district,
-      formData.city,
-    ].filter(Boolean);
-    return parts.join(", ");
-  };
+  /* ================= Submit ================= */
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!formData.fullName || !formData.phone || !formData.address) {
-      alert("Vui lòng điền đầy đủ thông tin bắt buộc!");
+      alert("Vui lòng nhập đầy đủ thông tin bắt buộc");
       return;
     }
 
     if (items.length === 0) {
-      alert("Giỏ hàng trống!");
+      alert("Giỏ hàng trống");
+      return;
+    }
+
+    const invalidItem = items.find((item) => !item.productId);
+    if (invalidItem) {
+      alert(
+        "Một số sản phẩm trong giỏ hàng không hợp lệ. Vui lòng xoá và thêm lại.",
+      );
       return;
     }
 
     try {
-      // 1️⃣ Create Order
-      const orderRes = await dispatch(
+      /* ========= 1. Create Order ========= */
+      const order = await dispatch(
         createOrderThunk({
           shippingAddress: buildShippingAddress(),
-          items: items.map((item) => ({
-            productId: item.id.toString(),
-            quantity: item.quantity,
-          })),
+          recipientName: formData.fullName,
+          recipientPhone: formData.phone,
+          paymentMethod,
+          voucherCode: selectedPromotion?.code || undefined,
+          note: formData.note,
+          items: items.map((item) => {
+            // Chuẩn hoá variantId: bỏ qua Guid rỗng (0000...) nếu có
+            const rawVariantId = item.variantId ?? null;
+            const safeVariantId =
+              rawVariantId === "00000000-0000-0000-0000-000000000000"
+                ? null
+                : rawVariantId;
+
+            const base = {
+              productId: item.productId as string,
+              quantity: item.quantity,
+            };
+            return safeVariantId ? { ...base, variantId: safeVariantId } : base;
+          }),
         }),
       ).unwrap();
 
-      const orderId = orderRes.orderId;
-
-      // 2️⃣ Payment Flow
-      if (paymentMethod === "cod") {
+      /* ========= 2. Payment Flow ========= */
+      if (paymentMethod === "COD") {
         clearCart();
-        // Điều hướng về trang chi tiết đơn hàng thay vì route không tồn tại
-        navigate(`/orders/${orderId}`);
+        navigate(`/orders/${order.orderId}`);
         return;
       }
 
-      // VNPay
-      const paymentRes = await createVNPayPayment({
-        orderId,
-        amount: finalTotal,
-        orderDescription: `Thanh toán đơn hàng ${orderId}`,
-        bankCode: "",
-      });
+      const payRes = await createPayOSPayment({ orderId: order.orderId });
 
-      if (paymentRes.paymentUrl) {
-        window.location.href = paymentRes.paymentUrl;
-      } else {
+      if (!payRes.paymentUrl) {
         throw new Error("Không nhận được URL thanh toán");
       }
+
+      window.location.href = payRes.paymentUrl;
     } catch (err: any) {
-      console.error(err);
-      alert(err?.message || "Có lỗi xảy ra khi đặt hàng");
+      const axiosErr = err as AxiosError<any>;
+      console.error("Checkout error:", axiosErr);
+
+      const status = axiosErr.response?.status;
+      const data = axiosErr.response?.data;
+
+      const apiMessage =
+        data?.message ||
+        (Array.isArray(data?.errors) ? data.errors.join(", ") : undefined);
+
+      alert(apiMessage || `Đặt hàng thất bại (status ${status ?? "unknown"})`);
     }
   };
+
+  useEffect(() => {
+    const loadPromotions = async () => {
+      try {
+        const data = await getActivePromotions();
+        setPromotions(data);
+      } catch (err) {
+        console.error("Load promotions failed", err);
+      }
+    };
+
+    loadPromotions();
+  }, []);
+
+
+  /* ================= Empty Cart ================= */
 
   if (items.length === 0) {
     return (
@@ -128,10 +199,10 @@ export default function CheckoutPage() {
               Giỏ hàng trống
             </h2>
             <p className="text-gray-600 mb-6">
-              Vui lòng thêm sản phẩm vào giỏ hàng trước khi thanh toán.
+              Vui lòng thêm sản phẩm trước khi thanh toán.
             </p>
             <button
-              onClick={() => navigate("/product")}
+              onClick={() => navigate("/products")}
               className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-xl font-semibold"
             >
               Về trang sản phẩm
@@ -142,14 +213,16 @@ export default function CheckoutPage() {
     );
   }
 
+  /* ================= UI ================= */
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-green-50/30 to-white pt-25 pb-12">
+    <div className="min-h-screen bg-gradient-to-b from-green-50/30 to-white pt-24 pb-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
+        {/* ===== Header ===== */}
         <div className="mb-8">
           <button
             onClick={() => navigate("/cart")}
-            className="inline-flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-green-700 transition-colors group mb-4"
+            className="inline-flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-green-700 transition-colors mb-4"
           >
             <div className="inline-flex items-center leading-none gap-2 cursor-pointer group text-gray-700 hover:text-green-600 transition">
               <ArrowLeft className="w-4 h-4 relative bottom-[1px] group-hover:-translate-x-1 transition-transform" />
@@ -165,9 +238,9 @@ export default function CheckoutPage() {
 
         <form onSubmit={handleSubmit}>
           <div className="grid lg:grid-cols-3 gap-8">
-            {/* Left Column */}
+            {/* ================= Left ================= */}
             <div className="lg:col-span-2 space-y-6">
-              {/* Contact */}
+              {/* ===== Contact ===== */}
               <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
                 <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
                   <User className="w-5 h-5 text-green-600" />
@@ -180,11 +253,10 @@ export default function CheckoutPage() {
                       Họ và tên <span className="text-red-500">*</span>
                     </label>
                     <input
-                      type="text"
                       name="fullName"
                       value={formData.fullName}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-green-500 focus:outline-none transition-colors"
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-green-500 outline-none"
                       placeholder="Nguyễn Văn A"
                       required
                     />
@@ -195,11 +267,10 @@ export default function CheckoutPage() {
                       Số điện thoại <span className="text-red-500">*</span>
                     </label>
                     <input
-                      type="tel"
                       name="phone"
                       value={formData.phone}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-green-500 focus:outline-none transition-colors"
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-green-500 outline-none"
                       placeholder="0912345678"
                       required
                     />
@@ -210,18 +281,18 @@ export default function CheckoutPage() {
                       Email
                     </label>
                     <input
-                      type="email"
                       name="email"
+                      type="email"
                       value={formData.email}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-green-500 focus:outline-none transition-colors"
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-green-500 outline-none"
                       placeholder="email@example.com"
                     />
                   </div>
                 </div>
               </div>
 
-              {/* Shipping */}
+              {/* ===== Shipping ===== */}
               <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
                 <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
                   <MapPin className="w-5 h-5 text-green-600" />
@@ -234,63 +305,51 @@ export default function CheckoutPage() {
                       Địa chỉ <span className="text-red-500">*</span>
                     </label>
                     <input
-                      type="text"
                       name="address"
                       value={formData.address}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-green-500 focus:outline-none transition-colors"
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-green-500 outline-none"
                       placeholder="Số nhà, tên đường"
                       required
                     />
                   </div>
 
                   <div className="grid md:grid-cols-3 gap-4">
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Tỉnh/Thành phố
-                      </label>
-                      <input
-                        type="text"
-                        name="city"
-                        value={formData.city}
-                        onChange={handleInputChange}
-                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-green-500 focus:outline-none transition-colors"
-                        placeholder="Hồ Chí Minh"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Quận/Huyện
-                      </label>
-                      <input
-                        type="text"
-                        name="district"
-                        value={formData.district}
-                        onChange={handleInputChange}
-                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-green-500 focus:outline-none transition-colors"
-                        placeholder="Quận 1"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Phường/Xã
-                      </label>
-                      <input
-                        type="text"
-                        name="ward"
-                        value={formData.ward}
-                        onChange={handleInputChange}
-                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-green-500 focus:outline-none transition-colors"
-                        placeholder="Phường Bến Nghé"
-                      />
-                    </div>
+                    <input
+                      name="city"
+                      value={formData.city}
+                      onChange={handleInputChange}
+                      className="px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-green-500 outline-none"
+                      placeholder="Tỉnh/Thành phố"
+                    />
+                    <input
+                      name="district"
+                      value={formData.district}
+                      onChange={handleInputChange}
+                      className="px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-green-500 outline-none"
+                      placeholder="Quận/Huyện"
+                    />
+                    <input
+                      name="ward"
+                      value={formData.ward}
+                      onChange={handleInputChange}
+                      className="px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-green-500 outline-none"
+                      placeholder="Phường/Xã"
+                    />
                   </div>
+
+                  <textarea
+                    name="note"
+                    value={formData.note}
+                    onChange={handleInputChange}
+                    rows={3}
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-green-500 outline-none resize-none"
+                    placeholder="Ghi chú cho người giao hàng (tuỳ chọn)"
+                  />
                 </div>
               </div>
 
-              {/* Payment */}
+              {/* ===== Payment ===== */}
               <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
                 <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
                   <CreditCard className="w-5 h-5 text-green-600" />
@@ -300,22 +359,20 @@ export default function CheckoutPage() {
                 <div className="space-y-3">
                   {/* COD */}
                   <label
-                    className={`flex items-start gap-4 p-4 border-2 rounded-xl cursor-pointer transition-all ${paymentMethod === "cod"
-                        ? "border-green-500 bg-green-50"
-                        : "border-gray-200 hover:border-green-300"
+                    className={`flex items-start gap-4 p-4 border-2 rounded-xl cursor-pointer transition-all ${paymentMethod === "COD"
+                      ? "border-green-500 bg-green-50"
+                      : "border-gray-200 hover:border-green-300"
                       }`}
                   >
                     <input
                       type="radio"
                       name="payment"
-                      value="cod"
-                      checked={paymentMethod === "cod"}
-                      onChange={(e) =>
-                        setPaymentMethod(e.target.value as PaymentMethod)
-                      }
+                      value="COD"
+                      checked={paymentMethod === "COD"}
+                      onChange={() => setPaymentMethod("COD")}
                       className="mt-1"
                     />
-                    <div className="flex-1">
+                    <div>
                       <div className="font-semibold text-gray-900 mb-1">
                         Thanh toán khi nhận hàng (COD)
                       </div>
@@ -325,29 +382,27 @@ export default function CheckoutPage() {
                     </div>
                   </label>
 
-                  {/* VNPay */}
+                  {/* PayOS */}
                   <label
-                    className={`flex items-start gap-4 p-4 border-2 rounded-xl cursor-pointer transition-all ${paymentMethod === "vnpay"
-                        ? "border-green-500 bg-green-50"
-                        : "border-gray-200 hover:border-green-300"
+                    className={`flex items-start gap-4 p-4 border-2 rounded-xl cursor-pointer transition-all ${paymentMethod === "PAYOS"
+                      ? "border-green-500 bg-green-50"
+                      : "border-gray-200 hover:border-green-300"
                       }`}
                   >
                     <input
                       type="radio"
                       name="payment"
-                      value="vnpay"
-                      checked={paymentMethod === "vnpay"}
-                      onChange={(e) =>
-                        setPaymentMethod(e.target.value as PaymentMethod)
-                      }
+                      value="PAYOS"
+                      checked={paymentMethod === "PAYOS"}
+                      onChange={() => setPaymentMethod("PAYOS")}
                       className="mt-1"
                     />
-                    <div className="flex-1">
+                    <div>
                       <div className="font-semibold text-gray-900 mb-1">
-                        VNPay
+                        PayOS
                       </div>
                       <div className="text-sm text-gray-600">
-                        Thanh toán qua cổng VNPay
+                        Thanh toán qua PayOS (ATM, QR, Ví điện tử)
                       </div>
                     </div>
                   </label>
@@ -355,7 +410,7 @@ export default function CheckoutPage() {
               </div>
             </div>
 
-            {/* Right Column */}
+            {/* ================= Right ================= */}
             <div className="lg:col-span-1">
               <div className="bg-white rounded-2xl shadow-lg p-6 sticky top-24 border border-gray-100">
                 <h2 className="text-xl font-bold text-gray-900 mb-6">
@@ -365,7 +420,7 @@ export default function CheckoutPage() {
                 {/* Products */}
                 <div className="space-y-4 mb-6 pb-6 border-b border-gray-200">
                   {items.map((item) => {
-                    const itemPrice =
+                    const price =
                       Number(
                         item.price
                           .replace(/[^.\d]/g, "")
@@ -377,7 +432,7 @@ export default function CheckoutPage() {
                         <img
                           src={item.image}
                           alt={item.name}
-                          className="w-16 h-16 object-cover rounded-lg flex-shrink-0"
+                          className="w-16 h-16 object-cover rounded-lg"
                         />
                         <div className="flex-1 min-w-0">
                           <h4 className="text-sm font-semibold text-gray-900 line-clamp-2 mb-1">
@@ -388,13 +443,55 @@ export default function CheckoutPage() {
                               SL: {item.quantity}
                             </span>
                             <span className="font-bold text-gray-900">
-                              {formatPrice(itemPrice * item.quantity)}
+                              {formatPrice(price * item.quantity)}
                             </span>
                           </div>
                         </div>
                       </div>
                     );
                   })}
+                </div>
+
+                {/* ===== Voucher ===== */}
+                <div className="mb-6 pb-6 border-b border-gray-200">
+                  <h3 className="font-semibold text-gray-900 mb-3">
+                    Mã giảm giá
+                  </h3>
+
+                  {promotions.length === 0 ? (
+                    <div className="text-sm text-gray-500">
+                      Không có mã khuyến mãi
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {promotions.map((promo) => (
+                        <label
+                          key={promo.promotionId}
+                          className={`flex items-start gap-3 p-3 border rounded-lg cursor-pointer transition ${selectedPromotion?.promotionId === promo.promotionId
+                              ? "border-green-500 bg-green-50"
+                              : "border-gray-200 hover:border-green-300"
+                            }`}
+                        >
+                          <input
+                            type="radio"
+                            name="voucher"
+                            checked={
+                              selectedPromotion?.promotionId === promo.promotionId
+                            }
+                            onChange={() => setSelectedPromotion(promo)}
+                          />
+                          <div>
+                            <div className="font-semibold text-sm text-gray-900">
+                              {promo.code}
+                            </div>
+                            <div className="text-xs text-gray-600">
+                              {promo.description}
+                            </div>
+                          </div>
+                        </label>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 {/* Price Summary */}
@@ -405,7 +502,14 @@ export default function CheckoutPage() {
                       {formatPrice(totalPrice)}
                     </span>
                   </div>
-
+                  {discountAmount > 0 && (
+                    <div className="flex items-center justify-between text-red-600">
+                      <span>Giảm giá</span>
+                      <span className="font-semibold">
+                        -{formatPrice(discountAmount)}
+                      </span>
+                    </div>
+                  )}
                   <div className="flex items-center justify-between text-gray-700">
                     <span>Phí vận chuyển</span>
                     <span className="font-semibold">
@@ -433,8 +537,8 @@ export default function CheckoutPage() {
                   type="submit"
                   disabled={loading}
                   className={`w-full py-4 rounded-xl font-bold text-lg shadow-lg transition-all ${loading
-                      ? "bg-gray-400 cursor-not-allowed"
-                      : "bg-green-600 hover:bg-green-700 hover:shadow-xl"
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-green-600 hover:bg-green-700 hover:shadow-xl"
                     } text-white`}
                 >
                   {loading ? "Đang xử lý..." : "Đặt hàng"}
@@ -443,11 +547,11 @@ export default function CheckoutPage() {
                 {/* Trust */}
                 <div className="mt-6 pt-6 border-t border-gray-200 space-y-3">
                   <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
+                    <CheckCircle className="w-5 h-5 text-green-600" />
                     <span>Thông tin được bảo mật</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <Truck className="w-5 h-5 text-blue-600 flex-shrink-0" />
+                    <Truck className="w-5 h-5 text-blue-600" />
                     <span>Giao hàng nhanh 2-3 ngày</span>
                   </div>
                 </div>
