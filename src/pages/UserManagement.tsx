@@ -70,6 +70,7 @@ export default function UserManagement() {
   const handleDelete = async (id: string) => {
     if (window.confirm("Bạn có chắc chắn muốn xóa user này?")) {
       try {
+        console.log("Deleting user with ID:", id);
         await deleteUser(id);
         alert("Xóa user thành công!");
         await fetchUsers();
@@ -180,7 +181,7 @@ export default function UserManagement() {
                     <div className="flex items-center">
                       <div className="flex-shrink-0 h-10 w-10 flex items-center justify-center bg-blue-100 rounded-full">
                         <span className="text-blue-600 font-medium">
-                          {user.fullName.charAt(0).toUpperCase()}
+                          {user.fullName ? user.fullName.charAt(0).toUpperCase() : "U"}
                         </span>
                       </div>
                       <div className="ml-4">
@@ -191,17 +192,16 @@ export default function UserManagement() {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {user.email}
+                    {user.email || "N/A"}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {user.phoneNumber}
+                    {user.phoneNumber || "N/A"}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      user.isActive 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-red-100 text-red-800'
-                    }`}>
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${user.isActive
+                      ? 'bg-green-100 text-green-800'
+                      : 'bg-red-100 text-red-800'
+                      }`}>
                       {user.isActive ? 'Active' : 'Inactive'}
                     </span>
                   </td>
@@ -289,7 +289,7 @@ export default function UserManagement() {
                   />
                 </div>
               </div>
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-gray-700 text-sm font-medium mb-2">
@@ -316,7 +316,7 @@ export default function UserManagement() {
                   />
                 </div>
               </div>
-              
+
               <div>
                 <label className="block text-gray-700 text-sm font-medium mb-2">
                   Address
@@ -329,7 +329,7 @@ export default function UserManagement() {
                   required
                 />
               </div>
-              
+
               <div>
                 <label className="block text-gray-700 text-sm font-medium mb-2">
                   Additional Address
@@ -341,7 +341,7 @@ export default function UserManagement() {
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
-              
+
               <div className="flex items-center">
                 <input
                   type="checkbox"
@@ -354,7 +354,7 @@ export default function UserManagement() {
                   Active User
                 </label>
               </div>
-              
+
               <div className="flex justify-end pt-4 border-t">
                 <button
                   type="button"
@@ -392,7 +392,7 @@ export default function UserManagement() {
                 </svg>
               </button>
             </div>
-            
+
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -401,16 +401,15 @@ export default function UserManagement() {
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-500">Status</label>
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                    viewingUser.isActive 
-                      ? 'bg-green-100 text-green-800' 
-                      : 'bg-red-100 text-red-800'
-                  }`}>
+                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${viewingUser.isActive
+                    ? 'bg-green-100 text-green-800'
+                    : 'bg-red-100 text-red-800'
+                    }`}>
                     {viewingUser.isActive ? 'Active' : 'Inactive'}
                   </span>
                 </div>
               </div>
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium text-gray-500">Full Name</label>
@@ -421,7 +420,7 @@ export default function UserManagement() {
                   <p className="text-gray-900 font-medium">{viewingUser.email}</p>
                 </div>
               </div>
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium text-gray-500">Phone Number</label>
@@ -432,18 +431,18 @@ export default function UserManagement() {
                   <p className="text-gray-900 font-medium">{viewingUser.status}</p>
                 </div>
               </div>
-              
+
               <div>
                 <label className="text-sm font-medium text-gray-500">Address</label>
                 <p className="text-gray-900">{viewingUser.editAddress}</p>
               </div>
-              
+
               <div>
                 <label className="text-sm font-medium text-gray-500">Additional Address</label>
                 <p className="text-gray-900">{viewingUser.additionalAddress}</p>
               </div>
             </div>
-            
+
             <div className="flex justify-end mt-6 pt-4 border-t">
               <button
                 onClick={handleCloseDetailModal}
