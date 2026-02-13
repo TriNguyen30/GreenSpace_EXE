@@ -14,9 +14,9 @@ export type CartItem = {
   quantity: number;
   // Id nội bộ trong FE (dùng cho key & localStorage)
   // Ngoài ra lưu thêm id thật từ backend:
-  productId?: string;
+  productId: string;
   // Optional: real variant id from backend, used when creating orders.
-  variantId?: string | null;
+  variantId: string;
 };
 
 type CartContextType = {
@@ -48,16 +48,27 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, [items]);
 
   const addToCart = (item: Omit<CartItem, "quantity">, quantity: number) => {
+    if (!item.variantId) {
+      throw new Error("Không thể thêm sản phẩm khi chưa có variantId");
+    }
+
     setItems((prev) => {
-      const existing = prev.find((i) => i.id === item.id);
+      const existing = prev.find(
+        (i) => i.id === item.id && i.variantId === item.variantId
+      );
+
       if (existing) {
         return prev.map((i) =>
-          i.id === item.id ? { ...i, quantity: i.quantity + quantity } : i,
+          i.id === item.id && i.variantId === item.variantId
+            ? { ...i, quantity: i.quantity + quantity }
+            : i
         );
       }
+
       return [...prev, { ...item, quantity }];
     });
   };
+
 
   const removeFromCart = (id: number) => {
     setItems((prev) => prev.filter((i) => i.id !== id));

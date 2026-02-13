@@ -7,7 +7,7 @@ export type OrderStatus =
   | "CANCELLED";
 
 export interface OrderItem {
-  variantId: string;
+  productId: string;
   productName: string;
   thumbnailUrl: string;
   unitPrice: number;
@@ -34,8 +34,7 @@ export interface CreateOrderItemPayload {
   // BE có thể chấp nhận productId (sản phẩm đơn giản)
   // và/hoặc variantId (khi có nhiều biến thể). FE sẽ luôn gửi productId,
   // và chỉ gửi variantId nếu thực sự có.
-  productId: string;
-  variantId?: string | null;
+  variantId: string;
   quantity: number;
 }
 

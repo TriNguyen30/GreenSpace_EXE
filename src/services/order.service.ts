@@ -15,11 +15,10 @@ export const getOrderById = async (id: string): Promise<Order> => {
     return res.data;
 };
 
-export const createOrder = async (
-    payload: CreateOrderPayload,
-): Promise<Order> => {
+export const createOrder = async (payload: CreateOrderPayload): Promise<Order> => {
     const res = await axiosInstance.post("/Orders", payload);
-    return res.data;
+    console.log("🔍 RAW response:", res.data);
+    return res.data?.data ?? res.data;
 };
 
 export const updateOrderStatus = async (
