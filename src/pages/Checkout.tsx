@@ -90,35 +90,39 @@ export default function CheckoutPage() {
       );
       return;
     }
-
     try {
       /* ========= 1. Create Order ========= */
-      const order = await dispatch(
-        createOrderThunk({
-          shippingAddress: buildShippingAddress(),
-          recipientName: formData.fullName,
-          recipientPhone: formData.phone,
-          paymentMethod,
-          voucherCode: selectedPromotion?.code || undefined,
-          note: formData.note,
-          items: items.map((item) => {
-            // Chuẩn hoá variantId: bỏ qua Guid rỗng (0000...) nếu có
-            const rawVariantId = item.variantId ?? null;
-            const safeVariantId =
-              rawVariantId === "00000000-0000-0000-0000-000000000000"
-                ? null
-                : rawVariantId;
+      const payload = {
+        shippingAddress: buildShippingAddress(),
+        recipientName: formData.fullName,
+        recipientPhone: formData.phone,
+        paymentMethod,
+        voucherCode: selectedPromotion?.code || undefined,
+        note: formData.note,
+        items: items.map((item) => {
+          // Chuẩn hoá variantId: bỏ qua Guid rỗng (0000...) nếu có
+          const rawVariantId = item.variantId ?? null;
+          const safeVariantId =
+            rawVariantId === "00000000-0000-0000-0000-000000000000"
+              ? null
+              : rawVariantId;
 
-            if (!safeVariantId) {
-              throw new Error(`Sản phẩm "${item.name}" chưa có variant hợp lệ`);
-            }
-            return {
-              variantId: safeVariantId,
-              quantity: item.quantity,
-            }
-          }),
+          if (!safeVariantId) {
+            throw new Error(`Sản phẩm "${item.name}" chưa có variant hợp lệ`);
+          }
+          return {
+            variantId: safeVariantId,
+            quantity: item.quantity,
+          };
         }),
-      ).unwrap();
+      };
+
+      console.log("📦 ORDER PAYLOAD:", JSON.stringify(payload, null, 2));
+
+      const order = await dispatch(createOrderThunk(payload)).unwrap();
+
+
+
 
       /* ========= 2. Payment Flow ========= */
       if (paymentMethod === "COD") {

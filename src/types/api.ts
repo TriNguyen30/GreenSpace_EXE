@@ -65,9 +65,13 @@ export interface RegisterFinalizePayload {
 // Product
 export interface ProductVariant {
   variantId: string;
-  name: string;
+  sku: string;
   price: number;
   stockQuantity: number;
+  imageUrl: string | null;
+  color: string | null;
+  sizeOrModel: string | null;
+  isActive: boolean;
 }
 
 export interface Product {
