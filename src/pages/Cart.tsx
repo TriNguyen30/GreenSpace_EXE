@@ -171,30 +171,41 @@ export default function CartPage() {
                           </div>
 
                           {/* Quantity Controls */}
-                          <div className="flex items-center gap-4">
-                            <div className="flex items-center border-2 border-gray-200 rounded-xl overflow-hidden bg-white">
-                              <button
-                                onClick={() =>
-                                  updateQuantity(item.id, item.quantity - 1)
-                                }
-                                className="px-4 py-2 hover:bg-gray-100 transition-colors"
-                                aria-label="Giảm số lượng"
-                              >
-                                <Minus className="w-4 h-4 text-gray-600" />
-                              </button>
-                              <div className="px-6 py-2 bg-gray-50 font-bold text-center min-w-[60px]">
-                                {item.quantity}
-                              </div>
-                              <button
-                                onClick={() =>
-                                  updateQuantity(item.id, item.quantity + 1)
-                                }
-                                className="px-4 py-2 hover:bg-gray-100 transition-colors"
-                                aria-label="Tăng số lượng"
-                              >
-                                <Plus className="w-4 h-4 text-gray-600" />
-                              </button>
-                            </div>
+                          <div className="flex items-center gap-3">
+                          <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden bg-white text-sm">
+                            <button
+                              onClick={() =>
+                                updateQuantity(item.id, item.quantity - 1)
+                              }
+                              className="px-2.5 py-1.5 hover:bg-gray-100 transition-colors"
+                              aria-label="Giảm số lượng"
+                            >
+                              <Minus className="w-3 h-3 text-gray-600" />
+                            </button>
+                            <input
+                              type="number"
+                              min={1}
+                              value={item.quantity}
+                              onChange={(e) => {
+                                const raw = e.target.value.trim();
+                                const next = Number(raw);
+                                if (!raw) return;
+                                if (Number.isNaN(next)) return;
+                                updateQuantity(item.id, Math.max(1, next));
+                              }}
+                              className="w-14 px-1.5 py-1.5 bg-gray-50 font-semibold text-center border-0 focus:outline-none focus:ring-0"
+                              aria-label="Số lượng"
+                            />
+                            <button
+                              onClick={() =>
+                                updateQuantity(item.id, item.quantity + 1)
+                              }
+                              className="px-2.5 py-1.5 hover:bg-gray-100 transition-colors"
+                              aria-label="Tăng số lượng"
+                            >
+                              <Plus className="w-3 h-3 text-gray-600" />
+                            </button>
+                          </div>
                           </div>
                         </div>
 
