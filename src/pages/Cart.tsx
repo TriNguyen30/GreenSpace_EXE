@@ -11,6 +11,7 @@ import {
   Truck,
   Shield,
   CreditCard,
+  Package,
 } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 
@@ -50,15 +51,22 @@ export default function CartPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
-          <button
-            onClick={() => navigate("/product")}
-            className="inline-flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-green-700 transition-colors group mb-4"
-          >
-            <div className="inline-flex items-center leading-none gap-2 cursor-pointer group text-gray-700 hover:text-green-600 transition">
+          <div className="flex flex-wrap items-center gap-3 mb-4">
+            <button
+              onClick={() => navigate("/product")}
+              className="inline-flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-green-700 transition-colors group"
+            >
               <ArrowLeft className="w-4 h-4 relative bottom-[1px] group-hover:-translate-x-1 transition-transform" />
               <span className="text-sm font-medium">Tiếp tục mua sắm</span>
-            </div>
-          </button>
+            </button>
+            <button
+              onClick={() => navigate("/orders")}
+              className="inline-flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-green-700 transition-colors group"
+            >
+              <Package className="w-4 h-4 group-hover:scale-110 transition-transform" />
+              <span className="text-sm font-medium">Đơn hàng của tôi</span>
+            </button>
+          </div>
 
           <div className="flex items-center justify-between">
             <div>

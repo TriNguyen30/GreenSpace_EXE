@@ -141,7 +141,7 @@ export default function OrderDetailPage() {
                     </h3>
 
                     <div className="space-y-4">
-                        {currentOrder.items.map((item) => (
+                        {(currentOrder.items ?? []).map((item) => (
                             <div
                                 key={item.productId}
                                 className="flex items-center gap-4 border-b border-gray-100 pb-4 last:border-b-0 last:pb-0"
@@ -157,11 +157,11 @@ export default function OrderDetailPage() {
                                     </h4>
                                     <div className="text-sm text-gray-500">
                                         SL: {item.quantity} ×{" "}
-                                        {item.unitPrice.toLocaleString("vi-VN")} ₫
+                                        {(item.unitPrice ?? 0).toLocaleString("vi-VN")} ₫
                                     </div>
                                 </div>
                                 <div className="font-bold text-gray-900">
-                                    {item.totalPrice.toLocaleString("vi-VN")} ₫
+                                    {(item.totalPrice ?? 0).toLocaleString("vi-VN")} ₫
                                 </div>
                             </div>
                         ))}
@@ -174,7 +174,7 @@ export default function OrderDetailPage() {
                         <div className="flex items-center justify-between text-gray-700">
                             <span>Tạm tính</span>
                             <span className="font-semibold">
-                                {currentOrder.totalAmount.toLocaleString("vi-VN")} ₫
+                                {(currentOrder.totalAmount ?? 0).toLocaleString("vi-VN")} ₫
                             </span>
                         </div>
                         <div className="flex items-center justify-between text-gray-700">
@@ -184,7 +184,7 @@ export default function OrderDetailPage() {
                         <div className="border-t border-gray-200 pt-3 flex items-center justify-between text-lg font-bold text-gray-900">
                             <span>Tổng cộng</span>
                             <span className="text-green-700">
-                                {currentOrder.totalAmount.toLocaleString("vi-VN")} ₫
+                                {(currentOrder.totalAmount ?? 0).toLocaleString("vi-VN")} ₫
                             </span>
                         </div>
                     </div>

@@ -38,7 +38,8 @@ export default function OrderListPage() {
         );
     }
 
-    if (orders.length === 0) {
+    const orderList = Array.isArray(orders) ? orders : [];
+    if (orderList.length === 0) {
         return (
             <div className="min-h-screen bg-gradient-to-b from-green-50/30 to-white pt-24">
                 <div className="max-w-xl mx-auto px-4 text-center">
@@ -68,7 +69,7 @@ export default function OrderListPage() {
                 <h1 className="text-3xl font-bold text-gray-900 mb-8">Đơn hàng của tôi</h1>
 
                 <div className="space-y-4">
-                    {orders.map((order) => (
+                    {orderList.map((order) => (
                         <div
                             key={order.orderId}
                             onClick={() => navigate(`/orders/${order.orderId}`)}
