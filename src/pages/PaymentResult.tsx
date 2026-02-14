@@ -38,11 +38,21 @@ export default function PaymentResultPage() {
                     fetchOrderByIdThunk(orderId)
                 ).unwrap();
 
-                // ✅ Lấy trạng thái từ backend (không tin query param)
-                if (order.paymentStatus === "Paid") {
+                // Backend có thể trả về paymentStatus (PayOS) hoặc status
+                const paymentStatus = (order as { paymentStatus?: string }).paymentStatus;
+                const status = order.status;
+
+                const isPaid =
+                    paymentStatus === "Paid" ||
+                    status === "COMPLETED" ||
+                    status === "CONFIRMED";
+                const isCancelled =
+                    paymentStatus === "Cancelled" || status === "CANCELLED";
+
+                if (isPaid) {
                     clearCart();
                     setOrderStatus("success");
-                } else if (order.paymentStatus === "Cancelled") {
+                } else if (isCancelled) {
                     setOrderStatus("cancelled");
                 } else {
                     setOrderStatus("failed");

@@ -4,7 +4,6 @@ import {
     ArrowLeft,
     MapPin,
     Phone,
-    Mail,
     Package,
     XCircle,
 } from "lucide-react";
@@ -64,12 +63,17 @@ export default function OrderDetailPage() {
                         Quay lại đơn hàng
                     </button>
 
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 flex-wrap">
                         <span className="text-sm text-gray-500">
                             Mã đơn: #{currentOrder.orderId}
                         </span>
+                        <span className="text-sm text-gray-500">
+                            {currentOrder.createdAt
+                                ? new Date(currentOrder.createdAt).toLocaleString("vi-VN")
+                                : ""}
+                        </span>
                         <span className="px-3 py-1 rounded-full bg-green-100 text-green-700 text-sm font-semibold">
-                            {statusTextMap[currentOrder.status]}
+                            {statusTextMap[currentOrder.status?.toUpperCase()] ?? currentOrder.status}
                         </span>
                     </div>
                 </div>
@@ -87,15 +91,21 @@ export default function OrderDetailPage() {
                         </div>
                     </div>
 
-                    {/* Contact (placeholder) */}
+                    {/* Contact - từ API GET /Orders/{id} */}
                     <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
                         <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
                             <Phone className="w-5 h-5 text-green-600" />
-                            Liên hệ
+                            Người nhận
                         </h3>
-                        <div className="space-y-1 text-sm text-gray-700">
-                            <div>Email: user@email.com</div>
-                            <div>Phone: 0900000000</div>
+                        <div className="space-y-2 text-sm text-gray-700">
+                            <div>
+                                <span className="text-gray-500">Tên: </span>
+                                {currentOrder.recipientName ?? "—"}
+                            </div>
+                            <div>
+                                <span className="text-gray-500">SĐT: </span>
+                                {currentOrder.recipientPhone ?? "—"}
+                            </div>
                         </div>
                     </div>
 
@@ -167,6 +177,16 @@ export default function OrderDetailPage() {
                         ))}
                     </div>
                 </div>
+
+                {/* Ghi chú - từ API GET /Orders/{id} */}
+                {(currentOrder.note != null && currentOrder.note !== "") && (
+                    <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+                        <h3 className="font-bold text-gray-900 mb-2 flex items-center gap-2">
+                            Ghi chú đơn hàng
+                        </h3>
+                        <p className="text-sm text-gray-700">{currentOrder.note}</p>
+                    </div>
+                )}
 
                 {/* Summary */}
                 <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 flex justify-end">
