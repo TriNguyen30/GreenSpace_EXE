@@ -15,3 +15,8 @@ export const createPayOSPayment = async (
     return res.data.data;
 };
 
+export const getPaymentByOrderId = async (orderId: string) => {
+    const res = await axiosInstance.get(`/Payments/order/${orderId}`);
+    return res.data.data;
+};
+

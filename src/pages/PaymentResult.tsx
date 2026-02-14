@@ -10,6 +10,8 @@ import {
 import { useAppDispatch } from "@/store/hooks";
 import { fetchOrderByIdThunk } from "@/store/slices/orderSlice";
 import { useCart } from "@/context/CartContext";
+import { getPaymentByOrderId } from "@/services/payment.service";
+
 
 type PaymentStatus = "success" | "failed" | "cancelled" | "pending";
 
@@ -25,6 +27,8 @@ export default function PaymentResultPage() {
     const [orderStatus, setOrderStatus] =
         useState<PaymentStatus>("pending");
 
+    /* ================= Load & Verify Payment ================= */
+
     useEffect(() => {
         if (!orderId) {
             setOrderStatus("failed");
@@ -32,31 +36,37 @@ export default function PaymentResultPage() {
             return;
         }
 
+        let retryCount = 0;
+        const maxRetry = 3;
+
         const loadOrder = async () => {
             try {
-                const order = await dispatch(
-                    fetchOrderByIdThunk(orderId)
-                ).unwrap();
+                const payment = await getPaymentByOrderId(orderId);
 
-                // Backend có thể trả về paymentStatus (PayOS) hoặc status
-                const paymentStatus = (order as { paymentStatus?: string }).paymentStatus;
-                const status = order.status;
+                const paymentStatus = payment.status?.toUpperCase();
 
-                const isPaid =
-                    paymentStatus === "Paid" ||
-                    status === "COMPLETED" ||
-                    status === "CONFIRMED";
-                const isCancelled =
-                    paymentStatus === "Cancelled" || status === "CANCELLED";
+                const isPaid = paymentStatus === "PAID";
+                const isCancelled = paymentStatus === "CANCELLED";
+                const isPending = paymentStatus === "PENDING";
 
                 if (isPaid) {
                     clearCart();
                     setOrderStatus("success");
-                } else if (isCancelled) {
-                    setOrderStatus("cancelled");
-                } else {
-                    setOrderStatus("failed");
+                    return;
                 }
+
+                if (isCancelled) {
+                    setOrderStatus("cancelled");
+                    return;
+                }
+
+                if (isPending && retryCount < maxRetry) {
+                    retryCount++;
+                    setTimeout(loadOrder, 2000);
+                    return;
+                }
+
+                setOrderStatus("failed");
             } catch {
                 setOrderStatus("failed");
             } finally {
@@ -64,10 +74,12 @@ export default function PaymentResultPage() {
             }
         };
 
+
         loadOrder();
     }, [dispatch, orderId, clearCart]);
 
-    // 🔁 Auto redirect sau 3 giây nếu thành công
+    /* ================= Auto Redirect ================= */
+
     useEffect(() => {
         if (orderStatus === "success") {
             const timer = setTimeout(() => {
@@ -92,6 +104,7 @@ export default function PaymentResultPage() {
     }
 
     const isSuccess = orderStatus === "success";
+    const isCancelled = orderStatus === "cancelled";
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-green-50/30 to-white flex items-center justify-center px-4">
@@ -118,7 +131,7 @@ export default function PaymentResultPage() {
                             </button>
 
                             <button
-                                onClick={() => navigate("/products")}
+                                onClick={() => navigate("/product")}
                                 className="w-full py-3 rounded-xl font-semibold bg-gray-100 hover:bg-gray-200 text-gray-800 transition flex items-center justify-center gap-2"
                             >
                                 <ShoppingBag className="w-4 h-4" />
@@ -130,10 +143,14 @@ export default function PaymentResultPage() {
                     <>
                         <XCircle className="w-20 h-20 text-red-500 mx-auto mb-6" />
                         <h1 className="text-2xl font-bold text-gray-900 mb-3">
-                            Thanh toán thất bại ❌
+                            {isCancelled
+                                ? "Thanh toán đã huỷ"
+                                : "Thanh toán thất bại ❌"}
                         </h1>
                         <p className="text-gray-600 mb-8">
-                            Thanh toán không thành công hoặc đã bị huỷ.
+                            {isCancelled
+                                ? "Bạn đã huỷ giao dịch thanh toán."
+                                : "Thanh toán không thành công."}
                         </p>
 
                         <div className="space-y-3">

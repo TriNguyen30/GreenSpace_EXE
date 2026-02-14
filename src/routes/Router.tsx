@@ -33,7 +33,6 @@ export default function AppRoutes() {
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/orders" element={<OrderList />} />
         <Route path="/orders/:id" element={<OrderDetail />} />
-        <Route path="/payment/result" element={<PaymentResult />} />
       </Route>
       <Route
         path="/admin"
@@ -54,6 +53,7 @@ export default function AppRoutes() {
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/payment-result" element={<PaymentResult />} />
     </Routes>
     </RouteTransition>
     </Suspense>
