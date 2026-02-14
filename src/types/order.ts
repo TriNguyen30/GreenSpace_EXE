@@ -23,7 +23,6 @@ export interface Order {
   shippingAddress: string;
   recipientName: string;
   recipientPhone: string;
-  paymentMethod: string;
   note?: string;
   items: OrderItem[];
 }
@@ -46,7 +45,6 @@ export interface CreateOrderPayload {
   shippingAddress: string;
   recipientName: string;
   recipientPhone: string;
-  paymentMethod: string;
   voucherCode?: string;
   note?: string;
   items: CreateOrderItemPayload[];

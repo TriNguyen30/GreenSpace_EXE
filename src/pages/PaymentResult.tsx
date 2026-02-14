@@ -9,19 +9,21 @@ import {
 } from "lucide-react";
 import { useAppDispatch } from "@/store/hooks";
 import { fetchOrderByIdThunk } from "@/store/slices/orderSlice";
+import { useCart } from "@/context/CartContext";
 
 type PaymentStatus = "success" | "failed" | "cancelled" | "pending";
 
 export default function PaymentResultPage() {
     const navigate = useNavigate();
     const dispatch = useAppDispatch();
+    const { clearCart } = useCart();
     const [params] = useSearchParams();
 
     const orderId = params.get("orderId");
-    const status = (params.get("status") as PaymentStatus) || "pending";
 
     const [loading, setLoading] = useState(true);
-    const [orderStatus, setOrderStatus] = useState<PaymentStatus>("pending");
+    const [orderStatus, setOrderStatus] =
+        useState<PaymentStatus>("pending");
 
     useEffect(() => {
         if (!orderId) {
@@ -32,9 +34,19 @@ export default function PaymentResultPage() {
 
         const loadOrder = async () => {
             try {
-                // Backend webhook đã update order rồi → chỉ cần fetch lại
-                await dispatch(fetchOrderByIdThunk(orderId)).unwrap();
-                setOrderStatus(status);
+                const order = await dispatch(
+                    fetchOrderByIdThunk(orderId)
+                ).unwrap();
+
+                // ✅ Lấy trạng thái từ backend (không tin query param)
+                if (order.paymentStatus === "Paid") {
+                    clearCart();
+                    setOrderStatus("success");
+                } else if (order.paymentStatus === "Cancelled") {
+                    setOrderStatus("cancelled");
+                } else {
+                    setOrderStatus("failed");
+                }
             } catch {
                 setOrderStatus("failed");
             } finally {
@@ -43,7 +55,18 @@ export default function PaymentResultPage() {
         };
 
         loadOrder();
-    }, [dispatch, orderId, status]);
+    }, [dispatch, orderId, clearCart]);
+
+    // 🔁 Auto redirect sau 3 giây nếu thành công
+    useEffect(() => {
+        if (orderStatus === "success") {
+            const timer = setTimeout(() => {
+                navigate("/orders");
+            }, 3000);
+
+            return () => clearTimeout(timer);
+        }
+    }, [orderStatus, navigate]);
 
     /* ================= UI ================= */
 
@@ -51,7 +74,9 @@ export default function PaymentResultPage() {
         return (
             <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-green-50/30 to-white">
                 <Loader2 className="w-12 h-12 text-green-600 animate-spin mb-4" />
-                <p className="text-gray-600 font-medium">Đang xác nhận thanh toán...</p>
+                <p className="text-gray-600 font-medium">
+                    Đang xác nhận thanh toán...
+                </p>
             </div>
         );
     }
@@ -67,8 +92,11 @@ export default function PaymentResultPage() {
                         <h1 className="text-2xl font-bold text-gray-900 mb-3">
                             Thanh toán thành công 🎉
                         </h1>
-                        <p className="text-gray-600 mb-8">
-                            Đơn hàng của bạn đã được xác nhận và đang được xử lý.
+                        <p className="text-gray-600 mb-6">
+                            Đơn hàng của bạn đã được xác nhận.
+                        </p>
+                        <p className="text-sm text-gray-400 mb-6">
+                            Tự động chuyển về trang đơn hàng sau 3 giây...
                         </p>
 
                         <div className="space-y-3">
@@ -95,13 +123,15 @@ export default function PaymentResultPage() {
                             Thanh toán thất bại ❌
                         </h1>
                         <p className="text-gray-600 mb-8">
-                            Thanh toán không thành công hoặc đã bị huỷ. Bạn có thể thử lại.
+                            Thanh toán không thành công hoặc đã bị huỷ.
                         </p>
 
                         <div className="space-y-3">
                             {orderId && (
                                 <button
-                                    onClick={() => navigate(`/checkout?retryOrderId=${orderId}`)}
+                                    onClick={() =>
+                                        navigate(`/checkout?retryOrderId=${orderId}`)
+                                    }
                                     className="w-full py-3 rounded-xl font-semibold bg-green-600 hover:bg-green-700 text-white transition flex items-center justify-center gap-2"
                                 >
                                     Thử thanh toán lại

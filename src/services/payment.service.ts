@@ -12,6 +12,6 @@ export const createPayOSPayment = async (
     payload: CreatePayOSPayload,
 ): Promise<CreatePayOSResponse> => {
     const res = await axiosInstance.post("/Payments/payos/create", payload);
-    return res.data;
+    return res.data.data;
 };
 

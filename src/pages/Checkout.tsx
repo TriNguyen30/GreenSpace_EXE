@@ -98,7 +98,6 @@ export default function CheckoutPage() {
         voucherCode: selectedPromotion?.code || undefined,
         note: formData.note,
         items: items.map((item) => ({
-          productId: item.productId,
           variantId: item.variantId,   // không check null nữa
           quantity: item.quantity,
         })),
@@ -223,7 +222,7 @@ export default function CheckoutPage() {
               Vui lòng thêm sản phẩm trước khi thanh toán.
             </p>
             <button
-              onClick={() => navigate("/products")}
+              onClick={() => navigate("/product")}
               className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-xl font-semibold"
             >
               Về trang sản phẩm
