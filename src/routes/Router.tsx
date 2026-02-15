@@ -16,6 +16,7 @@ import OrderList from "@/pages/OrderList";
 import OrderDetail from "@/pages/OrderDetail";
 import PaymentResult from "@/pages/PaymentResult";
 import UserProfile from "@/pages/UserProfile";
+import Tips from "@/pages/Tips";
 import Loading from "@/components/ui/Loading";
 import { Suspense } from "react";
 import RouteTransition from "./RouteTransition";
@@ -35,6 +36,7 @@ export default function AppRoutes() {
         <Route path="/orders" element={<OrderList />} />
         <Route path="/orders/:id" element={<OrderDetail />} />
         <Route path="/profile" element={<UserProfile />} />
+        <Route path="/tips" element={<Tips />} />
       </Route>
       <Route
         path="/admin"
