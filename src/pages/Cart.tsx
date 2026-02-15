@@ -1,7 +1,6 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  ShoppingCart,
   Trash2,
   Plus,
   Minus,
@@ -14,6 +13,7 @@ import {
   Package,
 } from "lucide-react";
 import { useCart } from "@/context/CartContext";
+import Modal from "@/components/ui/Modal";
 
 export default function CartPage() {
   const navigate = useNavigate();
@@ -22,6 +22,7 @@ export default function CartPage() {
   const [quantityInputs, setQuantityInputs] = useState<Record<number, string>>(
     {},
   );
+  const [clearAllModalOpen, setClearAllModalOpen] = useState(false);
 
   const totalPrice = getTotalPrice();
   const shippingFee = totalPrice > 500000 ? 0 : 30000;
@@ -32,10 +33,9 @@ export default function CartPage() {
     return price.toLocaleString("vi-VN") + " ₫";
   };
 
-  const handleClearCart = () => {
-    if (window.confirm("Bạn có chắc muốn xóa toàn bộ giỏ hàng?")) {
-      clearCart();
-    }
+  const handleConfirmClearCart = () => {
+    clearCart();
+    setClearAllModalOpen(false);
   };
 
   const handleCheckout = () => {
@@ -84,7 +84,7 @@ export default function CartPage() {
 
             {items.length > 0 && (
               <button
-                onClick={handleClearCart}
+                onClick={() => setClearAllModalOpen(true)}
                 className="text-sm text-red-600 hover:text-red-700 font-medium flex items-center gap-2 hover:underline"
               >
                 <Trash2 className="w-4 h-4" />
@@ -441,6 +441,35 @@ export default function CartPage() {
             </div>
           </div>
         )}
+
+        {/* Modal: Xóa tất cả giỏ hàng */}
+        <Modal
+          open={clearAllModalOpen}
+          onClose={() => setClearAllModalOpen(false)}
+          title="Xóa tất cả"
+          size="sm"
+        >
+          <p className="text-gray-600 mb-6">
+            Bạn có chắc muốn xóa toàn bộ sản phẩm trong giỏ hàng? Hành động này không thể hoàn tác.
+          </p>
+          <div className="flex justify-end gap-3">
+            <button
+              type="button"
+              onClick={() => setClearAllModalOpen(false)}
+              className="px-4 py-2.5 rounded-xl font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors"
+            >
+              Hủy
+            </button>
+            <button
+              type="button"
+              onClick={handleConfirmClearCart}
+              className="px-4 py-2.5 rounded-xl font-semibold text-white bg-red-600 hover:bg-red-700 transition-colors inline-flex items-center gap-2"
+            >
+              <Trash2 className="w-4 h-4" />
+              Xóa tất cả
+            </button>
+          </div>
+        </Modal>
       </div>
     </div>
   );
