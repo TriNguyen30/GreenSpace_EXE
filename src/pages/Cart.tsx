@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   ShoppingCart,
@@ -11,6 +11,7 @@ import {
   Truck,
   Shield,
   CreditCard,
+  Package,
 } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 
@@ -18,6 +19,9 @@ export default function CartPage() {
   const navigate = useNavigate();
   const { items, removeFromCart, updateQuantity, getTotalPrice, clearCart } =
     useCart();
+  const [quantityInputs, setQuantityInputs] = useState<Record<number, string>>(
+    {},
+  );
 
   const totalPrice = getTotalPrice();
   const shippingFee = totalPrice > 500000 ? 0 : 30000;
@@ -47,13 +51,22 @@ export default function CartPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
-          <button
-            onClick={() => navigate(-1)}
-            className="inline-flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-green-700 transition-colors group mb-4"
-          >
-            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-            Tiếp tục mua sắm
-          </button>
+          <div className="flex flex-wrap items-center gap-3 mb-4">
+            <button
+              onClick={() => navigate("/product")}
+              className="inline-flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-green-700 transition-colors group"
+            >
+              <ArrowLeft className="w-4 h-4 relative bottom-[1px] group-hover:-translate-x-1 transition-transform" />
+              <span className="text-sm font-medium">Tiếp tục mua sắm</span>
+            </button>
+            <button
+              onClick={() => navigate("/orders")}
+              className="inline-flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-green-700 transition-colors group"
+            >
+              <Package className="w-4 h-4 group-hover:scale-110 transition-transform" />
+              <span className="text-sm font-medium">Đơn hàng của tôi</span>
+            </button>
+          </div>
 
           <div className="flex items-center justify-between">
             <div>
@@ -169,28 +182,73 @@ export default function CartPage() {
                           </div>
 
                           {/* Quantity Controls */}
-                          <div className="flex items-center gap-4">
-                            <div className="flex items-center border-2 border-gray-200 rounded-xl overflow-hidden bg-white">
+                          <div className="flex items-center gap-3">
+                            <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden bg-white text-sm">
                               <button
-                                onClick={() =>
-                                  updateQuantity(item.id, item.quantity - 1)
-                                }
-                                className="px-4 py-2 hover:bg-gray-100 transition-colors"
+                                onClick={() => {
+                                  const nextQty = Math.max(1, item.quantity - 1);
+                                  updateQuantity(item.id, nextQty);
+                                  setQuantityInputs((prev) => ({
+                                    ...prev,
+                                    [item.id]: String(nextQty),
+                                  }));
+                                }}
+                                className="px-2.5 py-1.5 hover:bg-gray-100 transition-colors"
                                 aria-label="Giảm số lượng"
                               >
-                                <Minus className="w-4 h-4 text-gray-600" />
+                                <Minus className="w-3 h-3 text-gray-600" />
                               </button>
-                              <div className="px-6 py-2 bg-gray-50 font-bold text-center min-w-[60px]">
-                                {item.quantity}
-                              </div>
-                              <button
-                                onClick={() =>
-                                  updateQuantity(item.id, item.quantity + 1)
+                              <input
+                                type="number"
+                                min={1}
+                                value={
+                                  quantityInputs[item.id] ??
+                                  String(item.quantity)
                                 }
-                                className="px-4 py-2 hover:bg-gray-100 transition-colors"
+                                onChange={(e) => {
+                                  const raw = e.target.value;
+                                  if (!/^\d*$/.test(raw)) return;
+                                  setQuantityInputs((prev) => ({
+                                    ...prev,
+                                    [item.id]: raw,
+                                  }));
+
+                                  if (raw === "") return;
+
+                                  const next = Number(raw);
+                                  if (Number.isNaN(next)) return;
+
+                                  const safe = Math.max(1, next);
+                                  updateQuantity(item.id, safe);
+                                }}
+                                onBlur={() => {
+                                  setQuantityInputs((prev) => {
+                                    const current = prev[item.id];
+                                    if (current && Number(current) >= 1) {
+                                      return prev;
+                                    }
+                                    const fallback = String(
+                                      Math.max(1, item.quantity),
+                                    );
+                                    return { ...prev, [item.id]: fallback };
+                                  });
+                                }}
+                                className="w-14 px-1.5 py-1.5 bg-gray-50 font-semibold text-center border-0 focus:outline-none focus:ring-0 appearance-none [-moz-appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                                aria-label="Số lượng"
+                              />
+                              <button
+                                onClick={() => {
+                                  const nextQty = item.quantity + 1;
+                                  updateQuantity(item.id, nextQty);
+                                  setQuantityInputs((prev) => ({
+                                    ...prev,
+                                    [item.id]: String(nextQty),
+                                  }));
+                                }}
+                                className="px-2.5 py-1.5 hover:bg-gray-100 transition-colors"
                                 aria-label="Tăng số lượng"
                               >
-                                <Plus className="w-4 h-4 text-gray-600" />
+                                <Plus className="w-3 h-3 text-gray-600" />
                               </button>
                             </div>
                           </div>

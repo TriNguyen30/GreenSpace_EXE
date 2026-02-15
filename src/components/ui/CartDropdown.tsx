@@ -29,7 +29,7 @@ export default function CartDropdown() {
     >
       {/* Cart Button */}
       <button className="relative p-2 rounded-full hover:bg-gray-100 bg-gray-200 transition-colors">
-        <ShoppingCart className="w-5 h-5 text-gray-400" />
+        <ShoppingCart className="w-5 h-5 text-gray-400 cursor-pointer" onClick={() => navigate("/cart")} />
         {totalItems > 0 && (
           <span className="absolute -top-1 -right-1 bg-green-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
             {totalItems > 99 ? "99+" : totalItems}

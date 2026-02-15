@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, SlidersHorizontal } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { getProducts } from '@/services/product.service';
 import type { Product as ApiProduct } from '@/types/api';
@@ -9,10 +9,12 @@ import SearchBox from "@/components/ui/Search";
 type ProductItem = ApiProduct & { isNew?: boolean };
 
 export default function Product() {
+  const [sortBy, setSortBy] = useState<'newest' | 'price-low' | 'price-high'>('newest');
   const [currentPage, setCurrentPage] = useState(1);
   const [products, setProducts] = useState<ProductItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const productsPerPage = 20;
   const { keyword } = useSearch();
 
@@ -41,34 +43,72 @@ export default function Product() {
     void fetchProducts();
   }, []);
 
+  // Các loại cây (category) lấy từ API
+  const categories = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          products
+            .map((p) => p.categoryName)
+            .filter((name): name is string => Boolean(name)),
+        ),
+      ),
+    [products],
+  );
+
+  // Lọc theo loại cây (categoryName)
+  const categoryFilteredProducts = useMemo(() => {
+    if (selectedCategories.length === 0) return products;
+    return products.filter((product) =>
+      selectedCategories.includes(product.categoryName),
+    );
+  }, [products, selectedCategories]);
 
   /* ================= SEARCH FILTER ================= */
-  const filteredProducts = useMemo(() => {
-    if (!keyword.trim()) return products;
+  const searchedProducts = useMemo(() => {
+    const base = categoryFilteredProducts;
+
+    if (!keyword.trim()) return base;
 
     const q = keyword.toLowerCase();
-    return products.filter(
+    return base.filter(
       (p) =>
         p.name?.toLowerCase().includes(q) ||
         p.description?.toLowerCase().includes(q),
     );
-  }, [products, keyword]);
+  }, [categoryFilteredProducts, keyword]);
+
+  // Sắp xếp theo giá / mặc định
+  const sortedProducts = useMemo(() => {
+    const cloned = [...searchedProducts];
+
+    if (sortBy === 'price-low') {
+      return cloned.sort((a, b) => a.basePrice - b.basePrice);
+    }
+
+    if (sortBy === 'price-high') {
+      return cloned.sort((a, b) => b.basePrice - a.basePrice);
+    }
+
+    // 'newest' hoặc giá trị khác: giữ nguyên thứ tự API
+    return cloned;
+  }, [searchedProducts, sortBy]);
 
   useEffect(() => {
     setCurrentPage(1);
   }, [keyword]);
 
   // Pagination
-  const totalPages = Math.ceil(filteredProducts.length / productsPerPage) || 1;
+  const totalPages = Math.ceil(sortedProducts.length / productsPerPage) || 1;
   const startIndex = (currentPage - 1) * productsPerPage;
-  const paginatedProducts = filteredProducts.slice(
+  const paginatedProducts = sortedProducts.slice(
     startIndex,
     startIndex + productsPerPage,
   );
 
   return (
     <div className="min-h-screen bg-gray-50 py-19">
-      {/* Hero Banner Section */}
+      {/* Hero Banner Section */} 
       <section className="bg-green-50 py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h1 className="text-4xl font-bold text-green-800 mb-3">
@@ -82,13 +122,76 @@ export default function Product() {
 
       {/* Main Content */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex flex-col gap-8">
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* Left Sidebar - Filters */}
+          <aside className="lg:w-64 flex-shrink-0">
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+              <div className="flex items-center gap-2 mb-6">
+                <SlidersHorizontal className="w-5 h-5 text-green-700" />
+                <h2 className="text-xl font-bold text-gray-900">Bộ lọc</h2>
+              </div>
+
+              {/* Plant Type Filter (categoryName) */}
+              <div className="mb-8">
+                <h3 className="font-semibold text-gray-900 mb-4">LOẠI CÂY</h3>
+                <div className="space-y-3">
+                  {categories.map((category) => {
+                    const checked = selectedCategories.includes(category);
+                    return (
+                      <label
+                        key={category}
+                        className="flex items-center cursor-pointer select-none"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          onChange={() => {
+                            setCurrentPage(1);
+                            setSelectedCategories((prev) => {
+                              if (prev.includes(category)) {
+                                return prev.filter((c) => c !== category);
+                              }
+                              return [...prev, category];
+                            });
+                          }}
+                          className="w-5 h-5 rounded border-gray-300 text-green-600 focus:ring-green-600"
+                        />
+                        <span className="ml-3 text-gray-700">{category}</span>
+                      </label>
+                    );
+                  })}
+
+                  {categories.length === 0 && (
+                    <p className="text-sm text-gray-500">Chưa có dữ liệu loại cây.</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Price Sort */}
+              <div>
+                <h3 className="font-semibold text-gray-900 mb-4">MỨC GIÁ</h3>
+                <select
+                  value={sortBy}
+                  onChange={(e) => {
+                    setCurrentPage(1);
+                    setSortBy(e.target.value as 'newest' | 'price-low' | 'price-high');
+                  }}
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-green-600"
+                >
+                  <option value="newest">Mặc định</option>
+                  <option value="price-low">Giá: Thấp đến Cao</option>
+                  <option value="price-high">Giá: Cao đến Thấp</option>
+                </select>
+              </div>
+            </div>
+          </aside>
+
           {/* Products Section */}
           <div className="flex-1">
             {/* Info Bar */}
             <div className="flex justify-between items-center mb-6">
               <p className="text-gray-700">
-                Hiển thị {paginatedProducts.length} / {filteredProducts.length}{" "} sản phẩm
+                Hiển thị {paginatedProducts.length} / {sortedProducts.length} sản phẩm
               </p>
             </div>
 
