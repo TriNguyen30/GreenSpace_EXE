@@ -95,7 +95,10 @@ export default function CheckoutPage() {
         recipientName: formData.fullName,
         recipientPhone: formData.phone,
         paymentMethod,
-        voucherCode: selectedPromotion?.code || undefined,
+        voucherCode:
+          discountAmount > 0 && selectedPromotion
+            ? selectedPromotion.code
+            : undefined,
         note: formData.note,
         items: items.map((item) => ({
           variantId: item.variantId,   // không check null nữa
@@ -180,10 +183,16 @@ export default function CheckoutPage() {
   useEffect(() => {
     if (!promotions.length) return;
 
-    // Nếu user đã chọn voucher thủ công → không auto override
-    if (selectedPromotion) return;
-
     const total = totalPrice;
+
+    // If user has a promotion selected but cart total is below its minOrderValue, clear it
+    if (selectedPromotion && total < selectedPromotion.minOrderValue) {
+      setSelectedPromotion(null);
+      return;
+    }
+
+    // Nếu user đã chọn voucher thủ công và vẫn đủ điều kiện → không auto override
+    if (selectedPromotion) return;
 
     const validPromotions = promotions.filter(
       (p) =>
@@ -484,32 +493,46 @@ export default function CheckoutPage() {
                     </div>
                   ) : (
                     <div className="space-y-2">
-                      {promotions.map((promo) => (
-                        <label
-                          key={promo.promotionId}
-                          className={`flex items-start gap-3 p-3 border rounded-lg cursor-pointer transition ${selectedPromotion?.promotionId === promo.promotionId
-                            ? "border-green-500 bg-green-50"
-                            : "border-gray-200 hover:border-green-300"
+                      {promotions.map((promo) => {
+                        const qualifies = totalPrice >= promo.minOrderValue;
+                        return (
+                          <label
+                            key={promo.promotionId}
+                            className={`flex items-start gap-3 p-3 border rounded-lg transition ${
+                              !qualifies
+                                ? "border-gray-200 bg-gray-50 cursor-not-allowed opacity-75"
+                                : selectedPromotion?.promotionId === promo.promotionId
+                                  ? "border-green-500 bg-green-50 cursor-pointer"
+                                  : "border-gray-200 hover:border-green-300 cursor-pointer"
                             }`}
-                        >
-                          <input
-                            type="radio"
-                            name="voucher"
-                            checked={
-                              selectedPromotion?.promotionId === promo.promotionId
-                            }
-                            onChange={() => setSelectedPromotion(promo)}
-                          />
-                          <div>
-                            <div className="font-semibold text-sm text-gray-900">
-                              {promo.code}
+                          >
+                            <input
+                              type="radio"
+                              name="voucher"
+                              checked={
+                                selectedPromotion?.promotionId === promo.promotionId
+                              }
+                              onChange={() =>
+                                qualifies && setSelectedPromotion(promo)
+                              }
+                              disabled={!qualifies}
+                            />
+                            <div className="flex-1 min-w-0">
+                              <div className="font-semibold text-sm text-gray-900">
+                                {promo.code}
+                              </div>
+                              <div className="text-xs text-gray-600">
+                                {promo.description}
+                              </div>
+                              {!qualifies && (
+                                <div className="text-xs text-amber-600 mt-1">
+                                  Đơn tối thiểu {formatPrice(promo.minOrderValue)}
+                                </div>
+                              )}
                             </div>
-                            <div className="text-xs text-gray-600">
-                              {promo.description}
-                            </div>
-                          </div>
-                        </label>
-                      ))}
+                          </label>
+                        );
+                      })}
                     </div>
                   )}
                 </div>
