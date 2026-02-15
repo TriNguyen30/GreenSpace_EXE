@@ -20,6 +20,15 @@ export default function UserManagement() {
     isActive: true,
   });
 
+  // For update operations, use UpdateUserPayload format
+  const [updateFormData, setUpdateFormData] = useState<UpdateUserPayload>({
+    email: "",
+    fullName: "",
+    phoneNumber: "",
+    editAddress: "",
+    additionalAddress: "",
+  });
+
   useEffect(() => {
     fetchUsers();
   }, []);
@@ -38,27 +47,23 @@ export default function UserManagement() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const payload: any = { ...formData };
-
-    // Use null for empty optional fields instead of deleting them
-    // Swagger schema suggests all fields should be present
-    if (!payload.phoneNumber) payload.phoneNumber = null;
-    if (!payload.editAddress) payload.editAddress = null;
-    if (!payload.additionalAddress) payload.additionalAddress = null;
-    if (!payload.status) payload.status = null;
-
-    // Explicitly delete ID from body if it exists, as it is a Path param
-    delete payload.id;
-    delete payload.userId;
-
-    console.log("Submitting sanitized payload:", payload);
 
     try {
       if (editingUser) {
-        console.log("Updating user with ID:", editingUser.id);
-        await updateUser(editingUser.id, payload as UpdateUserPayload);
+        // For update, use updateFormData with fullName
+        const payload = {
+          email: updateFormData.email,
+          fullName: updateFormData.fullName,
+          phoneNumber: updateFormData.phoneNumber,
+          editAddress: updateFormData.editAddress,
+          additionalAddress: updateFormData.additionalAddress,
+        };
+        
+        console.log("Updating user with payload:", payload);
+        await updateUser(editingUser.id, payload);
         notification.success({ message: "Cập nhật user thành công!" });
       } else {
+        // For create, use formData with firstName + lastName
         await createUser(formData);
         notification.success({ message: "Tạo user thành công!" });
       }
@@ -81,15 +86,16 @@ export default function UserManagement() {
     console.log("Original User ID (userId):", user.userId);
 
     setEditingUser(user);
-    setFormData({
+    
+    // Set updateFormData for edit operations
+    setUpdateFormData({
       email: user.email,
-      firstName: user.firstName,
-      lastName: user.lastName,
+      fullName: user.fullName || `${user.firstName || ""} ${user.lastName || ""}`.trim(),
       phoneNumber: user.phoneNumber || "",
       editAddress: user.editAddress || "",
       additionalAddress: user.additionalAddress || "",
-      isActive: user.isActive,
     });
+    
     setIsModalOpen(true);
   };
 
@@ -121,6 +127,8 @@ export default function UserManagement() {
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setEditingUser(null);
+    
+    // Reset both forms
     setFormData({
       email: "",
       firstName: "",
@@ -129,6 +137,14 @@ export default function UserManagement() {
       editAddress: "",
       additionalAddress: "",
       isActive: true,
+    });
+    
+    setUpdateFormData({
+      email: "",
+      fullName: "",
+      phoneNumber: "",
+      editAddress: "",
+      additionalAddress: "",
     });
   };
 
@@ -286,32 +302,49 @@ export default function UserManagement() {
               </button>
             </div>
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              {editingUser ? (
+                // Edit mode - use fullName
                 <div>
                   <label className="block text-gray-700 text-sm font-medium mb-2">
-                    First Name
+                    Full Name
                   </label>
                   <input
                     type="text"
-                    value={formData.firstName}
-                    onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                    value={updateFormData.fullName}
+                    onChange={(e) => setUpdateFormData({ ...updateFormData, fullName: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     required
                   />
                 </div>
-                <div>
-                  <label className="block text-gray-700 text-sm font-medium mb-2">
-                    Last Name
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.lastName}
-                    onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required
-                  />
+              ) : (
+                // Create mode - use firstName + lastName
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-gray-700 text-sm font-medium mb-2">
+                      First Name
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.firstName}
+                      onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-gray-700 text-sm font-medium mb-2">
+                      Last Name
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.lastName}
+                      onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      required
+                    />
+                  </div>
                 </div>
-              </div>
+              )}
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -320,8 +353,14 @@ export default function UserManagement() {
                   </label>
                   <input
                     type="email"
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    value={editingUser ? updateFormData.email : formData.email}
+                    onChange={(e) => {
+                      if (editingUser) {
+                        setUpdateFormData({ ...updateFormData, email: e.target.value });
+                      } else {
+                        setFormData({ ...formData, email: e.target.value });
+                      }
+                    }}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     required
                   />
@@ -332,8 +371,14 @@ export default function UserManagement() {
                   </label>
                   <input
                     type="tel"
-                    value={formData.phoneNumber}
-                    onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
+                    value={editingUser ? updateFormData.phoneNumber : formData.phoneNumber}
+                    onChange={(e) => {
+                      if (editingUser) {
+                        setUpdateFormData({ ...updateFormData, phoneNumber: e.target.value });
+                      } else {
+                        setFormData({ ...formData, phoneNumber: e.target.value });
+                      }
+                    }}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
@@ -345,8 +390,14 @@ export default function UserManagement() {
                 </label>
                 <input
                   type="text"
-                  value={formData.editAddress}
-                  onChange={(e) => setFormData({ ...formData, editAddress: e.target.value })}
+                  value={editingUser ? updateFormData.editAddress : formData.editAddress}
+                  onChange={(e) => {
+                    if (editingUser) {
+                      setUpdateFormData({ ...updateFormData, editAddress: e.target.value });
+                    } else {
+                      setFormData({ ...formData, editAddress: e.target.value });
+                    }
+                  }}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
@@ -357,24 +408,32 @@ export default function UserManagement() {
                 </label>
                 <input
                   type="text"
-                  value={formData.additionalAddress}
-                  onChange={(e) => setFormData({ ...formData, additionalAddress: e.target.value })}
+                  value={editingUser ? updateFormData.additionalAddress : formData.additionalAddress}
+                  onChange={(e) => {
+                    if (editingUser) {
+                      setUpdateFormData({ ...updateFormData, additionalAddress: e.target.value });
+                    } else {
+                      setFormData({ ...formData, additionalAddress: e.target.value });
+                    }
+                  }}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
 
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  id="isActive"
-                  checked={formData.isActive}
-                  onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                />
-                <label htmlFor="isActive" className="ml-2 block text-sm text-gray-700">
-                  Active User
-                </label>
-              </div>
+              {!editingUser && (
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="isActive"
+                    checked={formData.isActive}
+                    onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  />
+                  <label htmlFor="isActive" className="ml-2 block text-sm text-gray-700">
+                    Active User
+                  </label>
+                </div>
+              )}
 
               <div className="flex justify-end pt-4 border-t">
                 <button

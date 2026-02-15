@@ -1,4 +1,4 @@
-# Products management
+# # Products management
 GET
 /api/Products
 
@@ -32,7 +32,6 @@ Schema
   "additionalProp3": "string"
 }
 
-
 POST
 /api/Products
 
@@ -51,8 +50,7 @@ Schema
   "description": "string",
   "basePrice": 0,
   "thumbnailUrl": "string",
-  "categoryId": 0,
-  "brandId": 0
+  "categoryId": 0
 }
 Responses
 Code	Description	Links
@@ -117,6 +115,7 @@ Schema
   "additionalProp3": "string"
 }
 
+
 GET
 /api/Products/{id}
 
@@ -153,6 +152,7 @@ Schema
   "additionalProp3": "string"
 }
 
+
 PUT
 /api/Products/{id}
 
@@ -174,8 +174,7 @@ Schema
   "description": "string",
   "basePrice": 0,
   "thumbnailUrl": "string",
-  "categoryId": 0,
-  "brandId": 0
+  "categoryId": 0
 }
 Responses
 Code	Description	Links
@@ -239,6 +238,7 @@ Schema
   "additionalProp2": "string",
   "additionalProp3": "string"
 }
+
 
 DELETE
 /api/Products/{id}

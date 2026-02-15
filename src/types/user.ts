@@ -29,12 +29,10 @@ export interface CreateUserPayload {
 
 export interface UpdateUserPayload {
   email: string;
-  firstName: string;
-  lastName: string;
+  fullName: string;
   phoneNumber: string;
   editAddress: string;
   additionalAddress: string;
-  isActive: boolean;
 }
 
 export interface ApiResponse<T> {
