@@ -19,7 +19,6 @@ export default function ProductManagement() {
     basePrice: 0,
     thumbnailUrl: "",
     categoryId: "",
-    brandId: "",
   });
 
   useEffect(() => {
@@ -74,7 +73,6 @@ export default function ProductManagement() {
       basePrice: product.basePrice,
       thumbnailUrl: product.thumbnailUrl,
       categoryId: product.categoryId,
-      brandId: product.brandId,
     });
     setIsModalOpen(true);
   };
@@ -112,7 +110,6 @@ export default function ProductManagement() {
       basePrice: 0,
       thumbnailUrl: "",
       categoryId: "",
-      brandId: "",
     });
   };
 
@@ -173,9 +170,6 @@ export default function ProductManagement() {
                 CATEGORY
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                BRAND
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 ACTIONS
               </th>
             </tr>
@@ -216,11 +210,6 @@ export default function ProductManagement() {
                       );
                     })()}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                      {product.brandName || product.brandId}
-                    </span>
-                  </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <button
                       onClick={() => handleView(product)}
@@ -252,7 +241,7 @@ export default function ProductManagement() {
               ))
             ) : (
               <tr>
-                <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
+                <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
                   No products found. Add your first product!
                 </td>
               </tr>
@@ -319,31 +308,17 @@ export default function ProductManagement() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-gray-700 text-sm font-medium mb-2">
-                    Image URL
-                  </label>
-                  <input
-                    type="url"
-                    value={formData.thumbnailUrl}
-                    onChange={(e) => setFormData({ ...formData, thumbnailUrl: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-gray-700 text-sm font-medium mb-2">
-                    Brand
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.brandId}
-                    onChange={(e) => setFormData({ ...formData, brandId: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required
-                  />
-                </div>
+              <div>
+                <label className="block text-gray-700 text-sm font-medium mb-2">
+                  Image URL
+                </label>
+                <input
+                  type="url"
+                  value={formData.thumbnailUrl}
+                  onChange={(e) => setFormData({ ...formData, thumbnailUrl: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                />
               </div>
 
               <div>
@@ -428,15 +403,9 @@ export default function ProductManagement() {
                 <p className="text-gray-900">{viewingProduct.description}</p>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Category</label>
-                  <p className="text-gray-900 font-medium">{viewingProduct.categoryId}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Brand</label>
-                  <p className="text-gray-900 font-medium">{viewingProduct.brandId}</p>
-                </div>
+              <div>
+                <label className="text-sm font-medium text-gray-500">Category</label>
+                <p className="text-gray-900 font-medium">{viewingProduct.categoryId}</p>
               </div>
 
               {viewingProduct.thumbnailUrl && (

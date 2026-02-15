@@ -5,9 +5,7 @@ export interface Product {
   basePrice: number;
   thumbnailUrl: string;
   categoryId: string;
-  brandId: string;
   categoryName?: string;
-  brandName?: string;
 }
 
 export interface CreateProductPayload {
@@ -16,7 +14,6 @@ export interface CreateProductPayload {
   basePrice: number;
   thumbnailUrl: string;
   categoryId: string;
-  brandId: string;
 }
 
 export interface UpdateProductPayload {
@@ -25,7 +22,6 @@ export interface UpdateProductPayload {
   basePrice: number;
   thumbnailUrl: string;
   categoryId: string;
-  brandId: string;
 }
 
 export interface ApiResponse<T> {
