@@ -528,7 +528,7 @@ export default function ProductDetail() {
 
           {/* Breadcrumb */}
           <div className="mb-6 pd-enter-1">
-            <button onClick={() => navigate(-1)} className="pd-back inline-flex items-center gap-1.5 text-sm text-gray-500 font-medium">
+            <button onClick={() => navigate("/product")} className="pd-back inline-flex items-center gap-1.5 text-sm text-gray-500 font-medium">
               <ChevronLeft className="pd-back-icon w-4 h-4" />
               Quay lại danh sách
             </button>
