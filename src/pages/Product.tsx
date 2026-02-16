@@ -143,7 +143,7 @@ function buildPages(total: number, current: number): (number | "...")[] {
 }
 
 // ─── Main component ───────────────────────────────────────────────────────────
-const PER_PAGE = 20;
+const PER_PAGE = 15;
 
 export default function Product() {
   injectStyles();
