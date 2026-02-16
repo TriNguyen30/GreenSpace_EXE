@@ -404,6 +404,11 @@ export default function ProductDetail() {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
 
+  // Scroll lên đầu trang khi vào chi tiết sản phẩm (từ Home / Product)
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [id]);
+
   useEffect(() => {
     if (!id) { setError("Không tìm thấy sản phẩm"); return; }
     let cancelled = false;
