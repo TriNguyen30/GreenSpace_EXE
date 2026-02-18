@@ -27,6 +27,7 @@ type CartContextType = {
   updateQuantity: (id: number, quantity: number) => void;
   clearCart: () => void;
   getTotalItems: () => number;
+  getTotalQuantity: () => number;
   getTotalPrice: () => number;
 };
 
@@ -70,7 +71,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
     });
   };
 
-
   const removeFromCart = (id: number) => {
     setItems((prev) => prev.filter((i) => i.id !== id));
   };
@@ -86,7 +86,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setItems([]);
   }, []);
 
-  const getTotalItems = () =>
+  // Returns count of unique products in cart
+  const getTotalItems = () => items.length;
+
+  // Returns total quantity of all items (sum of all quantities)
+  const getTotalQuantity = () =>
     items.reduce((total, item) => total + item.quantity, 0);
 
   const getTotalPrice = () =>
@@ -105,6 +109,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         updateQuantity,
         clearCart,
         getTotalItems,
+        getTotalQuantity,
         getTotalPrice,
       }}
     >

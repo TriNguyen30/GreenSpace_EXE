@@ -108,7 +108,7 @@ const formatPrice = (n: number) => n.toLocaleString("vi-VN") + " ₫";
 export default function CartDropdown() {
   injectStyles();
 
-  const { items, removeFromCart, updateQuantity, getTotalItems, getTotalPrice } = useCart();
+  const { items, removeFromCart, updateQuantity, getTotalItems, getTotalQuantity, getTotalPrice } = useCart();
   const navigate = useNavigate();
 
   const [open, setOpen] = useState(false);
@@ -118,7 +118,8 @@ export default function CartDropdown() {
   const wrapRef = useRef<HTMLDivElement>(null);
   const hoverTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const totalItems = getTotalItems();
+  const totalItems = getTotalItems(); // Count of unique products
+  const totalQuantity = getTotalQuantity(); // Sum of all quantities
   const totalPrice = getTotalPrice();
 
   // Animate badge when count changes
@@ -178,7 +179,7 @@ export default function CartDropdown() {
       >
         {/* ── Cart button ── */}
         <button
-          className={`cd-btn relative p-2 rounded-xl cursor-pointer ${open ? "open" : ""}`}
+          className={`cd-btn relative p-2 rounded-xl ${open ? "open" : ""}`}
           onClick={() => navigate("/cart")}
           aria-label="Giỏ hàng"
         >
