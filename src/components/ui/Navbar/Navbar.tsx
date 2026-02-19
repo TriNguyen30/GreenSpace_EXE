@@ -310,7 +310,7 @@ export default function Navbar() {
             ) : (
               /* Login button */
               <button
-                className="nb-login-btn text-white text-sm font-semibold px-5 py-2 rounded-xl"
+                className="nb-login-btn text-white text-sm font-semibold px-5 py-2 rounded-xl cursor-pointer"
                 onClick={() => navigateWithScroll("/login")}
               >
                 Đăng nhập

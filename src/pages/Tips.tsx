@@ -4,6 +4,7 @@ import {
     Sun, Droplets, Leaf, Scissors,
     Sprout, Bug, ThermometerSun, BookOpen, ArrowRight,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 const tips = [
@@ -143,6 +144,17 @@ function useScrollReveal(deps: unknown[] = []) {
 export default function Tips() {
     injectStyles();
     useScrollReveal([]);
+    const navigate = useNavigate();
+  // Scroll to top helper
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  // Navigate with scroll to top
+  const navigateWithScroll = (path: string) => {
+    navigate(path);
+    scrollToTop();
+  };
 
     return (
         <div className="min-h-screen bg-gray-50 pt-24 pb-16">
@@ -223,7 +235,8 @@ export default function Tips() {
                     </p>
                     <Link
                         to="/contact"
-                        className="tp-cta-btn inline-flex items-center justify-center gap-2 rounded-xl border-2 border-green-600 text-green-700 px-6 py-2.5 font-semibold text-sm"
+                        className="tp-cta-btn inline-flex items-center justify-center gap-2 rounded-xl border-2 border-green-600 text-green-700 px-6 py-2.5 font-semibold text-sm cursor-pointer"
+                        onClick={() => navigateWithScroll("/contact")}
                     >
                         Liên hệ tư vấn <ArrowRight className="w-4 h-4" />
                     </Link>

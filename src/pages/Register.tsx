@@ -458,11 +458,11 @@ export default function Register() {
           <div className="rg-s1 flex border-b border-gray-200 mb-6">
             <button
               onClick={() => navigate("/login")}
-              className="flex-1 pb-4 text-center font-semibold text-gray-400 hover:text-gray-600 transition-colors"
+              className="flex-1 pb-4 text-center font-semibold text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
             >
               Đăng nhập
             </button>
-            <button className="flex-1 pb-4 text-center font-semibold text-green-600 relative">
+            <button className="flex-1 pb-4 text-center font-semibold text-green-600 relative cursor-pointer">
               Đăng ký
               <span className="rg-tab-bar absolute left-0 bottom-0 w-full h-0.5 bg-green-500 rounded-full block" />
             </button>
@@ -531,7 +531,7 @@ export default function Register() {
                       <button
                         type="submit"
                         disabled={loading || isSubmitting}
-                        className="rg-submit-btn w-full text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2"
+                        className="rg-submit-btn w-full text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2 cursor-pointer"
                       >
                         {loading || isSubmitting ? (
                           <><span className="rg-spinner" /><span>Đang gửi...</span></>
@@ -601,7 +601,7 @@ export default function Register() {
                         type="button"
                         onClick={handleResend}
                         disabled={loading}
-                        className="rg-resend text-sm text-green-600 font-medium disabled:opacity-50"
+                        className="rg-resend text-sm text-green-600 font-medium disabled:opacity-50 cursor-pointer"
                       >
                         Gửi lại mã OTP
                       </button>
@@ -686,7 +686,7 @@ export default function Register() {
                       <button
                         type="submit"
                         disabled={loading || isSubmitting}
-                        className="rg-submit-btn w-full text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2"
+                        className="rg-submit-btn w-full text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2 cursor-pointer"
                       >
                         {loading || isSubmitting ? (
                           <><span className="rg-spinner" /><span>Đang tạo tài khoản...</span></>
@@ -720,7 +720,7 @@ export default function Register() {
               </div>
               <button
                 onClick={() => { dispatch(resetRegister()); navigate("/login"); }}
-                className="rg-submit-btn w-full text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2"
+                className="rg-submit-btn w-full text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2 cursor-pointer"
               >
                 Đăng nhập ngay <ArrowRight className="w-4 h-4" />
               </button>
