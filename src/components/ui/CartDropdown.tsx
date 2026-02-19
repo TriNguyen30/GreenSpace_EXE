@@ -161,6 +161,17 @@ export default function CartDropdown() {
     }, 240);
   }
 
+  // Scroll to top helper
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  // Navigate with scroll to top
+  const navigateWithScroll = (path: string) => {
+    navigate(path);
+    scrollToTop();
+  };
+
   return (
     <>
       {/* Mobile overlay backdrop */}
@@ -180,7 +191,7 @@ export default function CartDropdown() {
         {/* ── Cart button ── */}
         <button
           className={`cd-btn relative p-2 rounded-xl ${open ? "open" : ""}`}
-          onClick={() => navigate("/cart")}
+          onClick={() => navigateWithScroll("/cart")}
           aria-label="Giỏ hàng"
         >
           <ShoppingCart className="w-5 h-5 text-gray-600" />
@@ -314,13 +325,13 @@ export default function CartDropdown() {
 
                   {/* CTAs */}
                   <button
-                    onClick={() => { setOpen(false); navigate("/checkout"); }}
+                    onClick={() => { setOpen(false); navigateWithScroll("/checkout"); }}
                     className="cd-checkout w-full bg-green-600 text-white py-2.5 rounded-xl font-bold text-sm mb-2 flex items-center justify-center gap-2"
                   >
                     Thanh toán ngay <ArrowRight className="w-4 h-4" />
                   </button>
                   <button
-                    onClick={() => { setOpen(false); navigate("/cart"); }}
+                    onClick={() => { setOpen(false); navigateWithScroll("/cart"); }}
                     className="cd-view w-full border-2 border-gray-200 text-gray-600 py-2.5 rounded-xl font-semibold text-sm"
                   >
                     Xem giỏ hàng

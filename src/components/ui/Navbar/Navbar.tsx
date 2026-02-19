@@ -154,10 +154,21 @@ export default function Navbar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Scroll to top helper
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  // Navigate with scroll to top
+  const navigateWithScroll = (path: string) => {
+    navigate(path);
+    scrollToTop();
+  };
+
   // Close mobile menu on navigate
   const goTo = (path: string) => {
     setMobileOpen(false);
-    navigate(path);
+    navigateWithScroll(path);
   };
 
   const initials = getInitials(user?.fullName, user?.email);
@@ -188,16 +199,17 @@ export default function Navbar() {
             <DropdownMenu
               label="Bộ sưu tập"
               items={[
-                { label: "Tin tức", value: "news", onClick: () => navigate("/news") },
-                { label: "Loài hoa", value: "flowers", onClick: () => navigate("/product") },
-                { label: "Kiến thức – mẹo vặt", value: "tips", onClick: () => navigate("/tips") },
-                { label: "Khuyến mãi", value: "sale", onClick: () => navigate("/sale") },
-                { label: "Tuyển dụng", value: "jobs", onClick: () => navigate("/jobs") },
+                { label: "Tin tức", value: "news", onClick: () => navigateWithScroll("/news") },
+                { label: "Loài hoa", value: "flowers", onClick: () => navigateWithScroll("/product") },
+                { label: "Kiến thức – mẹo vặt", value: "tips", onClick: () => navigateWithScroll("/tips") },
+                { label: "Khuyến mãi", value: "sale", onClick: () => navigateWithScroll("/sale") },
+                { label: "Tuyển dụng", value: "jobs", onClick: () => navigateWithScroll("/jobs") },
               ]}
             />
 
             <NavLink
               to="/contact"
+              onClick={scrollToTop}
               className={({ isActive }) => `nb-navlink text-gray-600 text-sm font-medium ${isActive ? "active" : ""}`}
             >
               Liên hệ
@@ -205,6 +217,7 @@ export default function Navbar() {
 
             <NavLink
               to="/tips"
+              onClick={scrollToTop}
               className={({ isActive }) => `nb-navlink text-gray-600 text-sm font-medium ${isActive ? "active" : ""}`}
             >
               Mẹo chăm sóc
@@ -260,7 +273,7 @@ export default function Navbar() {
                     <div className="py-1.5">
                       <button
                         type="button"
-                        onClick={() => { setUserMenuOpen(false); navigate("/profile"); }}
+                        onClick={() => { setUserMenuOpen(false); navigateWithScroll("/profile"); }}
                         className="nb-menu-item w-full px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 flex items-center gap-2.5"
                       >
                         <User className="w-4 h-4 opacity-60" />
@@ -269,7 +282,7 @@ export default function Navbar() {
 
                       <button
                         type="button"
-                        onClick={() => { setUserMenuOpen(false); navigate("/orders"); }}
+                        onClick={() => { setUserMenuOpen(false); navigateWithScroll("/orders"); }}
                         className="nb-menu-item w-full px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 flex items-center gap-2.5"
                       >
                         <Package className="w-4 h-4 opacity-60" />
@@ -283,7 +296,7 @@ export default function Navbar() {
                         onClick={() => {
                           dispatch(logout());
                           setUserMenuOpen(false);
-                          navigate("/login");
+                          navigateWithScroll("/login");
                         }}
                         className="nb-menu-item w-full px-4 py-2.5 text-left text-sm text-red-500 hover:bg-red-50 hover:text-red-600 flex items-center gap-2.5"
                       >
@@ -298,7 +311,7 @@ export default function Navbar() {
               /* Login button */
               <button
                 className="nb-login-btn text-white text-sm font-semibold px-5 py-2 rounded-xl"
-                onClick={() => navigate("/login")}
+                onClick={() => navigateWithScroll("/login")}
               >
                 Đăng nhập
               </button>
