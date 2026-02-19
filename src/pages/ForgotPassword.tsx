@@ -379,14 +379,14 @@ export default function ForgotPassword() {
                 {/* Top */}
                 <div className="relative z-10 flex flex-col gap-4 text-white">
                     <div
-                        className="fp-back-btn flex items-center gap-2 cursor-pointer text-white/90 hover:text-white w-fit"
+                        className="fp-back-btn flex items-center gap-2 text-white/90 hover:text-white w-fit cursor-pointer"
                         style={{ transition: "all .2s" }}
                         onClick={() => navigate("/login")}
                         onMouseEnter={e => (e.currentTarget.style.transform = "translateX(-3px)")}
                         onMouseLeave={e => (e.currentTarget.style.transform = "translateX(0)")}
                     >
                         <ArrowLeft className="w-5 h-5" />
-                        <span className="text-sm font-medium hover:underline underline-offset-4">Quay lại đăng nhập</span>
+                        <span className="text-sm font-medium hover:underline underline-offset-4 cursor-pointer">Quay lại đăng nhập</span>
                     </div>
                     <div className="fp-logo-anim flex items-center gap-2">
                         <img src={Logo} alt="Logo" className="w-24 h-auto drop-shadow-lg" />
@@ -462,7 +462,7 @@ export default function ForgotPassword() {
                                 </div>
 
                                 <div className="fp-s4">
-                                    <button type="submit" disabled={isSubmitting || loading} className="fp-submit-btn w-full text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2">
+                                    <button type="submit" disabled={isSubmitting || loading} className="fp-submit-btn w-full text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2 cursor-pointer">
                                         {isSubmitting || loading
                                             ? <><span className="fp-spinner" /><span>Đang gửi...</span></>
                                             : <>Gửi mã OTP <ArrowRight className="w-4 h-4" /></>}
@@ -471,7 +471,7 @@ export default function ForgotPassword() {
 
                                 <div className="fp-s5 text-center">
                                     <button type="button" onClick={() => navigate("/login")}
-                                        className="fp-resend text-sm text-green-600 font-medium">
+                                        className="fp-resend text-sm text-green-600 font-medium cursor-pointer">
                                         Quay lại đăng nhập
                                     </button>
                                 </div>
@@ -518,7 +518,7 @@ export default function ForgotPassword() {
                                 <div className="fp-s5 text-center">
                                     <button type="button" disabled={loading}
                                         onClick={() => passwordMail && dispatch(passwordResendThunk({ email: passwordMail }))}
-                                        className="fp-resend text-sm text-green-600 font-medium disabled:opacity-50">
+                                        className="fp-resend text-sm text-green-600 font-medium disabled:opacity-50 cursor-pointer">
                                         Gửi lại mã OTP
                                     </button>
                                 </div>
@@ -590,7 +590,7 @@ export default function ForgotPassword() {
                                 </div>
 
                                 <div className="fp-s4 pt-1">
-                                    <button type="submit" disabled={isSubmitting || loading} className="fp-submit-btn w-full text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2">
+                                    <button type="submit" disabled={isSubmitting || loading} className="fp-submit-btn w-full text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2 cursor-pointer">
                                         {isSubmitting || loading
                                             ? <><span className="fp-spinner" /><span>Đang cập nhật...</span></>
                                             : <>Đặt lại mật khẩu <ArrowRight className="w-4 h-4" /></>}
@@ -616,7 +616,7 @@ export default function ForgotPassword() {
 
                             <button
                                 onClick={() => { dispatch(resetPassword()); navigate("/login"); }}
-                                className="fp-submit-btn w-full text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2"
+                                className="fp-submit-btn w-full text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2 cursor-pointer"
                             >
                                 Quay lại đăng nhập <ArrowRight className="w-4 h-4" />
                             </button>

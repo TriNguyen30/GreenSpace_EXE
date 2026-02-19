@@ -370,12 +370,13 @@ export default function GreenSpaceLanding() {
             </p>
             <div className="gs-hero-btns flex gap-4">
               <button
-                className="gs-btn-primary bg-green-500 hover:bg-green-600 text-white px-6 py-2.5 rounded-lg font-semibold"
+                className="gs-btn-primary bg-green-500 hover:bg-green-600 text-white px-6 py-2.5 rounded-lg font-semibold cursor-pointer"
                 onClick={() => navigate("/product")}
               >
                 Xem Cây Ngay!
               </button>
-              <button className="gs-btn-outline border-2 border-gray-300 hover:border-green-400 hover:text-green-700 text-gray-700 px-6 py-2.5 rounded-lg font-semibold">
+              <button className="gs-btn-outline border-2 border-gray-300 hover:border-green-400 hover:text-green-700 text-gray-700 px-6 py-2.5 rounded-lg font-semibold cursor-pointer" 
+              onClick={() => navigate("/contact")}>
                 Tư Vấn Miễn Phí
               </button>
             </div>
@@ -566,7 +567,7 @@ export default function GreenSpaceLanding() {
                 onBlur={e => (e.currentTarget.style.boxShadow = "none")}
               />
               <button
-                className="gs-cta-btn bg-white text-green-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-50"
+                className="gs-cta-btn bg-white text-green-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-50 cursor-pointer"
                 onClick={() => navigate("/register", { state: { prefillEmail: email } })}
               >
                 Đăng ký ngay

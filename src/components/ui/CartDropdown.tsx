@@ -190,7 +190,7 @@ export default function CartDropdown() {
       >
         {/* ── Cart button ── */}
         <button
-          className={`cd-btn relative p-2 rounded-xl ${open ? "open" : ""}`}
+          className={`cd-btn relative p-2 rounded-xl cursor-pointer ${open ? "open" : ""}`}
           onClick={() => navigateWithScroll("/cart")}
           aria-label="Giỏ hàng"
         >

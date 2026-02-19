@@ -351,7 +351,7 @@ export default function Login() {
                   setActiveTab(key);
                   if (key === "register") navigate("/register");
                 }}
-                className={`flex-1 pb-4 text-center font-semibold relative transition-colors duration-200 ${activeTab === key
+                className={`flex-1 pb-4 text-center font-semibold relative transition-colors duration-200 cursor-pointer ${activeTab === key
                     ? "text-green-600"
                     : "text-gray-400 hover:text-gray-600"
                   }`}
@@ -424,7 +424,7 @@ export default function Login() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="ln-eye-btn absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400"
+                  className="ln-eye-btn absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 cursor-pointer"
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -441,7 +441,7 @@ export default function Login() {
               <button
                 type="button"
                 onClick={() => navigate("/forgot-password")}
-                className="ln-forgot text-sm text-green-600 font-medium"
+                className="ln-forgot text-sm text-green-600 font-medium cursor-pointer"
               >
                 Quên mật khẩu?
               </button>
@@ -452,7 +452,7 @@ export default function Login() {
               <button
                 type="submit"
                 disabled={formik.isSubmitting || loading}
-                className="ln-submit-btn w-full text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2"
+                className="ln-submit-btn w-full text-white font-semibold py-3 rounded-xl flex items-center justify-center gap-2 cursor-pointer"
               >
                 {formik.isSubmitting || loading ? (
                   <>
@@ -489,7 +489,7 @@ export default function Login() {
 
           {/* Google */}
           <div className="ln-stagger-8">
-            <button className="ln-google-btn w-full flex items-center justify-center gap-3 px-4 py-3 border border-gray-200 rounded-xl bg-white shadow-sm text-sm font-medium text-gray-700">
+            <button className="ln-google-btn w-full flex items-center justify-center gap-3 px-4 py-3 border border-gray-200 rounded-xl bg-white shadow-sm text-sm font-medium text-gray-700 cursor-pointer">
               <FcGoogle className="w-5 h-5" />
               Đăng nhập với Google
             </button>

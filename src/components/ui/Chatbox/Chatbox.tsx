@@ -183,7 +183,7 @@ export default function Chatbox() {
             <button
                 type="button"
                 onClick={toggleOpen}
-                className={`fixed bottom-6 right-6 z-40 w-14 h-14 rounded-full bg-green-600 text-white shadow-lg hover:bg-green-700 flex items-center justify-center ${!open ? "cb-fab" : ""
+                className={`fixed bottom-6 right-6 z-40 w-14 h-14 rounded-full bg-green-600 text-white shadow-lg hover:bg-green-700 flex items-center justify-center cursor-pointer ${!open ? "cb-fab" : ""
                     }`}
                 style={{ transition: "background .2s, transform .2s" }}
                 aria-label={open ? "Đóng chat" : "Mở chat AI"}
