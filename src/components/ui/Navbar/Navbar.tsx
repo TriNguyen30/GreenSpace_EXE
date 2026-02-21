@@ -182,7 +182,7 @@ export default function Navbar() {
           {/* ── Logo ── */}
           <button
             type="button"
-            className="flex items-center gap-2.5 group"
+            className="flex items-center gap-2.5 group cursor-pointer"
             onClick={() => {
               navigate("/");
               document.getElementById("home")?.scrollIntoView({ behavior: "smooth" });

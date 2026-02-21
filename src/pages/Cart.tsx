@@ -187,7 +187,7 @@ export default function CartPage() {
           <div className="flex flex-wrap items-center gap-4 mb-4">
             <button
               onClick={() => navigate("/product")}
-              className="cp-back inline-flex items-center gap-1.5 text-sm font-medium text-gray-500"
+              className="cp-back inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 cursor-pointer"
             >
               <ArrowLeft className="cp-back-icon w-4 h-4" />
               Tiếp tục mua sắm
@@ -195,7 +195,7 @@ export default function CartPage() {
             <span className="text-gray-300">|</span>
             <button
               onClick={() => navigate("/orders")}
-              className="cp-orders-btn inline-flex items-center gap-1.5 text-sm font-medium text-gray-500"
+              className="cp-orders-btn inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 cursor-pointer"
             >
               <Package className="cp-orders-icon w-4 h-4" />
               Đơn hàng của tôi
@@ -237,7 +237,7 @@ export default function CartPage() {
             </p>
             <button
               onClick={() => navigate("/product")}
-              className="cp-checkout-btn inline-flex items-center gap-2 text-white px-8 py-3 rounded-xl font-semibold text-sm"
+              className="cp-checkout-btn inline-flex items-center gap-2 text-white px-8 py-3 rounded-xl font-semibold text-sm cu"
             >
               <ShoppingCart className="w-4 h-4" />
               Khám phá sản phẩm
@@ -414,10 +414,10 @@ export default function CartPage() {
                 )}
 
                 {/* CTAs */}
-                <button onClick={handleCheckout} className="cp-checkout-btn w-full text-white py-3.5 rounded-xl font-bold text-sm mb-3">
+                <button onClick={handleCheckout} className="cp-checkout-btn w-full text-white py-3.5 rounded-xl font-bold text-sm mb-3 cursor-pointer">
                   Tiến hành thanh toán →
                 </button>
-                <button onClick={() => navigate("/product")} className="cp-continue-btn w-full border-2 border-gray-200 text-gray-600 py-3 rounded-xl font-semibold text-sm transition-colors">
+                <button onClick={() => navigate("/product")} className="cp-continue-btn w-full border-2 border-gray-200 text-gray-600 py-3 rounded-xl font-semibold text-sm transition-colors cursor-pointer">
                   Tiếp tục mua sắm
                 </button>
 
