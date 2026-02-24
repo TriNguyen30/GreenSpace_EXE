@@ -5,30 +5,62 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000
 
 export const getProductVariants = async (productId: string): Promise<ProductVariant[]> => {
   try {
+    console.log("Fetching variants for product:", productId);
+    console.log("API URL:", `${API_BASE_URL}/products/${productId}/variants`);
+    
     const response = await api.get(`${API_BASE_URL}/products/${productId}/variants`);
     console.log("API Response:", response.data);
     console.log("Response data type:", typeof response.data);
+    console.log("Response structure:", {
+      hasData: 'data' in response.data,
+      hasIsSuccess: 'isSuccess' in response.data,
+      dataType: typeof response.data.data
+    });
     
-    // Xử lý các trường hợp response khác nhau
+    // Xử lý response structure từ Swagger: { data: [...], isSuccess: true, ... }
     let variants: ProductVariant[] = [];
     
-    if (Array.isArray(response.data)) {
+    if (response.data && response.data.data && Array.isArray(response.data.data)) {
+      variants = response.data.data;
+      console.log("Extracted variants from response.data.data:", variants);
+    } else if (Array.isArray(response.data)) {
       variants = response.data;
-    } else if (response.data && typeof response.data === 'object') {
-      // Nếu response là object, thử tìm property chứa mảng
-      if (response.data.data && Array.isArray(response.data.data)) {
-        variants = response.data.data;
-      } else if (response.data.variants && Array.isArray(response.data.variants)) {
-        variants = response.data.variants;
-      } else {
-        console.warn("Unexpected response structure:", response.data);
+      console.log("Using response.data directly as array:", variants);
+    } else {
+      console.warn("Unexpected response structure:", response.data);
+    }
+    
+    console.log("Final variants array:", variants);
+    console.log("Variants count:", variants.length);
+    return variants;
+  } catch (error: any) {
+    console.error("Error fetching product variants:", error);
+    
+    // Xử lý chi tiết các loại lỗi
+    if (error.response) {
+      const status = error.response.status;
+      const data = error.response.data;
+      
+      console.error("Response status:", status);
+      console.error("Response data:", data);
+      
+      if (status === 401) {
+        throw new Error("Authentication failed. Please check your login status.");
+      } else if (status === 403) {
+        throw new Error("You don't have permission to perform this action.");
+      } else if (status === 404) {
+        throw new Error("Product not found.");
+      } else if (status === 400) {
+        const message = data?.message || "Invalid data provided.";
+        throw new Error(`Validation error: ${message}`);
       }
     }
     
-    console.log("Processed variants:", variants);
-    return variants;
-  } catch (error) {
-    console.error("Error fetching product variants:", error);
+    // Nếu là lỗi network hoặc không có response
+    if (!error.response) {
+      throw new Error("Network error. Please check your connection.");
+    }
+    
     throw error;
   }
 };
@@ -38,9 +70,50 @@ export const getProductVariantById = async (productId: string, variantId: string
     console.log(`Fetching variant: productId=${productId}, variantId=${variantId}`);
     const response = await api.get(`${API_BASE_URL}/products/${productId}/variants/${variantId}`);
     console.log("Variant detail response:", response.data);
-    return response.data;
-  } catch (error) {
+    console.log("Response structure:", {
+      hasData: 'data' in response.data,
+      hasIsSuccess: 'isSuccess' in response.data,
+      dataType: typeof response.data.data
+    });
+    
+    // Xử lý response structure từ Swagger: { data: {...}, isSuccess: true, ... }
+    if (response.data && response.data.data) {
+      console.log("Extracted variant from response.data.data:", response.data.data);
+      return response.data.data;
+    } else if (response.data) {
+      console.log("Using response.data directly:", response.data);
+      return response.data;
+    } else {
+      throw new Error("No variant data found in response");
+    }
+  } catch (error: any) {
     console.error("Error fetching product variant:", error);
+    
+    // Xử lý chi tiết các loại lỗi
+    if (error.response) {
+      const status = error.response.status;
+      const data = error.response.data;
+      
+      console.error("Response status:", status);
+      console.error("Response data:", data);
+      
+      if (status === 401) {
+        throw new Error("Authentication failed. Please check your login status.");
+      } else if (status === 403) {
+        throw new Error("You don't have permission to perform this action.");
+      } else if (status === 404) {
+        throw new Error("Product or variant not found.");
+      } else if (status === 400) {
+        const message = data?.message || "Invalid data provided.";
+        throw new Error(`Validation error: ${message}`);
+      }
+    }
+    
+    // Nếu là lỗi network hoặc không có response
+    if (!error.response) {
+      throw new Error("Network error. Please check your connection.");
+    }
+    
     throw error;
   }
 };

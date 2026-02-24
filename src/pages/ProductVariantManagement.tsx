@@ -279,6 +279,16 @@ export default function ProductVariantManagement() {
                           </svg>
                         </button>
                         <button
+                          onClick={() => handleView(selectedProductId, variant.variantId)}
+                          className="text-green-600 hover:text-green-900"
+                          title="Xem chi tiết"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                          </svg>
+                        </button>
+                        <button
                           onClick={() => handleDelete(selectedProductId, variant.variantId)}
                           className="text-red-600 hover:text-red-900"
                           title="Xóa"
@@ -490,11 +500,6 @@ export default function ProductVariantManagement() {
                   }`}>
                     {viewingVariant.isActive ? 'Hoạt động' : 'Ngừng hoạt động'}
                   </span>
-                </div>
-
-                <div>
-                  <label className="block text-gray-700 text-sm font-medium mb-2">Sản phẩm</label>
-                  <p className="text-gray-900 font-medium">{getProductName(viewingVariant.productId)}</p>
                 </div>
               </div>
             </div>
