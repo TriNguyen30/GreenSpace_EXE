@@ -9,8 +9,11 @@ import {
   Store,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { logout } from "@/store/slices/authSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { logout } from "../store/slices/authSlice";
+import UserManagement from "./UserManagement";
+import ProductManagement from "./ProductManagement";
+import CategoryManagement from "./CategoryManagement";
 
 interface SidebarItemProps {
   icon: React.ReactNode;
@@ -39,8 +42,8 @@ export default function AdminDashboard() {
   const [activeSection, setActiveSection] = useState("categories");
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const navigate = useNavigate();
-  const dispatch = useAppDispatch();
-  const { user } = useAppSelector((state) => state.auth);
+  const dispatch = useDispatch();
+  const { user } = useSelector((state: any) => state.auth);
 
   const handleLogout = () => {
     dispatch(logout());
@@ -56,13 +59,13 @@ export default function AdminDashboard() {
   const renderContent = () => {
     switch (activeSection) {
       case "categories":
-        return <CategoriesContent />;
+        return <CategoryManagement />;
       case "products":
-        return <ProductsContent />;
+        return <ProductManagement />;
       case "users":
-        return <UsersContent />;
+        return <UserManagement />;
       default:
-        return <CategoriesContent />;
+        return <CategoryManagement />;
     }
   };
 
@@ -145,62 +148,4 @@ export default function AdminDashboard() {
   );
 }
 
-// Categories Content Component
-function CategoriesContent() {
-  const navigate = useNavigate();
-  
-  return (
-    <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="text-lg font-semibold text-gray-900">Quản lý danh mục</h3>
-        <button
-          onClick={() => navigate("/admin/categories")}
-          className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
-        >
-          Quản lý danh mục
-        </button>
-      </div>
-      <p className="text-gray-500">Nhấn vào nút trên để truy cập trang quản lý danh mục đầy đủ.</p>
-    </div>
-  );
-}
 
-// Products Content Component
-function ProductsContent() {
-  const navigate = useNavigate();
-  
-  return (
-    <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="text-lg font-semibold text-gray-900">Quản lý sản phẩm</h3>
-        <button
-          onClick={() => navigate("/admin/products")}
-          className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
-        >
-          Quản lý sản phẩm
-        </button>
-      </div>
-      <p className="text-gray-500">Nhấn vào nút trên để truy cập trang quản lý sản phẩm đầy đủ.</p>
-    </div>
-  );
-}
-
-// Users Content Component
-function UsersContent() {
-  const navigate = useNavigate();
-  
-  return (
-    <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="text-lg font-semibold text-gray-900">Quản lý người dùng</h3>
-        <button
-          onClick={() => navigate("/admin/users")}
-          className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
-        >
-          Quản lý người dùng
-        </button>
-      </div>
-      <p className="text-gray-500">Nhấn vào nút trên để truy cập trang quản lý người dùng đầy đủ.</p>
-    </div>
-  );
-}

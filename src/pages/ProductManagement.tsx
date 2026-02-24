@@ -26,9 +26,21 @@ export default function ProductManagement() {
     fetchCategories();
   }, []);
 
+  const getCategoryName = (categoryId: string, categoryName?: string) => {
+    // Ưu tiên sử dụng categoryName từ API nếu có
+    if (categoryName) return categoryName;
+    
+    // Fallback: tìm trong categories list nếu không có categoryName
+    if (!categoryId) return 'No category';
+    
+    const category = categories.find(cat => cat.categoryId === categoryId);
+    return category ? category.name : `Unknown (${categoryId})`;
+  };
+
   const fetchCategories = async () => {
     try {
       const data = await getCategories();
+      console.log("Categories loaded:", data);
       setCategories(data);
     } catch (error) {
       console.error("Failed to fetch categories:", error);
@@ -39,6 +51,7 @@ export default function ProductManagement() {
     try {
       setLoading(true);
       const data = await getProducts();
+      console.log("Products loaded:", data);
       setProducts(data);
     } catch (error) {
       console.error("Failed to fetch products:", error);
@@ -131,7 +144,7 @@ export default function ProductManagement() {
         </div>
         <button
           onClick={() => setIsModalOpen(true)}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-blue-700 transition-colors flex items-center"
+          className="bg-green-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-green-700 transition-colors flex items-center"
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
             <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
@@ -200,20 +213,22 @@ export default function ProductManagement() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     {(() => {
-                      const category = categories.find(cat => cat.categoryId === product.categoryId);
-                      return category ? (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                          {category.name}
+                      const categoryName = getCategoryName(product.categoryId, product.categoryName);
+                      return categoryName && categoryName !== 'No category' ? (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                          {categoryName}
                         </span>
                       ) : (
-                        <span className="text-sm text-gray-500">{product.categoryId}</span>
+                        <span className="text-sm text-gray-500 italic">
+                          {categoryName}
+                        </span>
                       );
                     })()}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <button
                       onClick={() => handleView(product)}
-                      className="text-gray-400 hover:text-gray-600 mr-3"
+                      className="text-gray-400 hover:text-green-600 mr-3"
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -222,7 +237,7 @@ export default function ProductManagement() {
                     </button>
                     <button
                       onClick={() => handleEdit(product)}
-                      className="text-gray-400 hover:text-gray-600 mr-3"
+                      className="text-gray-400 hover:text-green-600 mr-3"
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -353,7 +368,7 @@ export default function ProductManagement() {
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
                 >
                   {editingProduct ? "Update" : "Create"}
                 </button>
@@ -405,7 +420,7 @@ export default function ProductManagement() {
 
               <div>
                 <label className="text-sm font-medium text-gray-500">Category</label>
-                <p className="text-gray-900 font-medium">{viewingProduct.categoryId}</p>
+                <p className="text-gray-900 font-medium">{getCategoryName(viewingProduct.categoryId, viewingProduct.categoryName)}</p>
               </div>
 
               {viewingProduct.thumbnailUrl && (
