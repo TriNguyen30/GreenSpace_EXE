@@ -91,19 +91,90 @@ export const createProductVariant = async (productId: string, payload: CreatePro
 
 export const updateProductVariant = async (productId: string, variantId: string, payload: UpdateProductVariantPayload): Promise<ProductVariant> => {
   try {
+    console.log("Updating variant:", payload);
+    console.log("Product ID:", productId);
+    console.log("Variant ID:", variantId);
+    console.log("API URL:", `${API_BASE_URL}/products/${productId}/variants/${variantId}`);
+    
     const response = await api.put(`${API_BASE_URL}/products/${productId}/variants/${variantId}`, payload);
+    console.log("Update response status:", response.status);
+    console.log("Update response data:", response.data);
+    console.log("Update response headers:", response.headers);
+    
     return response.data;
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error updating product variant:", error);
+    
+    // Xử lý chi tiết các loại lỗi
+    if (error.response) {
+      const status = error.response.status;
+      const data = error.response.data;
+      
+      console.error("Response status:", status);
+      console.error("Response data:", data);
+      
+      if (status === 401) {
+        throw new Error("Authentication failed. Please check your login status.");
+      } else if (status === 403) {
+        throw new Error("You don't have permission to perform this action.");
+      } else if (status === 404) {
+        throw new Error("Product or variant not found.");
+      } else if (status === 400) {
+        const message = data?.message || "Invalid data provided.";
+        throw new Error(`Validation error: ${message}`);
+      }
+    }
+    
+    // Nếu là lỗi network hoặc không có response
+    if (!error.response) {
+      throw new Error("Network error. Please check your connection.");
+    }
+    
     throw error;
   }
 };
 
 export const deleteProductVariant = async (productId: string, variantId: string): Promise<void> => {
   try {
-    await api.delete(`${API_BASE_URL}/products/${productId}/variants/${variantId}`);
-  } catch (error) {
+    console.log("Deleting variant:");
+    console.log("Product ID:", productId);
+    console.log("Variant ID:", variantId);
+    console.log("API URL:", `${API_BASE_URL}/products/${productId}/variants/${variantId}`);
+    
+    const response = await api.delete(`${API_BASE_URL}/products/${productId}/variants/${variantId}`);
+    console.log("Delete response status:", response.status);
+    console.log("Delete response data:", response.data);
+    console.log("Delete response headers:", response.headers);
+    
+    return response.data;
+  } catch (error: any) {
     console.error("Error deleting product variant:", error);
+    
+    // Xử lý chi tiết các loại lỗi
+    if (error.response) {
+      const status = error.response.status;
+      const data = error.response.data;
+      
+      console.error("Response status:", status);
+      console.error("Response data:", data);
+      
+      if (status === 401) {
+        throw new Error("Authentication failed. Please check your login status.");
+      } else if (status === 403) {
+        throw new Error("You don't have permission to perform this action.");
+      } else if (status === 404) {
+        throw new Error("Product or variant not found.");
+      } else if (status === 400) {
+        const message = data?.message || "Invalid data provided.";
+        throw new Error(`Validation error: ${message}`);
+      }
+    }
+    
+    // Nếu là lỗi network hoặc không có response
+    if (!error.response) {
+      throw new Error("Network error. Please check your connection.");
+    }
+    
     throw error;
   }
 };

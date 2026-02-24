@@ -125,9 +125,10 @@ export default function ProductVariantManagement() {
   const handleDelete = async (productId: string, variantId: string) => {
     if (window.confirm("Bạn có chắc chắn muốn xóa biến thể này không?")) {
       try {
-        await deleteProductVariant(productId, variantId);
+        // Sử dụng selectedProductId thay vì productId từ variant
+        await deleteProductVariant(selectedProductId, variantId);
         notification.success({ message: "Biến thể được xóa thành công!" });
-        await fetchVariants(productId);
+        await fetchVariants(selectedProductId);
       } catch (error) {
         console.error("Failed to delete variant:", error);
         notification.error({ message: "Không thể xóa biến thể." });
@@ -278,7 +279,7 @@ export default function ProductVariantManagement() {
                           </svg>
                         </button>
                         <button
-                          onClick={() => handleDelete(variant.productId, variant.variantId)}
+                          onClick={() => handleDelete(selectedProductId, variant.variantId)}
                           className="text-red-600 hover:text-red-900"
                           title="Xóa"
                         >
