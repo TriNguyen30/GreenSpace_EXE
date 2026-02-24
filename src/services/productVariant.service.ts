@@ -1,8 +1,5 @@
-import axios from "axios";
-import { axiosConfig } from "@/config/axios.config";
+import { api } from "@/config/axios.config";
 import { ProductVariant, CreateProductVariantPayload, UpdateProductVariantPayload, UpdateStockPayload } from "@/types/productVariant";
-
-const api = axios.create(axiosConfig);
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
 
@@ -38,7 +35,9 @@ export const getProductVariants = async (productId: string): Promise<ProductVari
 
 export const getProductVariantById = async (productId: string, variantId: string): Promise<ProductVariant> => {
   try {
+    console.log(`Fetching variant: productId=${productId}, variantId=${variantId}`);
     const response = await api.get(`${API_BASE_URL}/products/${productId}/variants/${variantId}`);
+    console.log("Variant detail response:", response.data);
     return response.data;
   } catch (error) {
     console.error("Error fetching product variant:", error);
@@ -48,10 +47,44 @@ export const getProductVariantById = async (productId: string, variantId: string
 
 export const createProductVariant = async (productId: string, payload: CreateProductVariantPayload): Promise<ProductVariant> => {
   try {
+    console.log("Creating variant:", payload);
+    console.log("Product ID:", productId);
+    console.log("API URL:", `${API_BASE_URL}/products/${productId}/variants`);
+    
     const response = await api.post(`${API_BASE_URL}/products/${productId}/variants`, payload);
+    console.log("Create response status:", response.status);
+    console.log("Create response data:", response.data);
+    console.log("Create response headers:", response.headers);
+    
     return response.data;
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error creating product variant:", error);
+    
+    // Xử lý chi tiết các loại lỗi
+    if (error.response) {
+      const status = error.response.status;
+      const data = error.response.data;
+      
+      console.error("Response status:", status);
+      console.error("Response data:", data);
+      
+      if (status === 401) {
+        throw new Error("Authentication failed. Please check your login status.");
+      } else if (status === 403) {
+        throw new Error("You don't have permission to perform this action.");
+      } else if (status === 404) {
+        throw new Error("Product or variant not found.");
+      } else if (status === 400) {
+        const message = data?.message || "Invalid data provided.";
+        throw new Error(`Validation error: ${message}`);
+      }
+    }
+    
+    // Nếu là lỗi network hoặc không có response
+    if (!error.response) {
+      throw new Error("Network error. Please check your connection.");
+    }
+    
     throw error;
   }
 };
