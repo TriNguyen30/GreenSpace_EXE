@@ -394,7 +394,7 @@ export default function ProductDetail() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
-  const [mainImage, setMainImage] = useState("");
+  const [mainImage, setMainImage] = useState<string | null>(null);
   const [relatedProducts, setRelatedProducts] = useState<ApiProduct[]>([]);
   const [quantity, setQuantity] = useState(1);
   const [quantityInput, setQuantityInput] = useState("1");
@@ -418,7 +418,7 @@ export default function ProductDetail() {
         const result = await getProductById(id);
         if (cancelled || !result) { if (!cancelled) setError("Không tìm thấy sản phẩm"); return; }
         setApiProduct(result);
-        setMainImage(result.thumbnailUrl || "");
+        setMainImage(result.thumbnailUrl || null);
         const active = result.variants?.filter((v) => v.isActive) ?? [];
         setSelectedVariant(active.find((v) => v.stockQuantity > 0) ?? active[0] ?? null);
       } catch { if (!cancelled) setError("Không thể tải sản phẩm"); }
@@ -549,9 +549,15 @@ export default function ProductDetail() {
                 {/* Main image — click to open lightbox */}
                 <div
                   className="pd-main-img pd-img-wrap relative rounded-2xl overflow-hidden bg-gray-50 mb-4 aspect-[4/3]"
-                  onClick={() => openLightbox(Math.max(0, thumbnails.indexOf(mainImage)))}
+                  onClick={() => mainImage && openLightbox(Math.max(0, thumbnails.indexOf(mainImage)))}
                 >
-                  <img src={mainImage} alt={displayedName} className="w-full h-full object-cover" />
+                  {mainImage ? (
+                    <img src={mainImage} alt={displayedName} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-gray-300 text-sm">
+                      Hình ảnh đang cập nhật
+                    </div>
+                  )}
 
                   {/* Zoom hint — fades in on hover */}
                   <div className="pd-zoom-hint absolute bottom-3 left-3 flex items-center gap-1.5 bg-black/40 backdrop-blur-sm text-white/80 text-xs px-2.5 py-1.5 rounded-lg pointer-events-none">

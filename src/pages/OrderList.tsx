@@ -201,12 +201,13 @@ export default function OrderListPage() {
                 {/* ── Order list ── */}
                 <div className="ol-e2 space-y-3">
                     {orderList.map((order, i) => {
-                        const status = STATUS_MAP[order.status] ?? {
-                            label: order.status,
+                        const statusKey = (order.status ?? "").toString().toUpperCase();
+                        const status = STATUS_MAP[statusKey] ?? {
+                            label: statusKey || "—",
                             cls: "bg-gray-100 border-gray-200 text-gray-600",
                             dot: "#9ca3af",
                         };
-                        const isPending = order.status === "PENDING";
+                        const isPending = statusKey === "PENDING";
 
                         return (
                             <div

@@ -117,6 +117,9 @@ function injectStyles() {
 const formatDate = (s?: string) =>
     s ? new Date(s).toLocaleString("vi-VN", { dateStyle: "medium", timeStyle: "short" }) : "—";
 
+const formatPrice = (n?: number) =>
+    (Number(n ?? 0)).toLocaleString("vi-VN") + " ₫";
+
 // ─── Status stepper ───────────────────────────────────────────────────────────
 function StatusStepper({ status }: { status: string }) {
     if (status === "CANCELLED") return null;
@@ -127,7 +130,6 @@ function StatusStepper({ status }: { status: string }) {
             {STEPS.map((step, i) => {
                 const done = i < idx;
                 const active = i === idx;
-                const pending = i > idx;
                 const cfg = STATUS_MAP[step];
 
                 return (
@@ -298,19 +300,33 @@ export default function OrderDetailPage() {
                                 className="od-item flex items-center gap-4 py-3.5 first:pt-0 last:pb-0"
                                 style={{ animationDelay: `${0.28 + i * 0.05}s` }}>
                                 <div className="w-14 h-14 rounded-xl overflow-hidden bg-gray-50 shrink-0">
-                                    <img src={item.thumbnailUrl} alt={item.productName}
-                                        className="od-item-img w-full h-full object-cover" />
+                                    {item.thumbnailUrl ? (
+                                        <img
+                                            src={item.thumbnailUrl}
+                                            alt={item.productName}
+                                            className="od-item-img w-full h-full object-cover"
+                                        />
+                                    ) : (
+                                        <div className="w-full h-full flex items-center justify-center text-gray-300">
+                                            <Package className="w-5 h-5" />
+                                        </div>
+                                    )}
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <h4 className="text-sm font-semibold text-gray-900 line-clamp-2 leading-snug mb-1">
                                         {item.productName}
                                     </h4>
                                     <p className="text-xs text-gray-400">
-                                        {item.quantity} × {(item.unitPrice ?? 0).toLocaleString("vi-VN")} ₫
+                                        {item.quantity} × {formatPrice(item.priceAtPurchase ?? item.unitPrice)}
+                                        {item.variantSku ? <span className="ml-2 font-mono">({item.variantSku})</span> : null}
                                     </p>
                                 </div>
                                 <span className="text-sm font-bold text-gray-800 shrink-0">
-                                    {(item.totalPrice ?? 0).toLocaleString("vi-VN")} ₫
+                                    {formatPrice(
+                                        item.subTotal ??
+                                        item.totalPrice ??
+                                        (Number(item.priceAtPurchase ?? item.unitPrice ?? 0) * Number(item.quantity ?? 0))
+                                    )}
                                 </span>
                             </div>
                         ))}
@@ -331,16 +347,24 @@ export default function OrderDetailPage() {
                     <div className="max-w-xs ml-auto space-y-2.5">
                         <div className="flex justify-between text-sm text-gray-600">
                             <span>Tạm tính</span>
-                            <span className="font-semibold text-gray-800">{(currentOrder.totalAmount ?? 0).toLocaleString("vi-VN")} ₫</span>
+                            <span className="font-semibold text-gray-800">{formatPrice(currentOrder.subTotal ?? currentOrder.totalAmount)}</span>
                         </div>
+                        {!!currentOrder.discount && currentOrder.discount > 0 && (
+                            <div className="flex justify-between text-sm text-green-700">
+                                <span>Giảm giá</span>
+                                <span className="font-semibold">−{formatPrice(currentOrder.discount)}</span>
+                            </div>
+                        )}
                         <div className="flex justify-between text-sm text-gray-600">
                             <span className="flex items-center gap-1.5"><Truck className="w-3.5 h-3.5" /> Vận chuyển</span>
-                            <span className="font-semibold text-green-600">Miễn phí</span>
+                            <span className={`font-semibold ${Number(currentOrder.shippingFee ?? 0) === 0 ? "text-green-600" : "text-gray-800"}`}>
+                                {Number(currentOrder.shippingFee ?? 0) === 0 ? "Miễn phí" : formatPrice(currentOrder.shippingFee)}
+                            </span>
                         </div>
                         <div className="border-t border-gray-100 pt-2.5 flex justify-between">
                             <span className="font-bold text-gray-900">Tổng cộng</span>
                             <span className="text-xl font-black text-green-700">
-                                {(currentOrder.totalAmount ?? 0).toLocaleString("vi-VN")} ₫
+                                {formatPrice(currentOrder.finalAmount ?? currentOrder.totalAmount)}
                             </span>
                         </div>
                     </div>
