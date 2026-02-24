@@ -10,6 +10,8 @@ import { getProductById, getProducts } from "@/services/product.service";
 import type { Product as ApiProduct, ProductVariant } from "@/types/api";
 import { getActivePromotions } from "@/services/promotion.service";
 import type { Promotion } from "@/types/promotion";
+import { getProductAverageRating, getProductRatings } from "@/services/rating.service";
+import type { Rating } from "@/types/rating";
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
 const CSS = `
@@ -403,6 +405,9 @@ export default function ProductDetail() {
   const [promotions, setPromotions] = useState<Promotion[]>([]);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
+  const [ratings, setRatings] = useState<Rating[]>([]);
+  const [averageRating, setAverageRating] = useState<number | null>(null);
+  const [ratingsLoading, setRatingsLoading] = useState(false);
 
   // Scroll lên đầu trang khi vào chi tiết sản phẩm (từ Home / Product)
   useEffect(() => {
@@ -439,6 +444,41 @@ export default function ProductDetail() {
       .then((filtered) => setRelatedProducts(filtered.slice(0, 4)))
       .catch(() => setRelatedProducts([]));
   }, [apiProduct?.productId, apiProduct?.categoryName]);
+
+  // Load ratings khi đã có productId
+  useEffect(() => {
+    if (!apiProduct?.productId) {
+      setRatings([]);
+      setAverageRating(null);
+      return;
+    }
+
+    let cancelled = false;
+    (async () => {
+      try {
+        setRatingsLoading(true);
+        const [avg, list] = await Promise.all([
+          getProductAverageRating(apiProduct.productId).catch(() => null),
+          getProductRatings(apiProduct.productId).catch(() => []),
+        ]);
+        if (cancelled) return;
+        setAverageRating(avg);
+        setRatings(list);
+      } catch (e) {
+        console.error(e);
+        if (!cancelled) {
+          setAverageRating(null);
+          setRatings([]);
+        }
+      } finally {
+        if (!cancelled) setRatingsLoading(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [apiProduct?.productId]);
 
   const basePriceNumber = selectedVariant?.price ?? apiProduct?.basePrice ?? 0;
   const displayedName = apiProduct?.name ?? "";
@@ -615,8 +655,16 @@ export default function ProductDetail() {
                   <h1 className="text-3xl font-bold text-gray-900 leading-snug mb-2">{displayedName}</h1>
                   <p className="text-gray-500 text-sm leading-relaxed mb-3">{displayedDescription}</p>
                   <div className="flex items-center gap-2">
-                    <Stars />
-                    <span className="text-sm text-gray-400">(128 đánh giá)</span>
+                    <Stars rating={averageRating ?? 0} />
+                    {ratingsLoading ? (
+                      <span className="text-xs text-gray-400">Đang tải đánh giá...</span>
+                    ) : ratings.length > 0 && averageRating != null ? (
+                      <span className="text-sm text-gray-500">
+                        {averageRating.toFixed(1)} / 5 · {ratings.length} đánh giá
+                      </span>
+                    ) : (
+                      <span className="text-sm text-gray-400">Chưa có đánh giá</span>
+                    )}
                   </div>
                 </div>
 
@@ -730,12 +778,48 @@ export default function ProductDetail() {
                       "Kiểm tra độ ẩm đất trước khi tưới — tránh tưới quá nhiều.",
                       "Bón phân loãng 1–2 lần / tháng vào mùa sinh trưởng.",
                     ].map((text, i) => (
-                      <li key={i} className="flex gap-3 text-sm text-gray-600">
+                    <li key={i} className="flex gap-3 text-sm text-gray-600">
                         <span className="w-5 h-5 rounded-full bg-green-100 text-green-700 font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">{i + 1}</span>
                         {text}
                       </li>
                     ))}
                   </ol>
+                </div>
+
+                {/* Ratings list */}
+                <div className="mt-8">
+                  <SectionTitle>Đánh giá từ khách hàng</SectionTitle>
+                  {ratingsLoading && ratings.length === 0 && (
+                    <p className="text-sm text-gray-400">Đang tải đánh giá...</p>
+                  )}
+                  {!ratingsLoading && ratings.length === 0 && (
+                    <p className="text-sm text-gray-400">Chưa có đánh giá nào cho sản phẩm này.</p>
+                  )}
+                  {!ratingsLoading && ratings.length > 0 && (
+                    <div className="space-y-4">
+                      {ratings.map((r) => (
+                        <div
+                          key={r.ratingId}
+                          className="border border-gray-100 rounded-xl p-4 bg-white shadow-sm/50"
+                        >
+                          <div className="flex items-center justify-between mb-1.5">
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-semibold text-gray-800">
+                                {r.userName || "Ẩn danh"}
+                              </span>
+                              <Stars rating={r.stars} />
+                            </div>
+                            <span className="text-xs text-gray-400">
+                              {new Date(r.createdDate).toLocaleDateString("vi-VN")}
+                            </span>
+                          </div>
+                          <p className="text-sm text-gray-600 whitespace-pre-line">
+                            {r.comment || "Không có nội dung đánh giá."}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
