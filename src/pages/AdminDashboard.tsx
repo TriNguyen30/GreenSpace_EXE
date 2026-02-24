@@ -1,45 +1,106 @@
 import React, { useState } from "react";
-import { 
-  Package, 
+import {
   LogOut,
+  Boxes,
+  Package,
+  User,
   Menu,
   X,
   Store,
-  Boxes
+  ChevronDown,
+  Tag,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { logout } from "@/store/slices/authSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { logout } from "../store/slices/authSlice";
+import UserManagement from "./UserManagement";
+import ProductManagement from "./ProductManagement";
+import CategoryManagement from "./CategoryManagement";
+import ProductVariantManagement from "./ProductVariantManagement";
 
 interface SidebarItemProps {
   icon: React.ReactNode;
   label: string;
   isActive: boolean;
   onClick: () => void;
+  hasDropdown?: boolean;
+  dropdownItems?: { id: string; label: string; icon?: React.ReactNode }[];
+  onDropdownClick?: (id: string) => void;
+  productDropdownOpen?: boolean;
+  setProductDropdownOpen?: (open: boolean) => void;
+  activeSection?: string;
 }
 
-function SidebarItem({ icon, label, isActive, onClick }: SidebarItemProps) {
+function SidebarItem({ 
+  icon, 
+  label, 
+  isActive,
+  onClick, 
+  hasDropdown, 
+  dropdownItems, 
+  onDropdownClick,
+  productDropdownOpen,
+  setProductDropdownOpen,
+  activeSection
+}: SidebarItemProps) {
   return (
-    <button
-      onClick={onClick}
-      className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
-        isActive
-          ? "bg-green-100 text-green-700 font-medium"
-          : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
-      }`}
-    >
-      {icon}
-      <span>{label}</span>
-    </button>
+    <div>
+      <button
+        onClick={() => {
+          if (hasDropdown) {
+            setProductDropdownOpen?.(!productDropdownOpen);
+          } else {
+            onClick();
+          }
+        }}
+        className={`w-full flex items-center justify-between px-4 py-3 rounded-lg transition-all ${
+          isActive
+            ? "bg-green-100 text-green-700 font-medium"
+            : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+        }`}
+      >
+        <div className="flex items-center gap-3">
+          {icon}
+          <span>{label}</span>
+        </div>
+        {hasDropdown && (
+          <ChevronDown 
+            className={`w-4 h-4 transition-transform ${
+              productDropdownOpen ? 'rotate-180' : ''
+            }`} 
+          />
+        )}
+      </button>
+      
+      {hasDropdown && productDropdownOpen && dropdownItems && (
+        <div className="ml-6 mt-1 space-y-1">
+          {dropdownItems.map((item) => (
+            <button
+              key={item.id}
+              onClick={() => {
+                onDropdownClick?.(item.id);
+              }}
+              className={`w-full text-left px-4 py-2 text-sm rounded-lg transition-colors flex items-center gap-3 ${
+                activeSection === item.id ? 'bg-green-50 text-green-700' : 'text-gray-700 hover:bg-gray-100'
+              }`}
+            >
+              {item.icon && <span className="w-4 h-4">{item.icon}</span>}
+              {item.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 
 export default function AdminDashboard() {
   const [activeSection, setActiveSection] = useState("categories");
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [productDropdownOpen, setProductDropdownOpen] = useState(false);
   const navigate = useNavigate();
-  const dispatch = useAppDispatch();
-  const { user } = useAppSelector((state) => state.auth);
+  const dispatch = useDispatch();
+  const { user } = useSelector((state: any) => state.auth);
 
   const handleLogout = () => {
     dispatch(logout());
@@ -48,17 +109,31 @@ export default function AdminDashboard() {
 
   const menuItems = [
     { id: "categories", label: "Danh mục", icon: <Boxes className="w-5 h-5" /> },
-    { id: "products", label: "Sản phẩm", icon: <Package className="w-5 h-5" /> },
+    { 
+      id: "products", 
+      label: "Sản phẩm và biến thể", 
+      icon: <Package className="w-5 h-5" />,
+      hasDropdown: true,
+      dropdownItems: [
+        { id: "products", label: "Sản phẩm", icon: <Package className="w-4 h-4" /> },
+        { id: "variants", label: "Biến thể", icon: <Tag className="w-4 h-4" /> }
+      ]
+    },
+    { id: "users", label: "Người dùng", icon: <User className="w-5 h-5" /> },
   ];
 
   const renderContent = () => {
     switch (activeSection) {
       case "categories":
-        return <CategoriesContent />;
+        return <CategoryManagement />;
       case "products":
-        return <ProductsContent />;
+        return <ProductManagement />;
+      case "variants":
+        return <ProductVariantManagement />;
+      case "users":
+        return <UserManagement />;
       default:
-        return <CategoriesContent />;
+        return <CategoryManagement />;
     }
   };
 
@@ -95,7 +170,20 @@ export default function AdminDashboard() {
               icon={item.icon}
               label={item.label}
               isActive={activeSection === item.id}
-              onClick={() => setActiveSection(item.id)}
+              activeSection={activeSection}
+              onClick={() => {
+                if (item.hasDropdown) {
+                  setProductDropdownOpen(!productDropdownOpen);
+                } else {
+                  setProductDropdownOpen(false);
+                  setActiveSection(item.id);
+                }
+              }}
+              hasDropdown={item.hasDropdown}
+              dropdownItems={item.dropdownItems}
+              onDropdownClick={(id) => setActiveSection(id)}
+              productDropdownOpen={productDropdownOpen}
+              setProductDropdownOpen={setProductDropdownOpen}
             />
           ))}
         </nav>
@@ -141,32 +229,4 @@ export default function AdminDashboard() {
   );
 }
 
-// Categories Content Component
-function CategoriesContent() {
-  const navigate = useNavigate();
-  
-  return (
-    <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="text-lg font-semibold text-gray-900">Quản lý danh mục</h3>
-        <button
-          onClick={() => navigate("/admin/categories")}
-          className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
-        >
-          Quản lý danh mục
-        </button>
-      </div>
-      <p className="text-gray-500">Nhấn vào nút trên để truy cập trang quản lý danh mục đầy đủ.</p>
-    </div>
-  );
-}
 
-// Products Content Component
-function ProductsContent() {
-  return (
-    <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">Quản lý sản phẩm</h3>
-      <p className="text-gray-500">Tính năng quản lý sản phẩm sẽ được triển khai sau.</p>
-    </div>
-  );
-}

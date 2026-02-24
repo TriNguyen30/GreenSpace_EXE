@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { notification as antdNotification } from "antd";
 import {
   getCategories,
   createCategory,
@@ -7,7 +8,6 @@ import {
   getCategoryById
 } from "@/services/category.service";
 import type { Category, CreateCategoryPayload, UpdateCategoryPayload } from "@/types/category";
-import Notification, { NotificationType } from "@/components/ui/Notification";
 import {
   Plus,
   Search,
@@ -24,7 +24,6 @@ export default function CategoryManagement() {
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
-  const [notification, setNotification] = useState<{ type: NotificationType; message: string } | null>(null);
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [viewCategory, setViewCategory] = useState<Category | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -60,16 +59,16 @@ export default function CategoryManagement() {
 
       if (editingCategory) {
         await updateCategory(editingCategory.categoryId, payload as UpdateCategoryPayload);
-        setNotification({ type: "success", message: "Category updated successfully!" });
+        antdNotification.success({ message: "Category updated successfully!" });
       } else {
         await createCategory(payload);
-        setNotification({ type: "success", message: "Category created successfully!" });
+        antdNotification.success({ message: "Category created successfully!" });
       }
       await fetchCategories();
       handleCloseModal();
     } catch (error) {
       console.error("Failed to save category:", error);
-      setNotification({ type: "error", message: "Failed to save category." });
+      antdNotification.error({ message: "Failed to save category." });
     }
   };
 
@@ -87,11 +86,11 @@ export default function CategoryManagement() {
     if (window.confirm("Are you sure you want to delete this category?")) {
       try {
         await deleteCategory(id);
-        setNotification({ type: "success", message: "Category deleted successfully!" });
+        antdNotification.success({ message: "Category deleted successfully!" });
         await fetchCategories();
       } catch (error) {
         console.error("Failed to delete category:", error);
-        setNotification({ type: "error", message: "Failed to delete category." });
+        antdNotification.error({ message: "Failed to delete category." });
       }
     }
   };
@@ -109,7 +108,7 @@ export default function CategoryManagement() {
       setViewModalOpen(true);
     } catch (error) {
       console.error("Failed to fetch category details:", error);
-      setNotification({ type: "error", message: "Failed to load category details." });
+      antdNotification.error({ message: "Failed to load category details." });
     }
   };
 
@@ -129,26 +128,19 @@ export default function CategoryManagement() {
 
   return (
     <div className="min-h-screen bg-gray-50/50 p-6 space-y-6">
-      {notification && (
-        <Notification
-          type={notification.type}
-          message={notification.message}
-          onClose={() => setNotification(null)}
-        />
-      )}
 
       {/* Header Section */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 tracking-tight flex items-center gap-2">
-            <FolderTree className="w-8 h-8 text-blue-600" />
+            <FolderTree className="w-8 h-8 text-green-600" />
             Category Management
           </h1>
           <p className="text-gray-500 text-sm mt-1">Manage your product categories and hierarchy.</p>
         </div>
         <button
           onClick={() => setIsModalOpen(true)}
-          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-medium shadow-lg shadow-blue-600/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
+          className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-xl font-medium shadow-lg shadow-green-600/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
         >
           <Plus className="w-5 h-5" />
           Add Category
@@ -212,7 +204,7 @@ export default function CategoryManagement() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {category.parentName ? (
-                          <span className="flex items-center gap-1.5 text-blue-600 bg-blue-50 px-2.5 py-1 rounded-full text-xs font-medium w-fit">
+                          <span className="flex items-center gap-1.5 text-green-600 bg-green-50 px-2.5 py-1 rounded-full text-xs font-medium w-fit">
                             <ChevronRight className="w-3 h-3" />
                             {category.parentName}
                           </span>
@@ -224,14 +216,14 @@ export default function CategoryManagement() {
                         <div className="flex justify-end items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                           <button
                             onClick={() => handleView(category.categoryId)}
-                            className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                            className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
                             title="View Details"
                           >
                             <Eye className="w-4 h-4" />
                           </button>
                           <button
                             onClick={() => handleEdit(category)}
-                            className="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                            className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
                             title="Edit Category"
                           >
                             <Edit2 className="w-4 h-4" />
@@ -333,7 +325,7 @@ export default function CategoryManagement() {
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl shadow-lg shadow-blue-600/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                  className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-xl shadow-lg shadow-green-600/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
                 >
                   {editingCategory ? "Update Changes" : "Create Category"}
                 </button>

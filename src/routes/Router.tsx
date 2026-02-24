@@ -11,6 +11,8 @@ import Checkout from "@/pages/Checkout";
 import ProtectedRoute from "./ProtectedRoute";
 import AdminDashboard from "@/pages/AdminDashboard";
 import CategoryManagement from "@/pages/CategoryManagement";
+import ProductManagement from "@/pages/ProductManagement";
+import UserManagement from "@/pages/UserManagement";
 import ForgotPassword from "@/pages/ForgotPassword";
 import OrderList from "@/pages/OrderList";
 import OrderDetail from "@/pages/OrderDetail";
@@ -51,6 +53,22 @@ export default function AppRoutes() {
         element={
           <ProtectedRoute requireAdmin>
             <CategoryManagement />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/products"
+        element={
+          <ProtectedRoute requireAdmin>
+            <ProductManagement />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/users"
+        element={
+          <ProtectedRoute requireAdmin>
+            <UserManagement />
           </ProtectedRoute>
         }
       />
