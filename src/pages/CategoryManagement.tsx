@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { notification } from "antd";
+import { notification as antdNotification } from "antd";
 import {
   getCategories,
   createCategory,
@@ -59,16 +59,16 @@ export default function CategoryManagement() {
 
       if (editingCategory) {
         await updateCategory(editingCategory.categoryId, payload as UpdateCategoryPayload);
-        notification.success({ message: "Category updated successfully!" });
+        antdNotification.success({ message: "Category updated successfully!" });
       } else {
         await createCategory(payload);
-        notification.success({ message: "Category created successfully!" });
+        antdNotification.success({ message: "Category created successfully!" });
       }
       await fetchCategories();
       handleCloseModal();
     } catch (error) {
       console.error("Failed to save category:", error);
-      notification.error({ message: "Failed to save category." });
+      antdNotification.error({ message: "Failed to save category." });
     }
   };
 
@@ -86,11 +86,11 @@ export default function CategoryManagement() {
     if (window.confirm("Are you sure you want to delete this category?")) {
       try {
         await deleteCategory(id);
-        notification.success({ message: "Category deleted successfully!" });
+        antdNotification.success({ message: "Category deleted successfully!" });
         await fetchCategories();
       } catch (error) {
         console.error("Failed to delete category:", error);
-        notification.error({ message: "Failed to delete category." });
+        antdNotification.error({ message: "Failed to delete category." });
       }
     }
   };
@@ -108,7 +108,7 @@ export default function CategoryManagement() {
       setViewModalOpen(true);
     } catch (error) {
       console.error("Failed to fetch category details:", error);
-      setNotification({ type: "error", message: "Failed to load category details." });
+      antdNotification.error({ message: "Failed to load category details." });
     }
   };
 
@@ -128,13 +128,6 @@ export default function CategoryManagement() {
 
   return (
     <div className="min-h-screen bg-gray-50/50 p-6 space-y-6">
-      {notification && (
-        <Notification
-          type={notification.type}
-          message={notification.message}
-          onClose={() => setNotification(null)}
-        />
-      )}
 
       {/* Header Section */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
