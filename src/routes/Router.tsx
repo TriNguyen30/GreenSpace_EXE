@@ -17,14 +17,16 @@ import ForgotPassword from "@/pages/ForgotPassword";
 import OrderList from "@/pages/OrderList";
 import OrderDetail from "@/pages/OrderDetail";
 import PaymentResult from "@/pages/PaymentResult";
-import Loading from "@/components/ui/Loading";
-import { Suspense } from "react";
-import RouteTransition from "./RouteTransition";
+import UserProfile from "@/pages/UserProfile";
+import Tips from "@/pages/Tips";
+// import Loading from "@/components/ui/Loading";
+// import { Suspense } from "react";
+// import RouteTransition from "./RouteTransition";
 
 export default function AppRoutes() {
   return (
-    <Suspense fallback={<Loading />}>
-    <RouteTransition>
+    // <Suspense fallback={<Loading />}>
+    // <RouteTransition>
     <Routes>
       <Route element={<AppLayout />}>
         <Route path="/" element={<Home />} />
@@ -35,6 +37,8 @@ export default function AppRoutes() {
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/orders" element={<OrderList />} />
         <Route path="/orders/:id" element={<OrderDetail />} />
+        <Route path="/profile" element={<UserProfile />} />
+        <Route path="/tips" element={<Tips />} />
       </Route>
       <Route
         path="/admin"
@@ -73,7 +77,7 @@ export default function AppRoutes() {
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/payment-result" element={<PaymentResult />} />
     </Routes>
-    </RouteTransition>
-    </Suspense>
+    // </RouteTransition>
+    // </Suspense>
   );
 }

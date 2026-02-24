@@ -62,6 +62,27 @@ export interface RegisterFinalizePayload {
   address: string;
 }
 
+export interface Address {
+  addressId: string;
+  province: string;
+  district: string;
+  ward: string;
+  streetAddress: string;
+  label?: string;
+  isDefault: boolean;
+  createdAt: string;
+  updatedAt: string;
+} 
+
+export interface AddressPayload {
+  province: string;
+  district: string;
+  ward: string;
+  streetAddress: string;
+  label?: string;
+  isDefault?: boolean;
+}
+
 // Product
 export interface ProductVariant {
   variantId: string;
