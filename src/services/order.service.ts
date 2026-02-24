@@ -17,7 +17,6 @@ export const getOrderById = async (id: string): Promise<Order> => {
 
 export const createOrder = async (payload: CreateOrderPayload): Promise<Order> => {
     const res = await axiosInstance.post("/Orders", payload);
-    console.log("🔍 RAW response:", res.data);
     return res.data?.data ?? res.data;
 };
 
@@ -34,7 +33,7 @@ export const updateOrderStatus = async (
 
 export const cancelOrder = async (orderId: string): Promise<Order> => {
     const res = await axiosInstance.patch(`/Orders/${orderId}/status`, {
-        status: "CANCELLED",
+        status: "Cancelled",
     });
     return res.data.data;
 };

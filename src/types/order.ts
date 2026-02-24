@@ -4,26 +4,66 @@ export type OrderStatus =
   | "PROCESSING"
   | "SHIPPED"
   | "COMPLETED"
-  | "CANCELLED";
+  | "CANCELLED"
+  // Some BE endpoints return PascalCase
+  | "Pending"
+  | "Confirmed"
+  | "Processing"
+  | "Shipped"
+  | "Completed"
+  | "Cancelled";
+
+export type PaymentMethod = "COD" | "PayOS" | "PAYOS";
+
+export type PaymentStatus =
+  | "PENDING"
+  | "PAID"
+  | "CANCELLED"
+  | "FAILED"
+  | "Pending"
+  | "Paid"
+  | "Cancelled"
+  | "Failed";
 
 export interface OrderItem {
   productId: string;
   productName: string;
-  thumbnailUrl: string;
-  unitPrice: number;
   quantity: number;
-  totalPrice: number;
+  // New response shape
+  variantSku?: string | null;
+  priceAtPurchase?: number;
+  subTotal?: number;
+
+  // Legacy fields (kept optional for backward compatibility)
+  thumbnailUrl?: string | null;
+  unitPrice?: number;
+  totalPrice?: number;
 }
 
 export interface Order {
   orderId: string;
   createdAt: string;
   status: OrderStatus;
+
+  // Pricing
+  subTotal?: number;
+  discount?: number;
+  voucherCode?: string | null;
+  shippingFee?: number;
+  finalAmount?: number;
   totalAmount: number;
+
+  // Shipping
+  shippingAddressId?: string | null;
   shippingAddress: string;
   recipientName: string;
   recipientPhone: string;
   note?: string;
+
+  // Payment
+  paymentMethod?: PaymentMethod | string;
+  paymentStatus?: PaymentStatus | string;
+
   items: OrderItem[];
 }
 
@@ -45,6 +85,7 @@ export interface CreateOrderPayload {
   shippingAddress: string;
   recipientName: string;
   recipientPhone: string;
+  paymentMethod?: PaymentMethod | string;
   voucherCode?: string;
   note?: string;
   items: CreateOrderItemPayload[];
