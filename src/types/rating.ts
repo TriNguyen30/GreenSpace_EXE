@@ -8,3 +8,14 @@ export interface Rating {
   createdDate: string;
 }
 
+export interface RatingUpdatePayload {
+  stars: number;
+  comment: string;
+}
+
+export interface RatingCreatePayload {
+  productId: string;
+  stars: number;
+  comment: string;
+}
+

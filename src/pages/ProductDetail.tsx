@@ -10,8 +10,9 @@ import { getProductById, getProducts } from "@/services/product.service";
 import type { Product as ApiProduct, ProductVariant } from "@/types/api";
 import { getActivePromotions } from "@/services/promotion.service";
 import type { Promotion } from "@/types/promotion";
-import { getProductAverageRating, getProductRatings } from "@/services/rating.service";
+import { createRating, getProductAverageRating, getProductRatings, updateRating } from "@/services/rating.service";
 import type { Rating } from "@/types/rating";
+import { useAppSelector } from "@/store/hooks";
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
 const CSS = `
@@ -391,6 +392,7 @@ export default function ProductDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { addToCart } = useCart();
+  const authUser = useAppSelector((s) => s.auth.user);
 
   const [apiProduct, setApiProduct] = useState<ApiProduct | null>(null);
   const [loading, setLoading] = useState(false);
@@ -408,6 +410,9 @@ export default function ProductDetail() {
   const [ratings, setRatings] = useState<Rating[]>([]);
   const [averageRating, setAverageRating] = useState<number | null>(null);
   const [ratingsLoading, setRatingsLoading] = useState(false);
+  const [ratingSubmitting, setRatingSubmitting] = useState(false);
+  const [myStars, setMyStars] = useState(5);
+  const [myComment, setMyComment] = useState("");
 
   // Scroll lên đầu trang khi vào chi tiết sản phẩm (từ Home / Product)
   useEffect(() => {
@@ -446,39 +451,33 @@ export default function ProductDetail() {
   }, [apiProduct?.productId, apiProduct?.categoryName]);
 
   // Load ratings khi đã có productId
-  useEffect(() => {
+  const reloadRatings = useCallback(async () => {
     if (!apiProduct?.productId) {
       setRatings([]);
       setAverageRating(null);
       return;
     }
 
-    let cancelled = false;
-    (async () => {
-      try {
-        setRatingsLoading(true);
-        const [avg, list] = await Promise.all([
-          getProductAverageRating(apiProduct.productId).catch(() => null),
-          getProductRatings(apiProduct.productId).catch(() => []),
-        ]);
-        if (cancelled) return;
-        setAverageRating(avg);
-        setRatings(list);
-      } catch (e) {
-        console.error(e);
-        if (!cancelled) {
-          setAverageRating(null);
-          setRatings([]);
-        }
-      } finally {
-        if (!cancelled) setRatingsLoading(false);
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
+    setRatingsLoading(true);
+    try {
+      const [avg, list] = await Promise.all([
+        getProductAverageRating(apiProduct.productId).catch(() => null),
+        getProductRatings(apiProduct.productId).catch(() => []),
+      ]);
+      setAverageRating(avg);
+      setRatings(list);
+    } catch (e) {
+      console.error(e);
+      setAverageRating(null);
+      setRatings([]);
+    } finally {
+      setRatingsLoading(false);
+    }
   }, [apiProduct?.productId]);
+
+  useEffect(() => {
+    void reloadRatings();
+  }, [reloadRatings]);
 
   const basePriceNumber = selectedVariant?.price ?? apiProduct?.basePrice ?? 0;
   const displayedName = apiProduct?.name ?? "";
@@ -505,6 +504,28 @@ export default function ProductDetail() {
     }
     return imgs;
   }, [mainImage, apiProduct?.variants]);
+
+  const myExistingRating = useMemo(
+    () =>
+      authUser
+        ? ratings.find(
+            (r) =>
+              r.userName === authUser.fullName ||
+              r.userName === authUser.email,
+          )
+        : undefined,
+    [ratings, authUser],
+  );
+
+  useEffect(() => {
+    if (myExistingRating) {
+      setMyStars(myExistingRating.stars);
+      setMyComment(myExistingRating.comment ?? "");
+    } else {
+      setMyStars(5);
+      setMyComment("");
+    }
+  }, [myExistingRating?.ratingId]);
 
   function changeQuantity(delta: number) {
     setQuantity((q) => { const n = Math.max(1, q + delta); setQuantityInput(String(n)); return n; });
@@ -535,6 +556,43 @@ export default function ProductDetail() {
     };
     addToCart(cartItem, quantity);
     showToast(`Đã thêm ${quantity} ${cartItem.name} vào giỏ hàng!`);
+  }
+
+  async function handleSubmitRating() {
+    if (!apiProduct) return;
+    if (!authUser) {
+      navigate("/login");
+      return;
+    }
+
+    const trimmedComment = myComment.trim();
+    if (!trimmedComment) {
+      showToast("Vui lòng nhập nội dung đánh giá.");
+      return;
+    }
+
+    try {
+      setRatingSubmitting(true);
+      if (myExistingRating) {
+        await updateRating(myExistingRating.ratingId, {
+          stars: myStars,
+          comment: trimmedComment,
+        });
+      } else {
+        await createRating({
+          productId: apiProduct.productId,
+          stars: myStars,
+          comment: trimmedComment,
+        });
+      }
+      showToast("Đã gửi đánh giá. Cảm ơn bạn!");
+      await reloadRatings();
+    } catch (e) {
+      console.error(e);
+      showToast("Không thể gửi đánh giá. Vui lòng thử lại sau.");
+    } finally {
+      setRatingSubmitting(false);
+    }
   }
 
   if (loading && !apiProduct) {
@@ -786,9 +844,73 @@ export default function ProductDetail() {
                   </ol>
                 </div>
 
-                {/* Ratings list */}
+                {/* Ratings list & form */}
                 <div className="mt-8">
                   <SectionTitle>Đánh giá từ khách hàng</SectionTitle>
+
+                  {/* Rating form for logged-in users */}
+                  {authUser ? (
+                    <div className="mb-5 border border-gray-100 rounded-xl p-4 bg-gray-50">
+                      <p className="text-sm font-semibold text-gray-800 mb-2">
+                        Đánh giá của bạn
+                        {myExistingRating && (
+                          <span className="ml-1 text-xs text-gray-500">
+                            (bạn đã đánh giá, có thể cập nhật)
+                          </span>
+                        )}
+                      </p>
+                      <div className="flex items-center gap-1.5 mb-2">
+                        {[1, 2, 3, 4, 5].map((value) => (
+                          <button
+                            key={value}
+                            type="button"
+                            onClick={() => setMyStars(value)}
+                            className="focus:outline-none"
+                          >
+                            <Star
+                              className={`w-5 h-5 ${
+                                value <= myStars
+                                  ? "fill-yellow-400 text-yellow-400"
+                                  : "fill-gray-200 text-gray-300"
+                              }`}
+                            />
+                          </button>
+                        ))}
+                        <span className="text-xs text-gray-500 ml-1">
+                          {myStars} / 5
+                        </span>
+                      </div>
+                      <textarea
+                        value={myComment}
+                        onChange={(e) => setMyComment(e.target.value)}
+                        rows={3}
+                        className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 resize-none"
+                        placeholder="Chia sẻ cảm nhận của bạn về sản phẩm..."
+                      />
+                      <div className="mt-2 flex justify-end">
+                        <button
+                          type="button"
+                          onClick={handleSubmitRating}
+                          disabled={ratingSubmitting}
+                          className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-semibold text-white bg-green-600 hover:bg-green-700 disabled:opacity-60 disabled:cursor-not-allowed"
+                        >
+                          {ratingSubmitting ? "Đang gửi..." : myExistingRating ? "Cập nhật đánh giá" : "Gửi đánh giá"}
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-500 mb-4">
+                      Vui lòng{" "}
+                      <button
+                        type="button"
+                        onClick={() => navigate("/login")}
+                        className="text-green-600 font-semibold hover:underline"
+                      >
+                        đăng nhập
+                      </button>{" "}
+                      để đánh giá sản phẩm.
+                    </p>
+                  )}
                   {ratingsLoading && ratings.length === 0 && (
                     <p className="text-sm text-gray-400">Đang tải đánh giá...</p>
                   )}
