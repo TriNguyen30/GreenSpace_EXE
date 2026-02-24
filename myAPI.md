@@ -314,7 +314,44 @@ Schema
   "additionalProp3": "string"
 }
 
-# Products variants management
+GET
+/api/products/{productId}/variants
+
+
+Parameters
+Cancel
+Name	Description
+productId *
+string($uuid)
+(path)
+productId
+Execute
+Responses
+Code	Description	Links
+200	
+OK
+
+No links
+400	
+Bad Request
+
+Media type
+
+text/plain
+Example Value
+Schema
+{
+  "type": "string",
+  "title": "string",
+  "status": 0,
+  "detail": "string",
+  "instance": "string",
+  "additionalProp1": "string",
+  "additionalProp2": "string",
+  "additionalProp3": "string"
+}
+No links
+
 POST
 /api/products/{productId}/variants
 
@@ -402,42 +439,7 @@ Schema
   "additionalProp2": "string",
   "additionalProp3": "string"
 }
-
-GET
-/api/products/{productId}/variants
-
-
-Parameters
-Try it out
-Name	Description
-productId *
-string($uuid)
-(path)
-productId
-Responses
-Code	Description	Links
-200	
-OK
-
 No links
-400	
-Bad Request
-
-Media type
-
-text/plain
-Example Value
-Schema
-{
-  "type": "string",
-  "title": "string",
-  "status": 0,
-  "detail": "string",
-  "instance": "string",
-  "additionalProp1": "string",
-  "additionalProp2": "string",
-  "additionalProp3": "string"
-}
 
 GET
 /api/products/{productId}/variants/{variantId}
@@ -478,6 +480,7 @@ Schema
   "additionalProp2": "string",
   "additionalProp3": "string"
 }
+No links
 
 PUT
 /api/products/{productId}/variants/{variantId}
@@ -570,6 +573,7 @@ Schema
   "additionalProp2": "string",
   "additionalProp3": "string"
 }
+No links
 
 DELETE
 /api/products/{productId}/variants/{variantId}
@@ -648,6 +652,7 @@ Schema
   "additionalProp2": "string",
   "additionalProp3": "string"
 }
+No links
 
 PATCH
 /api/products/{productId}/variants/{variantId}/stock
