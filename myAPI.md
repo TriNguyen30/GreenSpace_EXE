@@ -313,7 +313,7 @@ Schema
   "additionalProp2": "string",
   "additionalProp3": "string"
 }
-
+# product variant management
 GET
 /api/products/{productId}/variants
 

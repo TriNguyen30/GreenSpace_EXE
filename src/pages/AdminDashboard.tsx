@@ -16,6 +16,7 @@ import { logout } from "../store/slices/authSlice";
 import UserManagement from "./UserManagement";
 import ProductManagement from "./ProductManagement";
 import CategoryManagement from "./CategoryManagement";
+import ProductVariantManagement from "./ProductVariantManagement";
 
 interface SidebarItemProps {
   icon: React.ReactNode;
@@ -128,14 +129,7 @@ export default function AdminDashboard() {
       case "products":
         return <ProductManagement />;
       case "variants":
-        return (
-          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">Quản lý biến thể</h3>
-            </div>
-            <p className="text-gray-500">Chức năng quản lý biến thể sẽ được phát triển sau.</p>
-          </div>
-        );
+        return <ProductVariantManagement />;
       case "users":
         return <UserManagement />;
       default:
