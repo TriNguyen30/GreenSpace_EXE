@@ -2,11 +2,16 @@ import React, { useEffect, useMemo, useState } from "react";
 import { ChevronLeft, ChevronRight, SlidersHorizontal, Package, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import { getProducts } from "@/services/product.service";
+import { getProductAverageRating, getProductRatings } from "@/services/rating.service";
 import type { Product as ApiProduct } from "@/types/api";
 import { useSearch } from "@/context/SearchContext";
 import SearchBox from "@/components/ui/Search";
 
-type ProductItem = ApiProduct & { isNew?: boolean };
+type ProductItem = ApiProduct & {
+  isNew?: boolean;
+  averageRating?: number | null;
+  ratingCount?: number;
+};
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
 const CSS = `
@@ -163,7 +168,29 @@ export default function Product() {
         setIsLoading(true);
         const api = await getProducts();
         const safe = Array.isArray(api) ? api : [];
-        setProducts(safe.map((p: ApiProduct, i: number) => ({ ...p, isNew: i < 5 })));
+
+        // Lấy rating trung bình + số lượt đánh giá cho từng sản phẩm
+        const [avgRatings, ratingLists] = await Promise.all([
+          Promise.all(
+            safe.map((p: ApiProduct) =>
+              getProductAverageRating(p.productId).catch(() => null),
+            ),
+          ),
+          Promise.all(
+            safe.map((p: ApiProduct) =>
+              getProductRatings(p.productId).catch(() => []),
+            ),
+          ),
+        ]);
+
+        setProducts(
+          safe.map((p: ApiProduct, i: number) => ({
+            ...p,
+            isNew: i < 5,
+            averageRating: avgRatings[i] ?? null,
+            ratingCount: Array.isArray(ratingLists[i]) ? ratingLists[i].length : 0,
+          })),
+        );
       } catch (e) {
         console.error(e);
         setError("Không tải được danh sách sản phẩm. Vui lòng thử lại.");
@@ -359,9 +386,19 @@ export default function Product() {
 
                   {/* Info */}
                   <div className="p-4">
-                    <h3 className="font-semibold text-gray-900 text-sm leading-snug mb-1.5 line-clamp-2">
+                    <h3 className="font-semibold text-gray-900 text-sm leading-snug mb-1 line-clamp-2">
                       {p.name}
                     </h3>
+                    {p.averageRating != null && (
+                      <p className="text-xs font-semibold text-yellow-600 mb-1 flex items-center gap-1">
+                        <span>{p.averageRating.toFixed(1)} / 5 ⭐</span>
+                        {typeof p.ratingCount === "number" && (
+                          <span className="text-[11px] font-normal text-gray-400">
+                            ({p.ratingCount} đánh giá)
+                          </span>
+                        )}
+                      </p>
+                    )}
                     <p className="text-xs text-gray-400 line-clamp-2 mb-3 leading-relaxed">
                       {p.description}
                     </p>

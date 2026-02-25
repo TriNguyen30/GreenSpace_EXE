@@ -10,6 +10,9 @@ import { getProductById, getProducts } from "@/services/product.service";
 import type { Product as ApiProduct, ProductVariant } from "@/types/api";
 import { getActivePromotions } from "@/services/promotion.service";
 import type { Promotion } from "@/types/promotion";
+import { createRating, getProductAverageRating, getProductRatings, updateRating } from "@/services/rating.service";
+import type { Rating } from "@/types/rating";
+import { useAppSelector } from "@/store/hooks";
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
 const CSS = `
@@ -389,6 +392,7 @@ export default function ProductDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { addToCart } = useCart();
+  const authUser = useAppSelector((s) => s.auth.user);
 
   const [apiProduct, setApiProduct] = useState<ApiProduct | null>(null);
   const [loading, setLoading] = useState(false);
@@ -403,6 +407,12 @@ export default function ProductDetail() {
   const [promotions, setPromotions] = useState<Promotion[]>([]);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
+  const [ratings, setRatings] = useState<Rating[]>([]);
+  const [averageRating, setAverageRating] = useState<number | null>(null);
+  const [ratingsLoading, setRatingsLoading] = useState(false);
+  const [ratingSubmitting, setRatingSubmitting] = useState(false);
+  const [myStars, setMyStars] = useState(5);
+  const [myComment, setMyComment] = useState("");
 
   // Scroll lên đầu trang khi vào chi tiết sản phẩm (từ Home / Product)
   useEffect(() => {
@@ -440,6 +450,35 @@ export default function ProductDetail() {
       .catch(() => setRelatedProducts([]));
   }, [apiProduct?.productId, apiProduct?.categoryName]);
 
+  // Load ratings khi đã có productId
+  const reloadRatings = useCallback(async () => {
+    if (!apiProduct?.productId) {
+      setRatings([]);
+      setAverageRating(null);
+      return;
+    }
+
+    setRatingsLoading(true);
+    try {
+      const [avg, list] = await Promise.all([
+        getProductAverageRating(apiProduct.productId).catch(() => null),
+        getProductRatings(apiProduct.productId).catch(() => []),
+      ]);
+      setAverageRating(avg);
+      setRatings(list);
+    } catch (e) {
+      console.error(e);
+      setAverageRating(null);
+      setRatings([]);
+    } finally {
+      setRatingsLoading(false);
+    }
+  }, [apiProduct?.productId]);
+
+  useEffect(() => {
+    void reloadRatings();
+  }, [reloadRatings]);
+
   const basePriceNumber = selectedVariant?.price ?? apiProduct?.basePrice ?? 0;
   const displayedName = apiProduct?.name ?? "";
   const displayedDescription = apiProduct?.description ?? "";
@@ -465,6 +504,28 @@ export default function ProductDetail() {
     }
     return imgs;
   }, [mainImage, apiProduct?.variants]);
+
+  const myExistingRating = useMemo(
+    () =>
+      authUser
+        ? ratings.find(
+            (r) =>
+              r.userName === authUser.fullName ||
+              r.userName === authUser.email,
+          )
+        : undefined,
+    [ratings, authUser],
+  );
+
+  useEffect(() => {
+    if (myExistingRating) {
+      setMyStars(myExistingRating.stars);
+      setMyComment(myExistingRating.comment ?? "");
+    } else {
+      setMyStars(5);
+      setMyComment("");
+    }
+  }, [myExistingRating?.ratingId]);
 
   function changeQuantity(delta: number) {
     setQuantity((q) => { const n = Math.max(1, q + delta); setQuantityInput(String(n)); return n; });
@@ -495,6 +556,43 @@ export default function ProductDetail() {
     };
     addToCart(cartItem, quantity);
     showToast(`Đã thêm ${quantity} ${cartItem.name} vào giỏ hàng!`);
+  }
+
+  async function handleSubmitRating() {
+    if (!apiProduct) return;
+    if (!authUser) {
+      navigate("/login");
+      return;
+    }
+
+    const trimmedComment = myComment.trim();
+    if (!trimmedComment) {
+      showToast("Vui lòng nhập nội dung đánh giá.");
+      return;
+    }
+
+    try {
+      setRatingSubmitting(true);
+      if (myExistingRating) {
+        await updateRating(myExistingRating.ratingId, {
+          stars: myStars,
+          comment: trimmedComment,
+        });
+      } else {
+        await createRating({
+          productId: apiProduct.productId,
+          stars: myStars,
+          comment: trimmedComment,
+        });
+      }
+      showToast("Đã gửi đánh giá. Cảm ơn bạn!");
+      await reloadRatings();
+    } catch (e) {
+      console.error(e);
+      showToast("Không thể gửi đánh giá. Vui lòng thử lại sau.");
+    } finally {
+      setRatingSubmitting(false);
+    }
   }
 
   if (loading && !apiProduct) {
@@ -621,8 +719,16 @@ export default function ProductDetail() {
                   <h1 className="text-3xl font-bold text-gray-900 leading-snug mb-2">{displayedName}</h1>
                   <p className="text-gray-500 text-sm leading-relaxed mb-3">{displayedDescription}</p>
                   <div className="flex items-center gap-2">
-                    <Stars />
-                    <span className="text-sm text-gray-400">(128 đánh giá)</span>
+                    <Stars rating={averageRating ?? 0} />
+                    {ratingsLoading ? (
+                      <span className="text-xs text-gray-400">Đang tải đánh giá...</span>
+                    ) : ratings.length > 0 && averageRating != null ? (
+                      <span className="text-sm text-gray-500">
+                        {averageRating.toFixed(1)} / 5 · {ratings.length} đánh giá
+                      </span>
+                    ) : (
+                      <span className="text-sm text-gray-400">Chưa có đánh giá</span>
+                    )}
                   </div>
                 </div>
 
@@ -736,12 +842,112 @@ export default function ProductDetail() {
                       "Kiểm tra độ ẩm đất trước khi tưới — tránh tưới quá nhiều.",
                       "Bón phân loãng 1–2 lần / tháng vào mùa sinh trưởng.",
                     ].map((text, i) => (
-                      <li key={i} className="flex gap-3 text-sm text-gray-600">
+                    <li key={i} className="flex gap-3 text-sm text-gray-600">
                         <span className="w-5 h-5 rounded-full bg-green-100 text-green-700 font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">{i + 1}</span>
                         {text}
                       </li>
                     ))}
                   </ol>
+                </div>
+
+                {/* Ratings list & form */}
+                <div className="mt-8">
+                  <SectionTitle>Đánh giá từ khách hàng</SectionTitle>
+
+                  {/* Rating form for logged-in users */}
+                  {authUser ? (
+                    <div className="mb-5 border border-gray-100 rounded-xl p-4 bg-gray-50">
+                      <p className="text-sm font-semibold text-gray-800 mb-2">
+                        Đánh giá của bạn
+                        {myExistingRating && (
+                          <span className="ml-1 text-xs text-gray-500">
+                            (bạn đã đánh giá, có thể cập nhật)
+                          </span>
+                        )}
+                      </p>
+                      <div className="flex items-center gap-1.5 mb-2">
+                        {[1, 2, 3, 4, 5].map((value) => (
+                          <button
+                            key={value}
+                            type="button"
+                            onClick={() => setMyStars(value)}
+                            className="focus:outline-none"
+                          >
+                            <Star
+                              className={`w-5 h-5 ${
+                                value <= myStars
+                                  ? "fill-yellow-400 text-yellow-400"
+                                  : "fill-gray-200 text-gray-300"
+                              }`}
+                            />
+                          </button>
+                        ))}
+                        <span className="text-xs text-gray-500 ml-1">
+                          {myStars} / 5
+                        </span>
+                      </div>
+                      <textarea
+                        value={myComment}
+                        onChange={(e) => setMyComment(e.target.value)}
+                        rows={3}
+                        className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 resize-none"
+                        placeholder="Chia sẻ cảm nhận của bạn về sản phẩm..."
+                      />
+                      <div className="mt-2 flex justify-end">
+                        <button
+                          type="button"
+                          onClick={handleSubmitRating}
+                          disabled={ratingSubmitting}
+                          className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-semibold text-white bg-green-600 hover:bg-green-700 disabled:opacity-60 disabled:cursor-not-allowed"
+                        >
+                          {ratingSubmitting ? "Đang gửi..." : myExistingRating ? "Cập nhật đánh giá" : "Gửi đánh giá"}
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-500 mb-4">
+                      Vui lòng{" "}
+                      <button
+                        type="button"
+                        onClick={() => navigate("/login")}
+                        className="text-green-600 font-semibold hover:underline"
+                      >
+                        đăng nhập
+                      </button>{" "}
+                      để đánh giá sản phẩm.
+                    </p>
+                  )}
+                  {ratingsLoading && ratings.length === 0 && (
+                    <p className="text-sm text-gray-400">Đang tải đánh giá...</p>
+                  )}
+                  {!ratingsLoading && ratings.length === 0 && (
+                    <p className="text-sm text-gray-400">Chưa có đánh giá nào cho sản phẩm này.</p>
+                  )}
+                  {!ratingsLoading && ratings.length > 0 && (
+                    <div className="space-y-4">
+                      {ratings.map((r) => (
+                        <div
+                          key={r.ratingId}
+                          className="border border-gray-100 rounded-xl p-4 bg-white shadow-sm/50"
+                        >
+                          <div className="flex items-center justify-between mb-1.5">
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-semibold text-gray-800">
+                                {r.userName || "Ẩn danh"}
+                              </span>
+                              <Stars rating={r.stars} />
+                            </div>
+                            <span className="text-xs text-gray-400">
+                              {new Date(r.createdDate).toLocaleDateString("vi-VN")}
+                            </span>
+                          </div>
+                          <p className="text-sm text-gray-600 whitespace-pre-line">
+                            {r.comment || "Không có nội dung đánh giá."}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
