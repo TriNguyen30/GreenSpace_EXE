@@ -202,8 +202,8 @@ export default function Navbar() {
                 { label: "Tin tức", value: "news", onClick: () => navigateWithScroll("/news") },
                 { label: "Loài hoa", value: "flowers", onClick: () => navigateWithScroll("/product") },
                 { label: "Kiến thức – mẹo vặt", value: "tips", onClick: () => navigateWithScroll("/tips") },
-                { label: "Khuyến mãi", value: "sale", onClick: () => navigateWithScroll("/sale") },
-                { label: "Tuyển dụng", value: "jobs", onClick: () => navigateWithScroll("/jobs") },
+                // { label: "Khuyến mãi", value: "sale", onClick: () => navigateWithScroll("/sale") },
+                // { label: "Tuyển dụng", value: "jobs", onClick: () => navigateWithScroll("/jobs") },
               ]}
             />
 
