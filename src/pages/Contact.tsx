@@ -360,12 +360,12 @@ export default function Contact() {
                   </div>
                 </Field>
 
-                <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:justify-between pt-1 border-t border-gray-100">
-                  <p className="text-xs text-gray-400 leading-relaxed max-w-sm">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:justify-between pt-1 border-t border-gray-200">
+                  <p className="text-xs text-gray-400 leading-relaxed max-w-sm mt-2">
                     Bằng cách gửi, bạn đồng ý để chúng tôi liên hệ qua email hoặc số điện thoại đã cung cấp.
                   </p>
                   <button type="submit" disabled={!canSubmit}
-                    className="ct-submit inline-flex items-center justify-center gap-2 rounded-xl bg-green-600 px-6 py-3 text-sm font-bold text-white shrink-0">
+                    className="ct-submit inline-flex items-center justify-center gap-2 rounded-xl bg-green-600 px-6 py-3 text-sm font-bold text-white shrink-0 mt-2">
                     {submitting
                       ? <><Loader2 className="w-4 h-4 animate-spin" /> Đang gửi...</>
                       : <><Send className="w-4 h-4" /> Gửi liên hệ</>}
@@ -374,7 +374,7 @@ export default function Contact() {
               </form>
 
               {/* Quick contact */}
-              <div className="mt-7 pt-6 border-t border-gray-100">
+              {/* <div className="mt-7 pt-6 border-t border-gray-100">
                 <p className="text-xs font-bold text-gray-400 tracking-widest uppercase mb-3">Kênh nhanh</p>
                 <div className="flex flex-wrap gap-3 text-sm">
                   <a href="mailto:support@greenspace.vn"
@@ -386,7 +386,7 @@ export default function Contact() {
                     <Phone className="w-4 h-4" /> 0900 111 222
                   </a>
                 </div>
-              </div>
+              </div> */}
             </div>
           </div>
         </div>
