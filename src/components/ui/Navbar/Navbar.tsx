@@ -6,7 +6,7 @@ import Logo from "@/assets/image/Logo.png";
 import CartDropdown from "../CartDropdown";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import { logout } from "@/store/slices/authSlice";
-
+import { axiosInstance } from "@/lib/axios";
 
 // ─── Inject styles ────────────────────────────────────────────────────────────
 const STYLES = `
@@ -26,7 +26,6 @@ const STYLES = `
   .nb-dropdown  { animation: nb-dropdown-in .22s cubic-bezier(.22,.68,0,1.1) both; }
   .nb-mobile-menu { animation: nb-mobile-in .25s ease both; }
 
-  /* Frosted glass when scrolled */
   .nb-header {
     transition: background .3s ease, box-shadow .3s ease, backdrop-filter .3s ease;
   }
@@ -37,7 +36,6 @@ const STYLES = `
     box-shadow: 0 1px 0 rgba(0,0,0,.06), 0 4px 24px rgba(0,0,0,.06);
   }
 
-  /* Nav link animated underline */
   .nb-navlink {
     position: relative;
     transition: color .2s;
@@ -58,7 +56,6 @@ const STYLES = `
   .nb-navlink:hover  { color: #16a34a; }
   .nb-navlink.active { color: #16a34a; font-weight: 600; }
 
-  /* Login button */
   .nb-login-btn {
     background: linear-gradient(135deg, #16a34a, #22c55e);
     transition: transform .2s cubic-bezier(.34,1.56,.64,1), box-shadow .2s, filter .2s;
@@ -70,35 +67,29 @@ const STYLES = `
   }
   .nb-login-btn:active { transform: scale(.97); }
 
-  /* User avatar button */
   .nb-avatar-btn {
     transition: background .2s, transform .2s;
   }
   .nb-avatar-btn:hover { background: #f0fdf4; transform: scale(1.04); }
   .nb-avatar-btn:active { transform: scale(.96); }
 
-  /* Avatar ring pulse when open */
   .nb-avatar-ring {
     animation: nb-avatar-ring 1.8s ease-in-out infinite;
   }
 
-  /* Dropdown menu item */
   .nb-menu-item {
     transition: background .15s, color .15s, padding-left .15s;
   }
   .nb-menu-item:hover { padding-left: 20px; }
 
-  /* Logo */
   .nb-logo {
     transition: transform .25s cubic-bezier(.34,1.56,.64,1), filter .2s;
   }
   .nb-logo:hover { transform: scale(1.08) rotate(-3deg); filter: drop-shadow(0 2px 8px rgba(22,163,74,.3)); }
 
-  /* Mobile menu toggle */
   .nb-hamburger { transition: transform .2s ease; }
   .nb-hamburger:hover { transform: scale(1.1); }
 
-  /* Chevron */
   .nb-chevron { transition: transform .25s cubic-bezier(.34,1.56,.64,1); }
   .nb-chevron.open { transform: rotate(180deg); }
 `;
@@ -112,7 +103,7 @@ function injectNavStyles() {
   document.head.appendChild(tag);
 }
 
-// ─── Initials helper ──────────────────────────────────────────────────────────
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 function getInitials(name?: string, email?: string): string {
   if (name) {
     const parts = name.trim().split(" ");
@@ -120,6 +111,14 @@ function getInitials(name?: string, email?: string): string {
     return parts[0][0].toUpperCase();
   }
   return email ? email[0].toUpperCase() : "U";
+}
+
+function buildFullName(item: any): string {
+  if (item?.fullName) return item.fullName;
+  const first = item?.firstName || "";
+  const last = item?.lastName || "";
+  const combined = `${first} ${last}`.trim();
+  return combined || item?.email?.split("@")[0] || "Khách hàng";
 }
 
 // ─── Main component ───────────────────────────────────────────────────────────
@@ -134,9 +133,43 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
+  // Profile fetched from /Users/me — more reliable than Redux store data
+  const [profileName, setProfileName] = useState<string>("");
+  const [profileEmail, setProfileEmail] = useState<string>("");
+
   const userMenuRef = useRef<HTMLDivElement>(null);
 
-  // Scroll detection for frosted glass
+  // Fetch real name from /Users/me whenever user logs in
+  useEffect(() => {
+    if (!token) {
+      setProfileName("");
+      setProfileEmail("");
+      return;
+    }
+
+    axiosInstance
+      .get("/Users/me")
+      .then((res) => {
+        const body = res.data;
+        const data = body?.data ?? body; // handle both { data: {...} } and raw object
+        setProfileName(buildFullName(data));
+        setProfileEmail(data?.email || "");
+      })
+      .catch(() => {
+        // Fallback to Redux store values if API fails
+        setProfileName(buildFullName(user));
+        setProfileEmail(user?.email || "");
+      });
+  }, [token]); // re-fetch only when token changes (login/logout)
+
+  // Derived display values — prefer fetched data, fallback to Redux store
+  const displayName = profileName || buildFullName(user) || "Khách hàng";
+  const displayEmail = profileEmail || user?.email || "";
+  const initials = getInitials(displayName, displayEmail);
+  // Show first name only in the button (last word for Vietnamese names like "Nguyễn Văn Tri" → "Tri")
+  const shortName = displayName.split(" ").pop() || displayName;
+
+  // Scroll detection
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
     window.addEventListener("scroll", onScroll, { passive: true });
@@ -154,25 +187,17 @@ export default function Navbar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Scroll to top helper
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
+  const scrollToTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
 
-  // Navigate with scroll to top
   const navigateWithScroll = (path: string) => {
     navigate(path);
     scrollToTop();
   };
 
-  // Close mobile menu on navigate
   const goTo = (path: string) => {
     setMobileOpen(false);
     navigateWithScroll(path);
   };
-
-  const initials = getInitials(user?.fullName, user?.email);
-  const displayName = user?.fullName || user?.email || "Khách hàng";
 
   return (
     <header className={`nb-header bg-white fixed top-0 left-0 w-full z-50 ${scrolled ? "scrolled" : ""}`}>
@@ -202,8 +227,6 @@ export default function Navbar() {
                 { label: "Tin tức", value: "news", onClick: () => navigateWithScroll("/news") },
                 { label: "Loài hoa", value: "flowers", onClick: () => navigateWithScroll("/product") },
                 { label: "Kiến thức – mẹo vặt", value: "tips", onClick: () => navigateWithScroll("/tips") },
-                // { label: "Khuyến mãi", value: "sale", onClick: () => navigateWithScroll("/sale") },
-                // { label: "Tuyển dụng", value: "jobs", onClick: () => navigateWithScroll("/jobs") },
               ]}
             />
 
@@ -229,7 +252,6 @@ export default function Navbar() {
             <CartDropdown />
 
             {token && user ? (
-              /* User menu */
               <div className="relative" ref={userMenuRef}>
                 <button
                   type="button"
@@ -238,16 +260,15 @@ export default function Navbar() {
                   aria-expanded={userMenuOpen}
                   aria-haspopup="true"
                 >
-                  {/* Avatar circle with initials */}
                   <span
                     className={`w-8 h-8 flex items-center justify-center rounded-full bg-gradient-to-br from-green-400 to-green-600 text-white text-sm font-bold select-none shrink-0 ${userMenuOpen ? "nb-avatar-ring" : ""}`}
                   >
                     {initials}
                   </span>
 
-                  {/* Name — hidden on small screens */}
+                  {/* Show proper first/last name in navbar */}
                   <span className="hidden lg:block text-sm font-medium text-gray-700 max-w-[96px] truncate">
-                    {displayName.split(" ")[0]}
+                    {shortName}
                   </span>
 
                   <ChevronDown className={`nb-chevron w-4 h-4 text-gray-400 ${userMenuOpen ? "open" : ""}`} />
@@ -264,7 +285,7 @@ export default function Navbar() {
                         </span>
                         <div className="min-w-0">
                           <p className="text-sm font-semibold text-gray-900 truncate">{displayName}</p>
-                          <p className="text-xs text-gray-400 truncate">{"Khách hàng"}</p>
+                          <p className="text-xs text-gray-400 truncate">{displayEmail}</p>
                         </div>
                       </div>
                     </div>
@@ -308,7 +329,6 @@ export default function Navbar() {
                 )}
               </div>
             ) : (
-              /* Login button */
               <button
                 className="nb-login-btn text-white text-sm font-semibold px-5 py-2 rounded-xl cursor-pointer"
                 onClick={() => navigateWithScroll("/login")}
