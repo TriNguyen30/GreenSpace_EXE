@@ -19,6 +19,8 @@ import OrderDetail from "@/pages/OrderDetail";
 import PaymentResult from "@/pages/PaymentResult";
 import UserProfile from "@/pages/UserProfile";
 import Tips from "@/pages/Tips";
+import News from "@/pages/News";
+import NewDetail from "@/pages/NewDetail";
 // import Loading from "@/components/ui/Loading";
 // import { Suspense } from "react";
 // import RouteTransition from "./RouteTransition";
@@ -39,6 +41,8 @@ export default function AppRoutes() {
         <Route path="/orders/:id" element={<OrderDetail />} />
         <Route path="/profile" element={<UserProfile />} />
         <Route path="/tips" element={<Tips />} />
+        <Route path="/news" element={<News />} />
+        <Route path="/news/:id" element={<NewDetail />} />
       </Route>
       <Route
         path="/admin"
