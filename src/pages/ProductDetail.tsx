@@ -509,10 +509,10 @@ export default function ProductDetail() {
     () =>
       authUser
         ? ratings.find(
-            (r) =>
-              r.userName === authUser.fullName ||
-              r.userName === authUser.email,
-          )
+          (r) =>
+            r.userName === authUser.fullName ||
+            r.userName === authUser.email,
+        )
         : undefined,
     [ratings, authUser],
   );
@@ -757,7 +757,7 @@ export default function ProductDetail() {
                         const oos = v.stockQuantity === 0;
                         return (
                           <button key={v.variantId} onClick={() => !oos && setSelectedVariant(v)} disabled={oos}
-                            className={`pd-variant relative px-4 py-2 rounded-xl border-2 text-sm font-medium ${isSelected ? "border-green-500 bg-green-50 text-green-700 shadow-sm" : oos ? "border-gray-100 bg-gray-50 text-gray-300 cursor-not-allowed" : "border-gray-200 bg-white text-gray-700 hover:border-green-300"}`}>
+                            className={`pd-variant relative px-4 py-2 rounded-xl border-2 text-sm font-medium ${isSelected ? "border-green-500 bg-green-50 text-green-700 shadow-sm" : oos ? "border-gray-100 bg-gray-50 text-gray-300 cursor-not-allowed" : "border-gray-200 bg-white text-gray-700 hover:border-green-300 cursor-pointer"}`}>
                             {v.sizeOrModel ?? v.sku}
                             {oos && <span className="ml-1 text-xs text-gray-300">(hết)</span>}
                             {isSelected && <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-green-500 rounded-full flex items-center justify-center"><Check className="w-2.5 h-2.5 text-white" strokeWidth={3} /></span>}
@@ -778,19 +778,19 @@ export default function ProductDetail() {
 
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mb-6">
                   <div className="flex items-center border-2 border-gray-200 rounded-xl overflow-hidden bg-white shrink-0 w-fit">
-                    <button onClick={() => changeQuantity(-1)} className="pd-qty-btn px-3 py-2.5 text-gray-500"><Minus className="w-4 h-4" /></button>
+                    <button onClick={() => changeQuantity(-1)} className="pd-qty-btn px-3 py-2.5 text-gray-500 cursor-pointer"><Minus className="w-4 h-4" /></button>
                     <input type="number" min={1} value={quantityInput}
                       onChange={(e) => { const r = e.target.value; if (!/^\d*$/.test(r)) return; setQuantityInput(r); if (r) setQuantity(Math.max(1, Number(r))); }}
                       onBlur={() => setQuantityInput((c) => (c && Number(c) >= 1 ? c : String(Math.max(1, quantity))))}
                       className="w-12 py-2.5 bg-transparent text-sm font-bold text-center border-0 outline-none [-moz-appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                     />
-                    <button onClick={() => changeQuantity(1)} className="pd-qty-btn px-3 py-2.5 text-gray-500"><Plus className="w-4 h-4" /></button>
+                    <button onClick={() => changeQuantity(1)} className="pd-qty-btn px-3 py-2.5 text-gray-500 cursor-pointer"><Plus className="w-4 h-4" /></button>
                   </div>
                   <div className="flex gap-2 flex-1">
-                    <button onClick={handleAddToCart} className="pd-cta-primary flex-1 inline-flex items-center justify-center gap-2 text-white px-5 py-2.5 rounded-xl font-semibold text-sm">
+                    <button onClick={handleAddToCart} className="pd-cta-primary flex-1 inline-flex items-center justify-center gap-2 text-white px-5 py-2.5 rounded-xl font-semibold text-sm cursor-pointer">
                       <ShoppingCart className="w-4 h-4" /> Thêm vào giỏ
                     </button>
-                    <button onClick={() => { handleAddToCart(); navigate("/checkout"); }} className="pd-cta-secondary px-5 py-2.5 border-2 border-green-600 text-green-700 rounded-xl font-semibold text-sm">
+                    <button onClick={() => { handleAddToCart(); navigate("/checkout"); }} className="pd-cta-secondary px-5 py-2.5 border-2 border-green-600 text-green-700 rounded-xl font-semibold text-sm cursor-pointer">
                       Mua ngay
                     </button>
                   </div>
@@ -842,7 +842,7 @@ export default function ProductDetail() {
                       "Kiểm tra độ ẩm đất trước khi tưới — tránh tưới quá nhiều.",
                       "Bón phân loãng 1–2 lần / tháng vào mùa sinh trưởng.",
                     ].map((text, i) => (
-                    <li key={i} className="flex gap-3 text-sm text-gray-600">
+                      <li key={i} className="flex gap-3 text-sm text-gray-600">
                         <span className="w-5 h-5 rounded-full bg-green-100 text-green-700 font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">{i + 1}</span>
                         {text}
                       </li>
@@ -874,11 +874,10 @@ export default function ProductDetail() {
                             className="focus:outline-none"
                           >
                             <Star
-                              className={`w-5 h-5 ${
-                                value <= myStars
+                              className={`w-5 h-5 ${value <= myStars
                                   ? "fill-yellow-400 text-yellow-400"
                                   : "fill-gray-200 text-gray-300"
-                              }`}
+                                }`}
                             />
                           </button>
                         ))}
@@ -898,7 +897,7 @@ export default function ProductDetail() {
                           type="button"
                           onClick={handleSubmitRating}
                           disabled={ratingSubmitting}
-                          className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-semibold text-white bg-green-600 hover:bg-green-700 disabled:opacity-60 disabled:cursor-not-allowed"
+                          className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-semibold text-white bg-green-600 hover:bg-green-700 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
                         >
                           {ratingSubmitting ? "Đang gửi..." : myExistingRating ? "Cập nhật đánh giá" : "Gửi đánh giá"}
                         </button>

@@ -216,7 +216,7 @@ export default function CartPage() {
             {items.length > 0 && (
               <button
                 onClick={() => setClearAllModalOpen(true)}
-                className="cp-clear-btn inline-flex items-center gap-1.5 text-sm font-medium text-gray-400"
+                className="cp-clear-btn inline-flex items-center gap-1.5 text-sm font-medium text-gray-400 cursor-pointer"
               >
                 <Trash2 className="w-4 h-4" />
                 Xóa tất cả
@@ -237,7 +237,7 @@ export default function CartPage() {
             </p>
             <button
               onClick={() => navigate("/product")}
-              className="cp-checkout-btn inline-flex items-center gap-2 text-white px-8 py-3 rounded-xl font-semibold text-sm cu"
+              className="cp-checkout-btn inline-flex items-center gap-2 text-white px-8 py-3 rounded-xl font-semibold text-sm cursor-pointer"
             >
               <ShoppingCart className="w-4 h-4" />
               Khám phá sản phẩm
@@ -283,7 +283,7 @@ export default function CartPage() {
                           </div>
                           <button
                             onClick={() => handleRemove(item.id)}
-                            className="cp-remove p-1.5 rounded-lg text-gray-300"
+                            className="cp-remove p-1.5 rounded-lg text-gray-300 cursor-pointer"
                             aria-label="Xóa"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -474,14 +474,14 @@ export default function CartPage() {
             <button
               type="button"
               onClick={() => setClearAllModalOpen(false)}
-              className="px-4 py-2.5 rounded-xl font-semibold text-sm text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors"
+              className="px-4 py-2.5 rounded-xl font-semibold text-sm text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors cursor-pointer"
             >
               Hủy
             </button>
             <button
               type="button"
               onClick={() => { clearCart(); setClearAllModalOpen(false); }}
-              className="px-4 py-2.5 rounded-xl font-semibold text-sm text-white bg-red-600 hover:bg-red-700 transition-colors inline-flex items-center gap-2"
+              className="px-4 py-2.5 rounded-xl font-semibold text-sm text-white bg-red-600 hover:bg-red-700 transition-colors inline-flex items-center gap-2 cursor-pointer"
             >
               <Trash2 className="w-4 h-4" />
               Xóa tất cả
