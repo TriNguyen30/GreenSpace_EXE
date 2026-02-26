@@ -2,11 +2,13 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
     User, Mail, Package, KeyRound, LogOut, ChevronRight, Shield,
-    Phone, MapPin, Calendar, Clock, Hash, Home, Info, CheckCircle, XCircle,
+    Phone, MapPin, Home, Info, CheckCircle, XCircle,
+    Pencil, Loader2, X, Save,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { logout } from "@/store/slices/authSlice";
 import { axiosInstance } from "@/lib/axios";
+import { updateUser } from "@/services/user.service";
 import type { User as UserType, ApiResponse } from "@/types/user";
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
@@ -73,6 +75,15 @@ const CSS = `
     border-radius:50%;
     animation:up-spinner .8s linear infinite;
   }
+
+  .up-input {
+    transition: border-color .2s, box-shadow .2s;
+  }
+  .up-input:focus {
+    border-color: #16a34a;
+    box-shadow: 0 0 0 3px rgba(22,163,74,.12);
+    outline: none;
+  }
 `;
 
 function injectStyles() {
@@ -92,21 +103,6 @@ function getInitials(name?: string, email?: string) {
         return parts[0][0].toUpperCase();
     }
     return email ? email[0].toUpperCase() : "U";
-}
-
-function formatDate(iso: string) {
-    try {
-        return new Date(iso).toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" });
-    } catch { return iso; }
-}
-
-function formatDateTime(iso: string) {
-    try {
-        return new Date(iso).toLocaleString("vi-VN", {
-            day: "2-digit", month: "2-digit", year: "numeric",
-            hour: "2-digit", minute: "2-digit",
-        });
-    } catch { return iso; }
 }
 
 function mapResponseToUser(item: any): UserType {
@@ -131,6 +127,27 @@ function mapResponseToUser(item: any): UserType {
         birthday: item.birthday || null,
         status: item.status || null,
         isActive: item.isActive ?? true,
+    };
+}
+
+type EditFormState = {
+    firstName: string;
+    lastName: string;
+    phoneNumber: string;
+    editAddress: string;
+    additionalAddress: string;
+};
+
+function profileToEditForm(p: UserType): EditFormState {
+    const parts = (p.fullName || "").trim().split(/\s+/);
+    const firstName = p.firstName || (parts.length > 0 ? parts[0] : "");
+    const lastName = p.lastName || (parts.length > 1 ? parts.slice(1).join(" ") : parts.length === 1 ? "" : "");
+    return {
+        firstName,
+        lastName,
+        phoneNumber: p.phoneNumber ?? "",
+        editAddress: p.editAddress ?? p.address ?? "",
+        additionalAddress: p.additionalAddress ?? "",
     };
 }
 
@@ -192,6 +209,17 @@ export default function UserProfile() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
+    const [editing, setEditing] = useState(false);
+    const [form, setForm] = useState<EditFormState>({
+        firstName: "",
+        lastName: "",
+        phoneNumber: "",
+        editAddress: "",
+        additionalAddress: "",
+    });
+    const [saving, setSaving] = useState(false);
+    const [saveError, setSaveError] = useState<string | null>(null);
+
     useEffect(() => {
         if (!token) {
             navigate("/login", { replace: true });
@@ -221,6 +249,49 @@ export default function UserProfile() {
 
         fetchProfile();
     }, [token, navigate]);
+
+    // Sync edit form when entering edit mode
+    useEffect(() => {
+        if (profile && editing) {
+            setForm(profileToEditForm(profile));
+        }
+    }, [editing, profile]);
+
+    const startEditing = () => {
+        if (profile) {
+            setForm(profileToEditForm(profile));
+            setSaveError(null);
+            setEditing(true);
+        }
+    };
+
+    const cancelEditing = () => {
+        setEditing(false);
+        setSaveError(null);
+    };
+
+    const handleSaveProfile = async () => {
+        if (!profile) return;
+        setSaving(true);
+        setSaveError(null);
+        try {
+            const fullName = `${form.firstName.trim()} ${form.lastName.trim()}`.trim() || profile.fullName;
+            const updated = await updateUser(profile.userId || profile.id, {
+                email: profile.email,
+                fullName,
+                phoneNumber: form.phoneNumber.trim() || "",
+                editAddress: form.editAddress.trim() || "",
+                additionalAddress: form.additionalAddress.trim() || "",
+            });
+            setProfile(mapResponseToUser({ ...updated, userId: updated.userId || updated.id }));
+            setEditing(false);
+        } catch (err) {
+            console.error("Failed to update profile:", err);
+            setSaveError("Không thể cập nhật. Vui lòng thử lại.");
+        } finally {
+            setSaving(false);
+        }
+    };
 
     const handleLogout = () => {
         dispatch(logout());
@@ -312,50 +383,130 @@ export default function UserProfile() {
 
                 {/* ── All User Info ── */}
                 <div className="up-details bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-5">
-                    <div className="px-5 py-3 border-b border-gray-50 flex items-center gap-2">
-                        <Info className="w-3.5 h-3.5 text-green-500" />
-                        <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                            Thông tin chi tiết
-                        </span>
+                    <div className="px-5 py-3 border-b border-gray-50 flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                            <Info className="w-3.5 h-3.5 text-green-500" />
+                            <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                Thông tin chi tiết
+                            </span>
+                        </div>
+                        {!editing ? (
+                            <button
+                                type="button"
+                                onClick={startEditing}
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-green-600 bg-green-50 border border-green-200 hover:bg-green-100 transition-colors"
+                            >
+                                <Pencil className="w-3.5 h-3.5" />
+                                Chỉnh sửa
+                            </button>
+                        ) : null}
                     </div>
 
-                    <div className="divide-y divide-gray-50">
-                        {/* <InfoRow icon={Hash} label="User ID" value={profile.userId} mono /> */}
-                        <InfoRow icon={Mail} label="Email" value={profile.email} />
-                        <InfoRow icon={User} label="Họ (Last name)" value={profile.lastName || "—"} />
-                        <InfoRow icon={User} label="Tên (First name)" value={profile.firstName || "—"} />
-                        <InfoRow icon={Phone} label="Số điện thoại" value={profile.phoneNumber ?? "—"} />
-                        {/* <InfoRow icon={MapPin} label="Địa chỉ" value={profile.address ?? "—"} /> */}
-                        {/* <InfoRow icon={Home} label="Địa chỉ bổ sung" value={profile.additionalAddress || "—"} /> */}
-                        {/* <InfoRow icon={Calendar} label="Ngày sinh" value={profile.birthday ? formatDate(profile.birthday) : "—"} /> */}
-                        {/* <InfoRow
-                            icon={Shield}
-                            label="Vai trò"
-                            value={profile.role}
-                            badge
-                            badgeGreen={!isAdmin}
-                        /> */}
-                        <InfoRow
-                            icon={CheckCircle}
-                            label="Trạng thái tài khoản"
-                            value={profile.isActive ? "Đang hoạt động" : "Đã bị khóa"}
-                            badge
-                            badgeGreen={profile.isActive}
-                        />
-                        {/* {profile.status && (
-                            <InfoRow icon={Info} label="Status" value={profile.status} />
-                        )}
-                        <InfoRow
-                            icon={Clock}
-                            label="Ngày tạo tài khoản"
-                            value={profile.createdAt ? formatDateTime(profile.createdAt) : "—"}
-                        />
-                        <InfoRow
-                            icon={Clock}
-                            label="Cập nhật lần cuối"
-                            value={profile.updatedAt ? formatDateTime(profile.updatedAt) : "—"}
-                        /> */}
-                    </div>
+                    {editing ? (
+                        <div className="p-5 space-y-4">
+                            {saveError && (
+                                <p className="text-sm text-red-500 bg-red-50 border border-red-100 px-3 py-2 rounded-lg">
+                                    {saveError}
+                                </p>
+                            )}
+                            <div>
+                                <label className="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">
+                                    Họ
+                                </label>
+                                <input
+                                    type="text"
+                                    value={form.lastName}
+                                    onChange={(e) => setForm((f) => ({ ...f, lastName: e.target.value }))}
+                                    className="up-input w-full px-4 py-2.5 text-sm border border-gray-200 rounded-xl bg-gray-50"
+                                    placeholder="Nhập họ"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">
+                                    Tên
+                                </label>
+                                <input
+                                    type="text"
+                                    value={form.firstName}
+                                    onChange={(e) => setForm((f) => ({ ...f, firstName: e.target.value }))}
+                                    className="up-input w-full px-4 py-2.5 text-sm border border-gray-200 rounded-xl bg-gray-50"
+                                    placeholder="Nhập tên"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">
+                                    Số điện thoại
+                                </label>
+                                <input
+                                    type="tel"
+                                    value={form.phoneNumber}
+                                    onChange={(e) => setForm((f) => ({ ...f, phoneNumber: e.target.value }))}
+                                    className="up-input w-full px-4 py-2.5 text-sm border border-gray-200 rounded-xl bg-gray-50"
+                                    placeholder="Nhập số điện thoại"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">
+                                    Địa chỉ
+                                </label>
+                                <input
+                                    type="text"
+                                    value={form.editAddress}
+                                    onChange={(e) => setForm((f) => ({ ...f, editAddress: e.target.value }))}
+                                    className="up-input w-full px-4 py-2.5 text-sm border border-gray-200 rounded-xl bg-gray-50"
+                                    placeholder="Nhập địa chỉ"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">
+                                    Địa chỉ bổ sung
+                                </label>
+                                <input
+                                    type="text"
+                                    value={form.additionalAddress}
+                                    onChange={(e) => setForm((f) => ({ ...f, additionalAddress: e.target.value }))}
+                                    className="up-input w-full px-4 py-2.5 text-sm border border-gray-200 rounded-xl bg-gray-50"
+                                    placeholder="Số nhà, tòa nhà, v.v."
+                                />
+                            </div>
+                            <div className="flex gap-2 pt-2">
+                                <button
+                                    type="button"
+                                    onClick={handleSaveProfile}
+                                    disabled={saving}
+                                    className="flex-1 inline-flex items-center justify-center gap-2 py-2.5 rounded-xl bg-green-600 text-white text-sm font-semibold hover:bg-green-700 disabled:opacity-60 transition-colors"
+                                >
+                                    {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                                    {saving ? "Đang lưu..." : "Lưu thay đổi"}
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={cancelEditing}
+                                    disabled={saving}
+                                    className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-gray-200 text-gray-600 text-sm font-semibold hover:bg-gray-50 disabled:opacity-60 transition-colors"
+                                >
+                                    <X className="w-4 h-4" />
+                                    Hủy
+                                </button>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="divide-y divide-gray-50">
+                            <InfoRow icon={Mail} label="Email" value={profile.email} />
+                            <InfoRow icon={User} label="Họ (Last name)" value={profile.lastName || "—"} />
+                            <InfoRow icon={User} label="Tên (First name)" value={profile.firstName || "—"} />
+                            <InfoRow icon={Phone} label="Số điện thoại" value={profile.phoneNumber ?? "—"} />
+                            <InfoRow icon={MapPin} label="Địa chỉ" value={profile.address ?? profile.editAddress ?? "—"} />
+                            <InfoRow icon={Home} label="Địa chỉ bổ sung" value={profile.additionalAddress || "—"} />
+                            <InfoRow
+                                icon={CheckCircle}
+                                label="Trạng thái tài khoản"
+                                value={profile.isActive ? "Đang hoạt động" : "Đã bị khóa"}
+                                badge
+                                badgeGreen={profile.isActive}
+                            />
+                        </div>
+                    )}
                 </div>
 
                 {/* ── Menu ── */}
