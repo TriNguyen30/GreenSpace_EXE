@@ -9,6 +9,7 @@ import {
   Store,
   ChevronDown,
   Tag,
+  PackageCheck
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -17,6 +18,7 @@ import UserManagement from "./UserManagement";
 import ProductManagement from "./ProductManagement";
 import CategoryManagement from "./CategoryManagement";
 import ProductVariantManagement from "./ProductVariantManagement";
+import OrderManagement from "./OrderManagement";
 
 interface SidebarItemProps {
   icon: React.ReactNode;
@@ -120,6 +122,7 @@ export default function AdminDashboard() {
       ]
     },
     { id: "users", label: "Người dùng", icon: <User className="w-5 h-5" /> },
+    { id: "orders", label: "Đơn hàng", icon: <PackageCheck className="w-5 h-5" /> },
   ];
 
   const renderContent = () => {
@@ -132,6 +135,8 @@ export default function AdminDashboard() {
         return <ProductVariantManagement />;
       case "users":
         return <UserManagement />;
+      case "orders":
+        return <OrderManagement />;
       default:
         return <CategoryManagement />;
     }
