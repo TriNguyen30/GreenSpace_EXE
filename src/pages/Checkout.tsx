@@ -277,7 +277,7 @@ export default function CheckoutPage() {
 
         {/* Header */}
         <div className="mb-8 ck-e1">
-          <button onClick={() => navigate("/cart")} className="ck-back inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 mb-4">
+          <button onClick={() => navigate("/cart")} className="ck-back inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 mb-4 cursor-pointer">
             <ArrowLeft className="ck-back-icon w-4 h-4" />
             Quay lại giỏ hàng
           </button>
@@ -465,7 +465,7 @@ export default function CheckoutPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="ck-submit w-full bg-green-600 text-white py-3.5 rounded-xl font-bold text-sm mb-4"
+                  className="ck-submit w-full bg-green-600 text-white py-3.5 rounded-xl font-bold text-sm mb-4 cursor-pointer"
                 >
                   {loading
                     ? <span className="inline-flex items-center gap-2"><Loader2 className="w-4 h-4 animate-spin" /> Đang xử lý...</span>

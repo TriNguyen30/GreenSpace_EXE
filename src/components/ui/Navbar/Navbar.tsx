@@ -293,7 +293,7 @@ export default function Navbar() {
                       <button
                         type="button"
                         onClick={() => { setUserMenuOpen(false); navigateWithScroll("/profile"); }}
-                        className="nb-menu-item w-full px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 flex items-center gap-2.5"
+                        className="nb-menu-item w-full px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 flex items-center gap-2.5 cursor-pointer"
                       >
                         <User className="w-4 h-4 opacity-60" />
                         Hồ sơ của tôi
@@ -302,7 +302,7 @@ export default function Navbar() {
                       <button
                         type="button"
                         onClick={() => { setUserMenuOpen(false); navigateWithScroll("/orders"); }}
-                        className="nb-menu-item w-full px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 flex items-center gap-2.5"
+                        className="nb-menu-item w-full px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 flex items-center gap-2.5 cursor-pointer"
                       >
                         <Package className="w-4 h-4 opacity-60" />
                         Đơn hàng
@@ -317,7 +317,7 @@ export default function Navbar() {
                           setUserMenuOpen(false);
                           navigateWithScroll("/login");
                         }}
-                        className="nb-menu-item w-full px-4 py-2.5 text-left text-sm text-red-500 hover:bg-red-50 hover:text-red-600 flex items-center gap-2.5"
+                        className="nb-menu-item w-full px-4 py-2.5 text-left text-sm text-red-500 hover:bg-red-50 hover:text-red-600 flex items-center gap-2.5 cursor-pointer"
                       >
                         <LogOut className="w-4 h-4 opacity-70" />
                         Đăng xuất

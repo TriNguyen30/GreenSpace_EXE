@@ -184,7 +184,7 @@ export default function OrderListPage() {
                 {/* ── Header ── */}
                 <div className="ol-e1 mb-7">
                     <button onClick={() => navigate("/profile")}
-                        className="ol-back inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 mb-4">
+                        className="ol-back inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 mb-4 cursor-pointer">
                         <ArrowLeft className="ol-back-icon w-4 h-4" />
                         Hồ sơ của tôi
                     </button>

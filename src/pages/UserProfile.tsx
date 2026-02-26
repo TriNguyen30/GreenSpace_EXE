@@ -394,7 +394,7 @@ export default function UserProfile() {
                             <button
                                 type="button"
                                 onClick={startEditing}
-                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-green-600 bg-green-50 border border-green-200 hover:bg-green-100 transition-colors"
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-green-600 bg-green-50 border border-green-200 hover:bg-green-100 transition-colors cursor-pointer"
                             >
                                 <Pencil className="w-3.5 h-3.5" />
                                 Chỉnh sửa
@@ -516,7 +516,7 @@ export default function UserProfile() {
                             key={label}
                             type="button"
                             onClick={onClick}
-                            className="up-menu-row w-full px-5 py-4 flex items-center gap-4 text-left"
+                            className="up-menu-row w-full px-5 py-4 flex items-center gap-4 text-left cursor-pointer"
                         >
                             <div className="up-row-icon w-10 h-10 rounded-xl bg-green-100 text-green-600 flex items-center justify-center shrink-0">
                                 <Icon className="w-4.5 h-4.5" />
@@ -532,7 +532,7 @@ export default function UserProfile() {
                     <button
                         type="button"
                         onClick={handleLogout}
-                        className="up-logout-row w-full px-5 py-4 flex items-center gap-4 text-left"
+                        className="up-logout-row w-full px-5 py-4 flex items-center gap-4 text-left cursor-pointer"
                     >
                         <div className="up-logout-icon w-10 h-10 rounded-xl bg-red-100 text-red-500 flex items-center justify-center shrink-0">
                             <LogOut className="w-4.5 h-4.5" />

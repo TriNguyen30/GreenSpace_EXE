@@ -214,7 +214,7 @@ export default function OrderDetailPage() {
                 {/* ── Header ── */}
                 <div className="od-e1 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <button onClick={() => navigate("/orders")}
-                        className="od-back inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 w-fit">
+                        className="od-back inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 w-fit cursor-pointer">
                         <ArrowLeft className="od-back-icon w-4 h-4" />
                         Đơn hàng của tôi
                     </button>

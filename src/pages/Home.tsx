@@ -472,7 +472,7 @@ export default function GreenSpaceLanding() {
                 className="gs-reveal from-up gs-card text-left bg-white rounded-xl overflow-hidden shadow-md"
                 aria-label={`Xem chi tiết ${product.name}`}
               >
-                <div className="relative overflow-hidden">
+                <div className="relative overflow-hidden cursor-pointer">
                   <img
                     src={
                       product.thumbnailUrl ||
@@ -487,7 +487,7 @@ export default function GreenSpaceLanding() {
                     </div>
                   )}
                 </div>
-                <div className="p-4">
+                <div className="p-4 cursor-pointer">
                   <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">
                     {product.name}
                   </h3>

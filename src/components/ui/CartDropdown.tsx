@@ -271,7 +271,7 @@ export default function CartDropdown() {
                                 </h4>
                                 <button
                                   onClick={(e) => { e.stopPropagation(); handleRemove(item.id); }}
-                                  className="cd-remove p-1 rounded-lg text-gray-300 shrink-0"
+                                  className="cd-remove p-1 rounded-lg text-gray-300 shrink-0 cursor-pointer"
                                   aria-label="Xóa"
                                 >
                                   <Trash2 className="w-3.5 h-3.5" />
@@ -285,7 +285,7 @@ export default function CartDropdown() {
                                 <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden">
                                   <button
                                     onClick={(e) => { e.stopPropagation(); updateQuantity(item.id, Math.max(1, item.quantity - 1)); }}
-                                    className="cd-qty-btn px-2 py-1.5 text-gray-400"
+                                    className="cd-qty-btn px-2 py-1.5 text-gray-400 cursor-pointer"
                                     aria-label="Giảm"
                                   >
                                     <Minus className="w-3 h-3" />
@@ -295,7 +295,7 @@ export default function CartDropdown() {
                                   </span>
                                   <button
                                     onClick={(e) => { e.stopPropagation(); updateQuantity(item.id, item.quantity + 1); }}
-                                    className="cd-qty-btn px-2 py-1.5 text-gray-400"
+                                    className="cd-qty-btn px-2 py-1.5 text-gray-400 cursor-pointer"
                                     aria-label="Tăng"
                                   >
                                     <Plus className="w-3 h-3" />
@@ -326,13 +326,13 @@ export default function CartDropdown() {
                   {/* CTAs */}
                   <button
                     onClick={() => { setOpen(false); navigateWithScroll("/checkout"); }}
-                    className="cd-checkout w-full bg-green-600 text-white py-2.5 rounded-xl font-bold text-sm mb-2 flex items-center justify-center gap-2"
+                    className="cd-checkout w-full bg-green-600 text-white py-2.5 rounded-xl font-bold text-sm mb-2 flex items-center justify-center gap-2 cursor-pointer"
                   >
                     Thanh toán ngay <ArrowRight className="w-4 h-4" />
                   </button>
                   <button
                     onClick={() => { setOpen(false); navigateWithScroll("/cart"); }}
-                    className="cd-view w-full border-2 border-gray-200 text-gray-600 py-2.5 rounded-xl font-semibold text-sm"
+                    className="cd-view w-full border-2 border-gray-200 text-gray-600 py-2.5 rounded-xl font-semibold text-sm cursor-pointer"
                   >
                     Xem giỏ hàng
                   </button>
