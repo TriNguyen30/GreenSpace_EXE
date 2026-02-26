@@ -5,6 +5,12 @@ import type {
     UpdateOrderStatusPayload,
 } from "@/types/order";
 
+
+export const getAllOrders = async (): Promise<Order[]> => {
+    const res = await axiosInstance.get("/Orders");
+    return res.data.data;
+}
+
 export const getMyOrders = async (): Promise<Order[]> => {
     const res = await axiosInstance.get("/Orders/my-orders");
     return res.data.data;
