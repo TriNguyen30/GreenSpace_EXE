@@ -166,8 +166,6 @@ export default function Navbar() {
   const displayName = profileName || buildFullName(user) || "Khách hàng";
   const displayEmail = profileEmail || user?.email || "";
   const initials = getInitials(displayName, displayEmail);
-  // Show first name only in the button (last word for Vietnamese names like "Nguyễn Văn Tri" → "Tri")
-  const shortName = displayName.split(" ").pop() || displayName;
 
   // Scroll detection
   useEffect(() => {
@@ -266,9 +264,9 @@ export default function Navbar() {
                     {initials}
                   </span>
 
-                  {/* Show proper first/last name in navbar */}
-                  <span className="hidden lg:block text-sm font-medium text-gray-700 max-w-[96px] truncate">
-                    {shortName}
+                  {/* Full name in navbar */}
+                  <span className="hidden lg:block text-sm font-medium text-gray-700 max-w-[140px] truncate">
+                    {displayName}
                   </span>
 
                   <ChevronDown className={`nb-chevron w-4 h-4 text-gray-400 ${userMenuOpen ? "open" : ""}`} />
