@@ -117,40 +117,51 @@ function injectStyles() {
 const formatDate = (s?: string) =>
     s ? new Date(s).toLocaleString("vi-VN", { dateStyle: "medium", timeStyle: "short" }) : "—";
 
-const formatPrice = (n?: number) =>
-    (Number(n ?? 0)).toLocaleString("vi-VN") + " ₫";
-
 // ─── Status stepper ───────────────────────────────────────────────────────────
 function StatusStepper({ status }: { status: string }) {
     if (status === "CANCELLED") return null;
     const idx = STEPS.indexOf(status as typeof STEPS[number]);
 
     return (
-        <div className="flex items-center gap-0 w-full">
+        <div className="flex items-center w-full overflow-x-auto pb-2">
             {STEPS.map((step, i) => {
                 const done = i < idx;
                 const active = i === idx;
                 const cfg = STATUS_MAP[step];
+                const StepIcon = cfg.icon;
+                const isLast = i === STEPS.length - 1;
 
                 return (
-                    <div key={step} className="flex items-center flex-1 min-w-0">
-                        <div className="flex flex-col items-center shrink-0">
-                            <div className={`w-7 h-7 rounded-full flex items-center justify-center border-2 transition-all
-                ${done ? "bg-green-600 border-green-600 text-white"
-                                    : active ? "bg-white border-green-600 text-green-600"
+                    <div key={step} className={`flex items-start ${isLast ? "" : "flex-1"} min-w-0`}>
+                        <div className="flex flex-col items-center shrink-0 gap-2">
+                            {/* Icon circle */}
+                            <div className={`relative w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all
+                ${done ? "bg-green-600 border-green-600 text-white shadow-md"
+                                    : active ? "bg-white border-green-600 text-green-600 shadow-lg ring-4 ring-green-100"
                                         : "bg-white border-gray-200 text-gray-300"}`}>
-                                {done
-                                    ? <CheckCircle2 className="w-3.5 h-3.5" />
-                                    : <span className={`w-2 h-2 rounded-full ${active ? "od-step-dot-active bg-green-500" : "bg-gray-200"}`} />
-                                }
+                                {done ? (
+                                    <CheckCircle2 className="w-5 h-5" strokeWidth={2.5} />
+                                ) : active ? (
+                                    <StepIcon className="w-5 h-5" strokeWidth={2.5} />
+                                ) : (
+                                    <StepIcon className="w-4 h-4" strokeWidth={2} />
+                                )}
+                                {/* Pulse ring for active */}
+                                {active && (
+                                    <span className="absolute inset-0 rounded-full od-step-dot-active" style={{ border: "2px solid #16a34a" }} />
+                                )}
                             </div>
-                            <span className={`text-xs mt-1 font-medium whitespace-nowrap ${done || active ? "text-green-700" : "text-gray-400"}`}>
-                                {cfg.label}
-                            </span>
+                            {/* Label */}
+                            <div className="flex flex-col items-center gap-0.5">
+                                <span className={`text-xs font-bold whitespace-nowrap ${done || active ? "text-green-700" : "text-gray-400"}`}>
+                                    {cfg.label}
+                                </span>
+                            </div>
                         </div>
+                        {/* Connecting line */}
                         {i < STEPS.length - 1 && (
-                            <div className="flex-1 h-0.5 bg-gray-100 mx-1 mb-4 overflow-hidden relative">
-                                {done && <div className="od-step-bar absolute inset-y-0 left-0 bg-green-500" />}
+                            <div className="flex-1 h-1 bg-gray-200 mx-2 mt-5 overflow-hidden relative rounded-full">
+                                {done && <div className="od-step-bar absolute inset-y-0 left-0 bg-green-500 rounded-full" />}
                             </div>
                         )}
                     </div>
@@ -300,33 +311,19 @@ export default function OrderDetailPage() {
                                 className="od-item flex items-center gap-4 py-3.5 first:pt-0 last:pb-0"
                                 style={{ animationDelay: `${0.28 + i * 0.05}s` }}>
                                 <div className="w-14 h-14 rounded-xl overflow-hidden bg-gray-50 shrink-0">
-                                    {item.thumbnailUrl ? (
-                                        <img
-                                            src={item.thumbnailUrl}
-                                            alt={item.productName}
-                                            className="od-item-img w-full h-full object-cover"
-                                        />
-                                    ) : (
-                                        <div className="w-full h-full flex items-center justify-center text-gray-300">
-                                            <Package className="w-5 h-5" />
-                                        </div>
-                                    )}
+                                    <img src={item.imageUrl} alt={item.productName}
+                                        className="od-item-img w-full h-full object-cover" />
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <h4 className="text-sm font-semibold text-gray-900 line-clamp-2 leading-snug mb-1">
                                         {item.productName}
                                     </h4>
                                     <p className="text-xs text-gray-400">
-                                        {item.quantity} × {formatPrice(item.priceAtPurchase ?? item.unitPrice)}
-                                        {item.variantSku ? <span className="ml-2 font-mono">({item.variantSku})</span> : null}
+                                        {item.quantity} × {(item.priceAtPurchase ?? 0).toLocaleString("vi-VN")} ₫
                                     </p>
                                 </div>
                                 <span className="text-sm font-bold text-gray-800 shrink-0">
-                                    {formatPrice(
-                                        item.subTotal ??
-                                        item.totalPrice ??
-                                        (Number(item.priceAtPurchase ?? item.unitPrice ?? 0) * Number(item.quantity ?? 0))
-                                    )}
+                                    {(item.subTotal ?? 0).toLocaleString("vi-VN")} ₫
                                 </span>
                             </div>
                         ))}
@@ -347,24 +344,16 @@ export default function OrderDetailPage() {
                     <div className="max-w-xs ml-auto space-y-2.5">
                         <div className="flex justify-between text-sm text-gray-600">
                             <span>Tạm tính</span>
-                            <span className="font-semibold text-gray-800">{formatPrice(currentOrder.subTotal ?? currentOrder.totalAmount)}</span>
+                            <span className="font-semibold text-gray-800">{(currentOrder.totalAmount ?? 0).toLocaleString("vi-VN")} ₫</span>
                         </div>
-                        {!!currentOrder.discount && currentOrder.discount > 0 && (
-                            <div className="flex justify-between text-sm text-green-700">
-                                <span>Giảm giá</span>
-                                <span className="font-semibold">−{formatPrice(currentOrder.discount)}</span>
-                            </div>
-                        )}
                         <div className="flex justify-between text-sm text-gray-600">
                             <span className="flex items-center gap-1.5"><Truck className="w-3.5 h-3.5" /> Vận chuyển</span>
-                            <span className={`font-semibold ${Number(currentOrder.shippingFee ?? 0) === 0 ? "text-green-600" : "text-gray-800"}`}>
-                                {Number(currentOrder.shippingFee ?? 0) === 0 ? "Miễn phí" : formatPrice(currentOrder.shippingFee)}
-                            </span>
+                            <span className="font-semibold text-green-600">Miễn phí</span>
                         </div>
                         <div className="border-t border-gray-100 pt-2.5 flex justify-between">
                             <span className="font-bold text-gray-900">Tổng cộng</span>
                             <span className="text-xl font-black text-green-700">
-                                {formatPrice(currentOrder.finalAmount ?? currentOrder.totalAmount)}
+                                {(currentOrder.totalAmount ?? 0).toLocaleString("vi-VN")} ₫
                             </span>
                         </div>
                     </div>
