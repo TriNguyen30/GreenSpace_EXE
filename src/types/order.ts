@@ -33,9 +33,13 @@ export interface OrderItem {
   variantSku?: string | null;
   priceAtPurchase?: number;
   subTotal?: number;
+  variantId: string | null;
 
   // Legacy fields (kept optional for backward compatibility)
   thumbnailUrl?: string | null;
+  imageUrl?: string | null;
+  sizeOrModel?: string | null;
+  color: string;
   unitPrice?: number;
   totalPrice?: number;
 }
