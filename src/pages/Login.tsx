@@ -272,6 +272,11 @@ export default function Login() {
         else navigate("/");
       } catch (err) {
         setSubmitError(true);
+        const message =
+          typeof err === "string"
+            ? err
+            : (err as any)?.message ||
+              "Đăng nhập thất bại. Vui lòng kiểm tra lại email hoặc mật khẩu.";
         console.error("Login failed:", err);
       } finally {
         setSubmitting(false);

@@ -56,7 +56,15 @@ axiosInstance.interceptors.response.use(
 
 
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    const isAuthLoginRequest =
+      typeof originalRequest?.url === "string" &&
+      originalRequest.url.includes("/Auth/login");
+
+    if (
+      error.response?.status === 401 &&
+      !originalRequest._retry &&
+      !isAuthLoginRequest
+    ) {
 
       if (isRefreshing) {
 
