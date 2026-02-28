@@ -10,6 +10,8 @@ import { createOrderThunk } from "@/store/slices/orderSlice";
 import { createPayOSPayment } from "@/services/payment.service";
 import { getActivePromotions } from "@/services/promotion.service";
 import type { Promotion } from "@/types/promotion";
+import { getProductVariantById } from "@/services/productVariant.service";
+import type { ProductVariant as VariantEntity } from "@/types/productVariant";
 
 type PaymentMethod = "COD" | "PAYOS";
 
@@ -228,6 +230,47 @@ export default function CheckoutPage() {
     if (items.length === 0) { alert("Giỏ hàng trống"); return; }
     const invalid = items.find((i) => !i.variantId);
     if (invalid) { alert(`"${invalid.name}" chưa có variant hợp lệ.`); return; }
+
+    // Kiểm tra trước: variant còn tồn tại và đủ tồn kho
+    try {
+      const checks = await Promise.all(
+        items.map(async (i) => {
+          try {
+            const variant = await getProductVariantById(i.productId, i.variantId!);
+            return { item: i, variant };
+          } catch (error: any) {
+            console.error("Variant validation failed for cart item", i, error);
+            return { item: i, error };
+          }
+        }),
+      );
+
+      const missing = checks.find((c) => (c as any).error);
+      if (missing) {
+        alert(
+          `Phiên bản sản phẩm "${missing.item.name}" không còn tồn tại hoặc đã bị thay đổi. ` +
+            "Vui lòng cập nhật hoặc xóa sản phẩm này khỏi giỏ hàng trước khi thanh toán.",
+        );
+        return;
+      }
+
+      const insufficient = checks.find(
+        (c): c is { item: (typeof items)[number]; variant: VariantEntity } =>
+          !!(c as any).variant &&
+          typeof (c as any).variant.stockQuantity === "number" &&
+          (c as any).variant.stockQuantity < c.item.quantity,
+      );
+
+      if (insufficient) {
+        alert(
+          `Sản phẩm "${insufficient.item.name}" chỉ còn ${insufficient.variant.stockQuantity} sản phẩm trong kho. ` +
+            "Vui lòng giảm số lượng trước khi thanh toán.",
+        );
+        return;
+      }
+    } catch (err) {
+      console.error("Failed to pre-validate variants before checkout", err);
+    }
 
     try {
       const payload = {

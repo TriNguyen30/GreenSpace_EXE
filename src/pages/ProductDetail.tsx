@@ -7,7 +7,10 @@ import {
 } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { getProductById, getProducts } from "@/services/product.service";
-import type { Product as ApiProduct, ProductVariant } from "@/types/api";
+import { getProductVariants } from "@/services/productVariant.service";
+import type { Product as ApiProduct } from "@/types/api";
+import type { Product as ProductEntity } from "@/types/product";
+import type { ProductVariant } from "@/types/productVariant";
 import { getActivePromotions } from "@/services/promotion.service";
 import type { Promotion } from "@/types/promotion";
 import { createRating, getProductAverageRating, getProductRatings, updateRating } from "@/services/rating.service";
@@ -395,11 +398,12 @@ export default function ProductDetail() {
   const authUser = useAppSelector((s) => s.auth.user);
 
   const [apiProduct, setApiProduct] = useState<ApiProduct | null>(null);
+  const [variants, setVariants] = useState<ProductVariant[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
   const [mainImage, setMainImage] = useState<string | null>(null);
-  const [relatedProducts, setRelatedProducts] = useState<ApiProduct[]>([]);
+  const [relatedProducts, setRelatedProducts] = useState<ProductEntity[]>([]);
   const [quantity, setQuantity] = useState(1);
   const [quantityInput, setQuantityInput] = useState("1");
   const [liked, setLiked] = useState(false);
@@ -427,9 +431,24 @@ export default function ProductDetail() {
         setLoading(true);
         const result = await getProductById(id);
         if (cancelled || !result) { if (!cancelled) setError("Không tìm thấy sản phẩm"); return; }
-        setApiProduct(result);
+        setApiProduct(result as unknown as ApiProduct);
         setMainImage(result.thumbnailUrl || null);
-        const active = result.variants?.filter((v) => v.isActive) ?? [];
+
+        let loadedVariants: ProductVariant[] = [];
+        try {
+          loadedVariants = await getProductVariants(result.productId);
+        } catch (e) {
+          console.error("Không thể tải danh sách variants, fallback sang dữ liệu trong product (nếu có).", e);
+          const inline = (result as any).variants;
+          if (Array.isArray(inline)) {
+            loadedVariants = inline as ProductVariant[];
+          }
+        }
+
+        if (cancelled) return;
+
+        setVariants(loadedVariants);
+        const active = loadedVariants.filter((v) => v.isActive);
         setSelectedVariant(active.find((v) => v.stockQuantity > 0) ?? active[0] ?? null);
       } catch { if (!cancelled) setError("Không thể tải sản phẩm"); }
       finally { if (!cancelled) setLoading(false); }
@@ -485,7 +504,11 @@ export default function ProductDetail() {
   const displayedCategory = apiProduct?.categoryName ?? "";
   const displayedBrand = apiProduct?.brandName ?? "Đang cập nhật";
   const skuSource = selectedVariant?.sku ?? apiProduct?.productId ?? "";
-  const activeVariants = apiProduct?.variants?.filter((v) => v.isActive) ?? [];
+  const allVariants: ProductVariant[] =
+    variants.length > 0
+      ? variants
+      : (((apiProduct as any)?.variants as ProductVariant[] | undefined) ?? []);
+  const activeVariants = allVariants.filter((v) => v.isActive);
 
   const validPromotions = promotions.filter((p) => p.isActive && basePriceNumber >= p.minOrderValue && new Date(p.endDate) > new Date());
   const bestPromotion = validPromotions[0];
@@ -497,7 +520,7 @@ export default function ProductDetail() {
 
   const thumbnails = useMemo(() => {
     const imgs = mainImage ? [mainImage] : [];
-    const variantImgs = (apiProduct?.variants ?? []).map((v) => v.imageUrl).filter((u): u is string => !!u);
+    const variantImgs = allVariants.map((v) => v.imageUrl).filter((u): u is string => !!u);
     for (const u of variantImgs) {
       if (imgs.length >= 4) break;
       if (!imgs.includes(u)) imgs.push(u);
@@ -544,15 +567,18 @@ export default function ProductDetail() {
 
   function handleAddToCart() {
     if (!apiProduct) return;
-    if (activeVariants.length > 0 && !selectedVariant) { showToast("Vui lòng chọn phiên bản sản phẩm"); return; }
-    if (selectedVariant?.stockQuantity === 0) { showToast("Phiên bản này đã hết hàng"); return; }
+    if (!selectedVariant) {
+      showToast("Vui lòng chọn phiên bản sản phẩm hợp lệ");
+      return;
+    }
+    if (selectedVariant.stockQuantity === 0) { showToast("Phiên bản này đã hết hàng"); return; }
     const cartItem = {
       id: Array.from(apiProduct.productId).slice(0, 8).reduce((s, c) => s + c.charCodeAt(0), 0),
       name: selectedVariant?.sizeOrModel ? `${apiProduct.name} - ${selectedVariant.sizeOrModel}` : apiProduct.name,
       price: `${basePriceNumber.toLocaleString()} đ`,
       image: selectedVariant?.imageUrl ?? apiProduct.thumbnailUrl ?? "",
       productId: apiProduct.productId,
-      variantId: selectedVariant?.variantId ?? apiProduct.productId,
+      variantId: selectedVariant.variantId,
     };
     addToCart(cartItem, quantity);
     showToast(`Đã thêm ${quantity} ${cartItem.name} vào giỏ hàng!`);
@@ -631,7 +657,7 @@ export default function ProductDetail() {
 
           {/* Breadcrumb */}
           <div className="mb-6 pd-enter-1">
-            <button onClick={() => navigate("/product")} className="pd-back inline-flex items-center gap-1.5 text-sm text-gray-500 font-medium">
+            <button onClick={() => navigate("/product")} className="pd-back inline-flex items-center gap-1.5 text-sm text-gray-500 font-medium cursor-pointer">
               <ChevronLeft className="pd-back-icon w-4 h-4" />
               Quay lại danh sách
             </button>
@@ -749,7 +775,7 @@ export default function ProductDetail() {
                   <div className="mb-5 p-4 bg-gray-50 rounded-2xl border border-gray-100">
                     <div className="flex items-center gap-2 mb-3">
                       <Package className="w-4 h-4 text-gray-400" />
-                      <span className="text-sm font-semibold text-gray-700">Phiên bản <span className="text-red-500">*</span></span>
+                      <span className="text-sm font-semibold text-gray-700">Kích cỡ <span className="text-red-500">*</span></span>
                     </div>
                     <div className="flex flex-wrap gap-2">
                       {activeVariants.map((v) => {
