@@ -59,11 +59,15 @@ axiosInstance.interceptors.response.use(
     const isAuthLoginRequest =
       typeof originalRequest?.url === "string" &&
       originalRequest.url.includes("/Auth/login");
+    const isAuthRefreshRequest =
+      typeof originalRequest?.url === "string" &&
+      originalRequest.url.includes("/Auth/refresh");
 
     if (
       error.response?.status === 401 &&
       !originalRequest._retry &&
-      !isAuthLoginRequest
+      !isAuthLoginRequest &&
+      !isAuthRefreshRequest
     ) {
 
       if (isRefreshing) {
@@ -94,7 +98,7 @@ axiosInstance.interceptors.response.use(
 
         const refreshToken = localStorage.getItem("refreshToken");
 
-        const res = await axios.post("/Auth/refresh", { refreshToken });
+        const res = await axiosInstance.post("/Auth/refresh", { refreshToken });
 
 
 

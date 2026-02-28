@@ -348,7 +348,9 @@ export default function OrderDetailPage() {
                         </div>
                         <div className="flex justify-between text-sm text-gray-600">
                             <span className="flex items-center gap-1.5"><Truck className="w-3.5 h-3.5" /> Vận chuyển</span>
-                            <span className="font-semibold text-green-600">Miễn phí</span>
+                            <span className={`font-semibold ${(currentOrder.shippingFee ?? 0) === 0 ? "text-green-600" : "text-gray-800"}`}>
+                                {(currentOrder.shippingFee ?? 0) === 0 ? "Miễn phí" : `${(currentOrder.shippingFee ?? 0).toLocaleString("vi-VN")} ₫`}
+                            </span>
                         </div>
                         <div className="border-t border-gray-100 pt-2.5 flex justify-between">
                             <span className="font-bold text-gray-900">Tổng cộng</span>
