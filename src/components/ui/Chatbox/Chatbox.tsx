@@ -126,6 +126,7 @@ export default function Chatbox() {
     const dispatch = useAppDispatch();
     const { messages, loading, error } = useAppSelector((state) => state.chat);
     const prevMsgCount = useRef(0);
+    const panelRef = useRef<HTMLDivElement>(null);
 
     injectStyles();
 
@@ -137,6 +138,22 @@ export default function Chatbox() {
         scrollToBottom();
         prevMsgCount.current = messages.length;
     }, [messages, loading]);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (panelRef.current && !panelRef.current.contains(event.target as Node)) {
+                setOpen(false); // đóng panel
+            }
+        };
+
+        if (open) {
+            document.addEventListener("mousedown", handleClickOutside);
+        }
+
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, [open]);
 
     /* Smooth close */
     const handleClose = () => {
@@ -202,8 +219,9 @@ export default function Chatbox() {
             {/* ── Panel ── */}
             {open && (
                 <div
-                    className={`fixed bottom-24 right-6 z-40 w-[380px] max-w-[calc(100vw-3rem)] h-[520px] max-h-[70vh] flex flex-col bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden ${closing ? "cb-panel-exit" : "cb-panel-enter"
+                    className={`fixed bottom-6 right-24 z-40 w-[380px] max-w-[calc(100vw-3rem)] h-[520px] max-h-[70vh] flex flex-col bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden ${closing ? "cb-panel-exit" : "cb-panel-enter"
                         }`}
+                        ref={panelRef}
                 >
                     {/* Header */}
                     <div className="flex items-center justify-between px-4 py-3 bg-green-600 text-white shrink-0">
