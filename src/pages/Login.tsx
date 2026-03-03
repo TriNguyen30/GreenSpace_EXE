@@ -276,7 +276,7 @@ export default function Login() {
           typeof err === "string"
             ? err
             : (err as any)?.message ||
-              "Đăng nhập thất bại. Vui lòng kiểm tra lại email hoặc mật khẩu.";
+            "Đăng nhập thất bại. Vui lòng kiểm tra lại email hoặc mật khẩu.";
         console.error("Login failed:", err);
       } finally {
         setSubmitting(false);
@@ -357,8 +357,8 @@ export default function Login() {
                   if (key === "register") navigate("/register");
                 }}
                 className={`flex-1 pb-4 text-center font-semibold relative transition-colors duration-200 cursor-pointer ${activeTab === key
-                    ? "text-green-600"
-                    : "text-gray-400 hover:text-gray-600"
+                  ? "text-green-600"
+                  : "text-gray-400 hover:text-gray-600"
                   }`}
               >
                 {label}
@@ -486,19 +486,19 @@ export default function Login() {
           </form>
 
           {/* Divider */}
-          <div className="my-7 ln-stagger-7 flex items-center gap-4">
+          {/* <div className="my-7 ln-stagger-7 flex items-center gap-4">
             <div className="ln-divider flex-1 h-px bg-gray-200" />
             <span className="text-xs text-gray-400 font-medium">Hoặc tiếp tục với</span>
             <div className="ln-divider flex-1 h-px bg-gray-200" />
-          </div>
+          </div> */}
 
           {/* Google */}
-          <div className="ln-stagger-8">
+          {/* <div className="ln-stagger-8">
             <button className="ln-google-btn w-full flex items-center justify-center gap-3 px-4 py-3 border border-gray-200 rounded-xl bg-white shadow-sm text-sm font-medium text-gray-700 cursor-pointer">
               <FcGoogle className="w-5 h-5" />
               Đăng nhập với Google
             </button>
-          </div>
+          </div> */}
 
         </div>
       </div>

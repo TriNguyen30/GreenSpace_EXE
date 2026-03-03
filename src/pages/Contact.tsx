@@ -243,12 +243,12 @@ export default function Contact() {
               <a href="mailto:support@greenspace.vn"
                 className="ct-quick-email inline-flex items-center gap-2 rounded-xl border-2 border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700">
                 <Mail className="w-4 h-4 text-green-600" />
-                support@greenspace.vn
+                greenspace@org.com
               </a>
               <a href="tel:+84900111222"
                 className="ct-quick-phone inline-flex items-center gap-2 rounded-xl bg-green-600 px-4 py-2.5 text-sm font-semibold text-white">
                 <Phone className="w-4 h-4" />
-                0900 111 222
+                0937 825 621
               </a>
             </div>
           </div>
@@ -267,12 +267,12 @@ export default function Contact() {
               </h2>
               <div className="space-y-1">
                 <InfoRow icon={<MapPin className="w-4 h-4" />} label="Địa chỉ">
-                  123 Green Street, Quận 1, TP.HCM
+                  242 Bưng Ông Thoàn, Phước Long B, Thủ Đức, TP HCM
                 </InfoRow>
                 <InfoRow icon={<Clock className="w-4 h-4" />} label="Giờ làm việc">
                   Thứ 2–Thứ 7: 08:30–18:00<br />Chủ nhật: 09:00–12:00
                 </InfoRow>
-                <InfoRow icon={<Mail className="w-4 h-4" />} label="Email">
+                {/* <InfoRow icon={<Mail className="w-4 h-4" />} label="Email">
                   <a href="mailto:support@greenspace.vn" className="text-green-700 font-medium hover:underline">
                     support@greenspace.vn
                   </a>
@@ -281,7 +281,7 @@ export default function Contact() {
                   <a href="tel:+84900111222" className="text-green-700 font-medium hover:underline">
                     0900 111 222
                   </a>
-                </InfoRow>
+                </InfoRow> */}
               </div>
             </div>
 
