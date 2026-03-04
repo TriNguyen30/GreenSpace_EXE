@@ -252,7 +252,7 @@ export default function Footer() {
             </h3>
             <ul className="space-y-3.5">
               {[
-                { icon: <MapPin className="w-4 h-4 shrink-0 text-green-400" />, text: " 242 Bưng Ông Thoàn  - Phước Long B - Thủ Đức - TP HCM" },
+                { icon: <MapPin className="w-4 h-4 shrink-0 text-green-400" />, text: " 242 Bưng Ông Thoàn, Phước Long B, Thủ Đức, TP HCM" },
                 { icon: <Phone className="w-4 h-4 shrink-0 text-green-400" />, text: "0937 825 621" },
                 { icon: <Mail className="w-4 h-4 shrink-0 text-green-400" />, text: "greenspace@org.com" },
               ].map(({ icon, text }) => (

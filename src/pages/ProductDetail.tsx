@@ -813,10 +813,10 @@ export default function ProductDetail() {
                     <button onClick={() => changeQuantity(1)} className="pd-qty-btn px-3 py-2.5 text-gray-500 cursor-pointer"><Plus className="w-4 h-4" /></button>
                   </div>
                   <div className="flex gap-2 flex-1">
-                    <button onClick={handleAddToCart} className="pd-cta-primary flex-1 inline-flex items-center justify-center gap-2 text-white px-5 py-2.5 rounded-xl font-semibold text-sm cursor-pointer">
+                    <button onClick={handleAddToCart} className="pd-cta-secondary flex-1 inline-flex items-center justify-center gap-2 border-2 border-green-600 text-green-700 px-5 py-2.5 rounded-xl font-semibold text-sm cursor-pointer">
                       <ShoppingCart className="w-4 h-4" /> Thêm vào giỏ
                     </button>
-                    <button onClick={() => { handleAddToCart(); navigate("/checkout"); }} className="pd-cta-secondary px-5 py-2.5 border-2 border-green-600 text-green-700 rounded-xl font-semibold text-sm cursor-pointer">
+                    <button onClick={() => { handleAddToCart(); navigate("/checkout"); }} className="pd-cta-primary px-5 py-2.5 rounded-xl font-semibold text-white text-sm cursor-pointer">
                       Mua ngay
                     </button>
                   </div>
@@ -901,8 +901,8 @@ export default function ProductDetail() {
                           >
                             <Star
                               className={`w-5 h-5 ${value <= myStars
-                                  ? "fill-yellow-400 text-yellow-400"
-                                  : "fill-gray-200 text-gray-300"
+                                ? "fill-yellow-400 text-yellow-400"
+                                : "fill-gray-200 text-gray-300"
                                 }`}
                             />
                           </button>
@@ -981,14 +981,14 @@ export default function ProductDetail() {
             <div className="border-t border-gray-100 bg-gray-50/60 px-6 lg:px-10 py-10 pd-enter-3">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-xl font-bold text-gray-900">Có thể bạn sẽ thích</h3>
-                <button onClick={() => navigate("/product")} className="text-sm font-semibold text-green-700 hover:text-green-800 hover:underline transition-colors">Xem tất cả →</button>
+                <button onClick={() => navigate("/product")} className="text-sm font-semibold text-green-700 hover:text-green-800 hover:underline transition-colors cursor-pointer">Xem tất cả →</button>
               </div>
               {relatedProducts.length > 0 ? (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                   {relatedProducts.map((p) => (
                     <button key={p.productId} type="button" onClick={() => navigate(`/product/${p.productId}`)} className="pd-related text-left bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm">
                       <div className="relative overflow-hidden aspect-[4/3]">
-                        <img src={p.thumbnailUrl} alt={p.name} className="w-full h-full object-cover" />
+                        <img src={p.thumbnailUrl} alt={p.name} className="w-full h-full object-cover cursor-pointer" />
                       </div>
                       <div className="p-3">
                         <p className="text-sm font-semibold text-gray-900 mb-1 line-clamp-2 leading-snug">{p.name}</p>
