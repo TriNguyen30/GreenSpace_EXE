@@ -172,13 +172,18 @@ export default function Chatbox() {
     const sendPrompt = (text: string) => {
         const trimmed = text.trim();
         if (!trimmed || loading) return;
+
         setInput("");
+
         dispatch(addUserMessage(trimmed));
+
         dispatch(
             sendMessageThunk({
-                description: trimmed,
+                message: trimmed,
                 language: "vi",
                 plantType: "general",
+                includeProductRecommendations: true,
+                skipCache: true,
             })
         );
     };
@@ -221,7 +226,7 @@ export default function Chatbox() {
                 <div
                     className={`fixed bottom-6 right-24 z-40 w-[380px] max-w-[calc(100vw-3rem)] h-[520px] max-h-[70vh] flex flex-col bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden ${closing ? "cb-panel-exit" : "cb-panel-enter"
                         }`}
-                        ref={panelRef}
+                    ref={panelRef}
                 >
                     {/* Header */}
                     <div className="flex items-center justify-between px-4 py-3 bg-green-600 text-white shrink-0">
