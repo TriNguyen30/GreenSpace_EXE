@@ -2,10 +2,10 @@ import { axiosInstance } from "@/lib/axios";
 
 export interface SendChatPayload {
     message: string;
-    language?: string;
-    plantType?: string;
     imageBase64?: string;
     imageUrl?: string;
+    language?: string;
+    plantType?: string;
     includeProductRecommendations?: boolean;
     skipCache?: boolean;
 }
@@ -14,14 +14,16 @@ export interface ChatResponse {
     result: string;
 }
 
-/** Response trả về từ Chatbox/message */
-export interface ChatboxApiResponse {
+interface ChatboxApiResponse {
     data?: {
-        result?: string;
+        isSuccessful?: boolean;
+        errorMessage?: string | null;
         message?: string;
     };
-    result?: string;
+    isSuccess?: boolean;
     message?: string;
+    errors?: unknown;
+    statusCode?: number;
 }
 
 export const sendChatMessage = async (
@@ -41,14 +43,30 @@ export const sendChatMessage = async (
         }
     );
 
-    const responseData = res.data;
+    const response = res.data;
 
-    const result =
-        responseData?.data?.result ??
-        responseData?.result ??
-        responseData?.data?.message ??
-        responseData?.message ??
-        "Không có phản hồi từ AI.";
+    // ❌ HTTP fail (axios thường tự throw rồi, nhưng check thêm cho chắc)
+    if (res.status !== 200) {
+        throw new Error("Lỗi kết nối máy chủ.");
+    }
 
-    return { result };
+    // ❌ Wrapper fail
+    if (!response?.isSuccess || response?.statusCode !== 200) {
+        throw new Error(response?.message || "Xử lý thất bại.");
+    }
+
+    // ❌ Data fail
+    if (!response?.data?.isSuccessful) {
+        throw new Error(
+            response?.data?.errorMessage || "AI xử lý thất bại."
+        );
+    }
+
+    const message = response?.data?.message;
+
+    if (!message) {
+        throw new Error("Không nhận được nội dung phản hồi từ AI.");
+    }
+
+    return { result: message };
 };
