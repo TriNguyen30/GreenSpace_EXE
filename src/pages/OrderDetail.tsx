@@ -285,9 +285,10 @@ export default function OrderDetailPage() {
                         {canCancel ? (
                             <button
                                 onClick={async () => {
-                                    if (!id) return;
+                                    const orderId = currentOrder.orderId;
+                                    if (!orderId) return;
                                     if (!confirm("Bạn chắc chắn muốn hủy đơn hàng này?")) return;
-                                    await dispatch(cancelOrderThunk(id));
+                                    await dispatch(cancelOrderThunk(orderId));
                                 }}
                                 className="od-cancel w-full flex items-center justify-center gap-2 bg-red-500 text-white py-2.5 rounded-xl font-bold text-sm"
                             >
