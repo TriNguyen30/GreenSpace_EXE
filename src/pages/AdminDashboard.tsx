@@ -105,17 +105,26 @@ export default function AdminDashboard() {
   const { user } = useSelector((state: any) => state.auth);
 
   const handleLogout = () => {
+    // Clear all auth-related data from localStorage
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
+    localStorage.removeItem("refreshToken");
+    localStorage.removeItem("role");
+    
+    // Dispatch logout to Redux
     dispatch(logout());
-    navigate("/login");
+    
+    // Navigate to customer home page
+    navigate("/");
   };
 
   const menuItems = [
     { id: "categories", label: "Danh mục", icon: <Boxes className="w-5 h-5" /> },
     { 
       id: "products", 
-      label: "Sản phẩm và biến thể", 
-      icon: <Package className="w-5 h-5" />,
-      hasDropdown: true,
+      label: "Sản phẩm & biến thể", 
+      icon: <Package className="w-4 h-5" />,
+      hasDropdown: true,      
       dropdownItems: [
         { id: "products", label: "Sản phẩm", icon: <Package className="w-4 h-4" /> },
         { id: "variants", label: "Biến thể", icon: <Tag className="w-4 h-4" /> }
