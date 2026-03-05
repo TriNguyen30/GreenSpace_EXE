@@ -55,19 +55,19 @@ const SUPPORT_LINKS = [
 const SOCIAL = [
   {
     label: "Facebook",
-    href: "https://facebook.com",
+    href: "https://www.facebook.com/profile.php?id=61584971247233&locale=vi_VN",
     icon: <FacebookIcon />,
     hoverColor: "#1877f2",
   },
   {
     label: "YouTube",
-    href: "https://youtube.com",
+    href: "https://www.youtube.com/@GreenSpacevn26",
     icon: <YoutubeIcon />,
     hoverColor: "#ff0000",
   },
   {
     label: "Instagram",
-    href: "https://instagram.com",
+    href: "https://www.instagram.com/greenspace.vn201/?hl=en",
     icon: <InstagramIcon />,
     hoverColor: "#c32aa3",
   },
