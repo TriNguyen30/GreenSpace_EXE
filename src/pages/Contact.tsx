@@ -243,7 +243,7 @@ export default function Contact() {
               <a href="mailto:support@greenspace.vn"
                 className="ct-quick-email inline-flex items-center gap-2 rounded-xl border-2 border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700">
                 <Mail className="w-4 h-4 text-green-600" />
-                greenspace@org.com
+                greenspace.vn201@gmail.com
               </a>
               <a href="tel:+84900111222"
                 className="ct-quick-phone inline-flex items-center gap-2 rounded-xl bg-green-600 px-4 py-2.5 text-sm font-semibold text-white">
