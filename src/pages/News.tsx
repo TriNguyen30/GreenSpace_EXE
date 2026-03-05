@@ -190,7 +190,7 @@ const MOCK_ARTICLES: Article[] = [
     excerpt:
       "Hướng dẫn chi tiết về các loại sâu bệnh phổ biến và phương pháp phòng trừ hiệu quả, an toàn cho cây.",
     image:
-      "https://images.unsplash.com/photo-1588392382834-a891154bca4d?w=800&q=80",
+      "https://tse3.mm.bing.net/th/id/OIP.2yy3dnrd8vv0wdmbpQGsugHaE8?rs=1&pid=ImgDetMain&o=7&rm=3",
     category: "Mẹo hữu ích",
     date: "2024-02-08",
     readTime: "8 phút đọc",
