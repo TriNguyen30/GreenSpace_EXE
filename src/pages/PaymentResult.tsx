@@ -11,7 +11,7 @@ import { useAppDispatch } from "@/store/hooks";
 import { fetchOrderByIdThunk } from "@/store/slices/orderSlice";
 import { useCart } from "@/context/CartContext";
 import { getPaymentByOrderId } from "@/services/payment.service";
-
+import { updateOrderStatus } from "@/services/order.service";
 
 type PaymentStatus = "success" | "failed" | "cancelled" | "pending";
 
@@ -39,7 +39,7 @@ export default function PaymentResultPage() {
         let retryCount = 0;
         const maxRetry = 3;
 
-        const loadOrder = async () => {
+                const loadOrder = async () => {
             try {
                 const payment = await getPaymentByOrderId(orderId);
 
@@ -50,6 +50,12 @@ export default function PaymentResultPage() {
                 const isPending = paymentStatus === "PENDING";
 
                 if (isPaid) {
+                    try {
+                        await updateOrderStatus(orderId, { status: "CONFIRMED" });
+                    } catch {
+                        // ignore status update error, still treat as paid
+                    }
+
                     clearCart();
                     setOrderStatus("success");
                     return;
