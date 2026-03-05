@@ -254,7 +254,7 @@ export default function Footer() {
               {[
                 { icon: <MapPin className="w-4 h-4 shrink-0 text-green-400" />, text: " 242 Bưng Ông Thoàn, Phước Long B, Thủ Đức, TP HCM" },
                 { icon: <Phone className="w-4 h-4 shrink-0 text-green-400" />, text: "0937 825 621" },
-                { icon: <Mail className="w-4 h-4 shrink-0 text-green-400" />, text: "greenspace@org.com" },
+                { icon: <Mail className="w-4 h-4 shrink-0 text-green-400" />, text: "greenspace.vn201@gmail.com" },
               ].map(({ icon, text }) => (
                 <li key={text} className="ft-contact-row flex items-start gap-2.5 text-gray-400 text-sm cursor-default">
                   <span className="mt-0.5">{icon}</span>
