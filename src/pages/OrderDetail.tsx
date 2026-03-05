@@ -1,8 +1,9 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, MapPin, Phone, Package, XCircle, AlertTriangle, Truck, CheckCircle2, Clock, Ban } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { fetchOrderByIdThunk, cancelOrderThunk } from "@/store/slices/orderSlice";
+import Modal from "@/components/ui/Modal";
 
 // ─── Status config ────────────────────────────────────────────────────────────
 const STATUS_MAP: Record<string, { label: string; cls: string; dot: string; icon: React.ElementType }> = {
@@ -179,6 +180,7 @@ export default function OrderDetailPage() {
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
     const { currentOrder, loading, error } = useAppSelector((s) => s.orders);
+    const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
 
     useEffect(() => { if (id) dispatch(fetchOrderByIdThunk(id)); }, [dispatch, id]);
 
@@ -283,17 +285,48 @@ export default function OrderDetailPage() {
                             </p>
                         </div>
                         {canCancel ? (
-                            <button
-                                onClick={async () => {
-                                    const orderId = currentOrder.orderId;
-                                    if (!orderId) return;
-                                    if (!confirm("Bạn chắc chắn muốn hủy đơn hàng này?")) return;
-                                    await dispatch(cancelOrderThunk(orderId));
-                                }}
-                                className="od-cancel w-full flex items-center justify-center gap-2 bg-red-500 text-white py-2.5 rounded-xl font-bold text-sm"
-                            >
-                                <XCircle className="w-4 h-4" /> Hủy đơn hàng
-                            </button>
+                            <>
+                                <button
+                                    onClick={() => setIsCancelModalOpen(true)}
+                                    className="od-cancel w-full flex items-center justify-center gap-2 bg-red-500 text-white py-2.5 rounded-xl font-bold text-sm cursor-pointer"
+                                >
+                                    <XCircle className="w-4 h-4" /> Hủy đơn hàng
+                                </button>
+                                <Modal
+                                    open={isCancelModalOpen}
+                                    onClose={() => setIsCancelModalOpen(false)}
+                                    title="Xác nhận hủy đơn hàng"
+                                    size="sm"
+                                >
+                                    <div className="space-y-4">
+                                        <p className="text-sm text-gray-600">
+                                            Bạn có chắc chắn muốn hủy đơn hàng này? Hành động này không thể hoàn tác.
+                                        </p>
+                                        <div className="flex justify-end gap-2">
+                                            <button
+                                                type="button"
+                                                onClick={() => setIsCancelModalOpen(false)}
+                                                className="px-4 py-2 rounded-lg text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 transition"
+                                            >
+                                                Đóng
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={async () => {
+                                                    const orderId = currentOrder.orderId;
+                                                    if (!orderId) return;
+                                                    await dispatch(cancelOrderThunk(orderId));
+                                                    setIsCancelModalOpen(false);
+                                                }}
+                                                className="px-4 py-2 rounded-lg text-sm font-semibold text-white bg-red-500 hover:bg-red-600 transition flex items-center gap-2"
+                                            >
+                                                <XCircle className="w-4 h-4" />
+                                                Xác nhận hủy
+                                            </button>
+                                        </div>
+                                    </div>
+                                </Modal>
+                            </>
                         ) : (
                             <div className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border text-xs font-semibold w-fit ${status.cls}`}>
                                 <StatusIcon className="w-3.5 h-3.5" />
