@@ -5,7 +5,9 @@ export interface Rating {
   userName: string;
   stars: number;
   comment: string;
-  createdDate: string;
+  /** ISO date string từ API (createDate) */
+  createdDate?: string;
+  createDate?: string;
 }
 
 export interface RatingUpdatePayload {

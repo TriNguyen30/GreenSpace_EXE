@@ -388,6 +388,13 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
   );
 }
 
+function formatRatingDate(dateStr: string | undefined): string {
+  if (!dateStr || typeof dateStr !== "string") return "—";
+  const d = new Date(dateStr.trim());
+  if (Number.isNaN(d.getTime())) return "—";
+  return d.toLocaleDateString("vi-VN");
+}
+
 // ─── Main component ───────────────────────────────────────────────────────────
 export default function ProductDetail() {
   injectPDStyles();
@@ -963,7 +970,7 @@ export default function ProductDetail() {
                               <Stars rating={r.stars} />
                             </div>
                             <span className="text-xs text-gray-400">
-                              {new Date(r.createdDate).toLocaleDateString("vi-VN")}
+                              {formatRatingDate(r.createDate ?? r.createdDate)}
                             </span>
                           </div>
                           <p className="text-sm text-gray-600 whitespace-pre-line">
