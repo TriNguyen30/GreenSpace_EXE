@@ -38,8 +38,6 @@ export const updateOrderStatus = async (
 };
 
 export const cancelOrder = async (orderId: string): Promise<Order> => {
-    const res = await axiosInstance.patch(`/Orders/${orderId}/status`, {
-        status: "Cancelled",
-    });
+    const res = await axiosInstance.patch(`/Orders/${orderId}/cancel`);
     return res.data.data;
 };
