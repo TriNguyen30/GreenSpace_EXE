@@ -38,7 +38,7 @@ export default function MessageBox() {
       type="button"
       onClick={handleClick}
       className="fixed bottom-24 right-6 z-40 w-14 h-14 rounded-full flex items-center justify-center cursor-pointer"
-      style={{ transition: "background .2s, transform .2s" }}
+      style={{ transition: "background .2s, transform .2s", animationDelay: '0.7s' }}
       aria-label="Mở Zalo Group"
     >
       <img
