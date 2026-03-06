@@ -315,8 +315,18 @@ export default function OrderDetailPage() {
                                                 onClick={async () => {
                                                     const orderId = currentOrder.orderId;
                                                     if (!orderId) return;
-                                                    await dispatch(cancelOrderThunk(orderId));
-                                                    setIsCancelModalOpen(false);
+                                                    try {
+                                                        await dispatch(cancelOrderThunk(orderId)).unwrap();
+                                                        setIsCancelModalOpen(false);
+                                                        navigate("/orders");
+                                                    } catch (err: any) {
+                                                        const msg =
+                                                            err?.message ||
+                                                            (Array.isArray(err?.errors)
+                                                                ? err.errors.join(", ")
+                                                                : undefined);
+                                                        alert(msg || "Hủy đơn hàng thất bại");
+                                                    }
                                                 }}
                                                 className="px-4 py-2 rounded-lg text-sm font-semibold text-white bg-red-500 hover:bg-red-600 transition flex items-center gap-2"
                                             >
