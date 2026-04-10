@@ -3,7 +3,7 @@ import { Mail, Lock, Eye, EyeOff, ArrowRight, ArrowLeft, Leaf } from "lucide-rea
 import { useNavigate } from "react-router-dom";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import BonSaiImage from "@/assets/image/BonSaiImage.png";
+import BonSaiImage from "@/assets/image/Bonsaiv2.jpg";
 import Logo from "@/assets/image/Logo.png";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { loginThunk } from "@/store/slices/authSlice";
@@ -291,7 +291,7 @@ export default function Login() {
       <div className="ln-left hidden lg:flex lg:w-1/2 ln-left-bg p-12 flex-col justify-between relative overflow-hidden">
 
         {/* BonSai bg image */}
-        <div className="absolute inset-0 opacity-8 pointer-events-none z-0">
+        <div className="absolute inset-0 opacity-30 pointer-events-none z-0">
           <img src={BonSaiImage} alt="" className="w-full h-full object-cover" />
         </div>
 

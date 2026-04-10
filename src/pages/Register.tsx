@@ -6,7 +6,7 @@ import {
 import { useLocation, useNavigate } from "react-router-dom";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
-import BonSaiImage from "@/assets/image/BonSaiImage.png";
+import BonSaiImage from "@/assets/image/Bonsaiv2.jpg";
 import Logo from "@/assets/image/Logo.png";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
@@ -409,7 +409,7 @@ export default function Register() {
       <div className="rg-left hidden lg:flex lg:w-1/2 rg-left-bg p-12 flex-col justify-between relative overflow-hidden">
 
         {/* BonSai bg */}
-        <div className="absolute inset-0 opacity-8 pointer-events-none z-0">
+        <div className="absolute inset-0 opacity-30 pointer-events-none z-0">
           <img src={BonSaiImage} alt="" className="w-full h-full object-cover" />
         </div>
         <div className="absolute inset-0 bg-gradient-to-br from-green-600/40 to-green-900/60 pointer-events-none z-0" />
