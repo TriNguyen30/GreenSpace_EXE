@@ -3,6 +3,7 @@ import { Leaf, MapPin, Recycle, Truck, CircleCheck } from "lucide-react";
 import { useNavigate } from "react-router";
 import { getProducts } from "@/services/product.service";
 import type { Product as ApiProduct } from "@/types/api";
+import { generateSlug } from "@/utils/slug";
 
 // ─── Inject keyframes & base animation styles ────────────────────────────────
 const CSS = `
@@ -468,7 +469,7 @@ export default function GreenSpaceLanding() {
               <button
                 key={product.productId}
                 type="button"
-                onClick={() => navigate(`/product/${product.productId}`)}
+                onClick={() => navigate(`/product/${generateSlug(product.name, product.productId)}`)}
                 className="gs-reveal from-up gs-card text-left bg-white rounded-xl overflow-hidden shadow-md"
                 aria-label={`Xem chi tiết ${product.name}`}
               >
