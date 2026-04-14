@@ -16,6 +16,7 @@ import type { Promotion } from "@/types/promotion";
 import { createRating, getProductAverageRating, getProductRatings, updateRating } from "@/services/rating.service";
 import type { Rating } from "@/types/rating";
 import { useAppSelector } from "@/store/hooks";
+import { useToast } from "@/components/ui/Toast";
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
 const CSS = `
@@ -195,69 +196,6 @@ function injectPDStyles() {
   document.head.appendChild(el);
 }
 
-// ─── Toast helper ─────────────────────────────────────────────────────────────
-function showToast(message: string) {
-  const container = (() => {
-    let c = document.getElementById("pd-toast-container") as HTMLDivElement | null;
-    if (!c) {
-      c = document.createElement("div");
-      c.id = "pd-toast-container";
-      c.style.cssText = "position:fixed;top:80px;right:16px;z-index:9999;display:flex;flex-direction:column;gap:8px;pointer-events:none;";
-      document.body.appendChild(c);
-    }
-    return c;
-  })();
-
-  const wrap = document.createElement("div");
-  wrap.style.cssText = "pointer-events:auto;overflow:hidden;";
-
-  const toast = document.createElement("div");
-  toast.className = "pd-toast-enter";
-  toast.style.cssText = `position:relative;display:flex;align-items:center;gap:12px;min-width:300px;max-width:380px;padding:14px 16px;border-radius:14px;overflow:hidden;color:#fff;cursor:default;background:#16a34a;border:1px solid rgba(255,255,255,.15);box-shadow:0 4px 6px rgba(0,0,0,.07),0 10px 30px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.15);`;
-
-  const icon = document.createElement("div");
-  icon.style.cssText = "font-size:22px;line-height:1;width:32px;height:32px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.18);border-radius:8px;flex-shrink:0;color:#fff;";
-  icon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>`;
-
-  const textBlock = document.createElement("div");
-  textBlock.style.cssText = "flex:1;min-width:0;";
-  const lbl = document.createElement("p");
-  lbl.style.cssText = "font-size:11px;font-weight:700;letter-spacing:.04em;margin:0 0 2px;opacity:.75;text-transform:uppercase;";
-  lbl.textContent = "Thành công";
-  const msg = document.createElement("p");
-  msg.style.cssText = "font-size:14px;font-weight:500;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;";
-  msg.textContent = message;
-  textBlock.append(lbl, msg);
-
-  const closeBtn = document.createElement("button");
-  closeBtn.style.cssText = "flex-shrink:0;background:rgba(255,255,255,.15);border:none;color:rgba(255,255,255,.8);width:24px;height:24px;border-radius:6px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;padding:0;";
-  closeBtn.innerHTML = `<svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M1 1l10 10M11 1L1 11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`;
-
-  const track = document.createElement("div");
-  track.style.cssText = "position:absolute;bottom:0;left:0;right:0;height:3px;background:rgba(255,255,255,.15);border-radius:0 0 14px 14px;overflow:hidden;";
-  const bar = document.createElement("div");
-  bar.className = "pd-toast-bar";
-  bar.style.cssText = "height:100%;background:rgba(255,255,255,.5);border-radius:inherit;animation-duration:3000ms;";
-  track.appendChild(bar);
-
-  toast.append(icon, textBlock, closeBtn, track);
-  wrap.appendChild(toast);
-  container.appendChild(wrap);
-
-  let dismissed = false;
-  const dismiss = () => {
-    if (dismissed) return;
-    dismissed = true;
-    toast.className = "pd-toast-exit";
-    setTimeout(() => wrap.remove(), 320);
-  };
-
-  closeBtn.addEventListener("click", dismiss);
-  const t = setTimeout(dismiss, 3000);
-  toast.addEventListener("mouseenter", () => { bar.style.animationPlayState = "paused"; clearTimeout(t); });
-  toast.addEventListener("mouseleave", () => { bar.style.animationPlayState = "running"; setTimeout(dismiss, 800); });
-}
-
 // ─── Lightbox ─────────────────────────────────────────────────────────────────
 function Lightbox({ images, startIndex, onClose }: {
   images: string[]; startIndex: number; onClose: () => void;
@@ -398,6 +336,7 @@ function formatRatingDate(dateStr: string | undefined): string {
 // ─── Main component ───────────────────────────────────────────────────────────
 export default function ProductDetail() {
   injectPDStyles();
+  const { success, error: toastError, warning } = useToast();
 
   const { id } = useParams();
   const navigate = useNavigate();
@@ -575,10 +514,10 @@ export default function ProductDetail() {
   function handleAddToCart() {
     if (!apiProduct) return;
     if (!selectedVariant) {
-      showToast("Vui lòng chọn phiên bản sản phẩm hợp lệ");
+      warning("Thiếu phiên bản", "Vui lòng chọn phiên bản sản phẩm hợp lệ");
       return;
     }
-    if (selectedVariant.stockQuantity === 0) { showToast("Phiên bản này đã hết hàng"); return; }
+    if (selectedVariant.stockQuantity === 0) { toastError("Hết hàng", "Phiên bản này đã hết hàng"); return; }
     const cartItem = {
       id: Array.from(apiProduct.productId).slice(0, 8).reduce((s, c) => s + c.charCodeAt(0), 0),
       name: selectedVariant?.sizeOrModel ? `${apiProduct.name} - ${selectedVariant.sizeOrModel}` : apiProduct.name,
@@ -588,7 +527,7 @@ export default function ProductDetail() {
       variantId: selectedVariant.variantId,
     };
     addToCart(cartItem, quantity);
-    showToast(`Đã thêm ${quantity} ${cartItem.name} vào giỏ hàng!`);
+    success("Thành công", `Đã thêm ${quantity} ${cartItem.name} vào giỏ hàng!`);
   }
 
   async function handleSubmitRating() {
@@ -600,7 +539,7 @@ export default function ProductDetail() {
 
     const trimmedComment = myComment.trim();
     if (!trimmedComment) {
-      showToast("Vui lòng nhập nội dung đánh giá.");
+      warning("Thiếu thông tin", "Vui lòng nhập nội dung đánh giá.");
       return;
     }
 
@@ -618,11 +557,11 @@ export default function ProductDetail() {
           comment: trimmedComment,
         });
       }
-      showToast("Đã gửi đánh giá. Cảm ơn bạn!");
+      success("Thành công", "Đã gửi đánh giá. Cảm ơn bạn!");
       await reloadRatings();
     } catch (e) {
       console.error(e);
-      showToast("Không thể gửi đánh giá. Vui lòng thử lại sau.");
+      toastError("Lỗi", "Không thể gửi đánh giá. Vui lòng thử lại sau.");
     } finally {
       setRatingSubmitting(false);
     }
