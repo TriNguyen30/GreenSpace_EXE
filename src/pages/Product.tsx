@@ -6,6 +6,7 @@ import { getProductAverageRating, getProductRatings } from "@/services/rating.se
 import type { Product as ApiProduct } from "@/types/api";
 import { useSearch } from "@/context/SearchContext";
 import SearchBox from "@/components/ui/Search";
+import { generateSlug } from "@/utils/slug";
 
 type ProductItem = ApiProduct & {
   isNew?: boolean;
@@ -360,7 +361,7 @@ export default function Product() {
               {!isLoading && !error && paginated.map((p, i) => (
                 <Link
                   key={p.productId}
-                  to={`/product/${p.productId}`}
+                  to={`/product/${generateSlug(p.name, p.productId)}`}
                   className="pl-card bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm block focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500"
                   aria-label={`Xem chi tiết ${p.name}`}
                   style={{ animationDelay: `${i * 0.045}s` }}

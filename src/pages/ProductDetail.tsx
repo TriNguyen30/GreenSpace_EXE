@@ -17,6 +17,7 @@ import { createRating, getProductAverageRating, getProductRatings, updateRating 
 import type { Rating } from "@/types/rating";
 import { useAppSelector } from "@/store/hooks";
 import { useToast } from "@/components/ui/Toast";
+import { extractIdFromSlug, generateSlug } from "@/utils/slug";
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
 const CSS = `
@@ -338,7 +339,8 @@ export default function ProductDetail() {
   injectPDStyles();
   const { success, error: toastError, warning } = useToast();
 
-  const { id } = useParams();
+  const { slug } = useParams();
+  const id = slug ? extractIdFromSlug(slug) : undefined;
   const navigate = useNavigate();
   const { addToCart } = useCart();
   const authUser = useAppSelector((s) => s.auth.user);
@@ -932,7 +934,7 @@ export default function ProductDetail() {
               {relatedProducts.length > 0 ? (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                   {relatedProducts.map((p) => (
-                    <button key={p.productId} type="button" onClick={() => navigate(`/product/${p.productId}`)} className="pd-related text-left bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm">
+                    <button key={p.productId} type="button" onClick={() => navigate(`/product/${generateSlug(p.name, p.productId)}`)} className="pd-related text-left bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm">
                       <div className="relative overflow-hidden aspect-[4/3]">
                         <img src={p.thumbnailUrl} alt={p.name} className="w-full h-full object-cover cursor-pointer" />
                       </div>
