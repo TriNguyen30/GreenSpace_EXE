@@ -6,6 +6,7 @@ import { SearchProvider } from "@/context/SearchContext";
 import { Provider } from "react-redux";
 import { store } from "@/store/store.ts";
 import { ToastProvider } from "@/components/ui/Toast";
+import { Analytics } from "@vercel/analytics/react";
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
         </BrowserRouter>
       </CartProvider>
       </ToastProvider>
+      <Analytics />
     </SearchProvider>
   );
 }
