@@ -51,7 +51,7 @@ export default function PaymentResultPage() {
 
                 if (isPaid) {
                     try {
-                        await updateOrderStatus(orderId, { status: "CONFIRMED" });
+                        await updateOrderStatus(orderId, { status: "Confirmed" });
                     } catch {
                         // ignore status update error, still treat as paid
                     }
