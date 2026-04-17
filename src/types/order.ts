@@ -1,17 +1,18 @@
 export type OrderStatus =
   | "PENDING"
   | "CONFIRMED"
-  | "PROCESSING"
-  | "SHIPPED"
+  | "SHIPPING"
   | "COMPLETED"
   | "CANCELLED"
+  | "RETURNED"
   // Some BE endpoints return PascalCase
   | "Pending"
   | "Confirmed"
-  | "Processing"
-  | "Shipped"
+  | "Shipping"
   | "Completed"
-  | "Cancelled";
+  | "Cancelled"
+  | "Returned"
+  | string;
 
 export type PaymentMethod = "COD" | "PayOS" | "PAYOS";
 

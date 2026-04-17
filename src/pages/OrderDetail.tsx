@@ -9,13 +9,13 @@ import Modal from "@/components/ui/Modal";
 const STATUS_MAP: Record<string, { label: string; cls: string; dot: string; icon: React.ElementType }> = {
     PENDING: { label: "Chờ xác nhận", cls: "bg-yellow-50 border-yellow-200 text-yellow-700", dot: "#f59e0b", icon: Clock },
     CONFIRMED: { label: "Đã xác nhận", cls: "bg-blue-50 border-blue-200 text-blue-700", dot: "#3b82f6", icon: CheckCircle2 },
-    PROCESSING: { label: "Đang xử lý", cls: "bg-violet-50 border-violet-200 text-violet-700", dot: "#8b5cf6", icon: Package },
-    SHIPPED: { label: "Đang giao", cls: "bg-indigo-50 border-indigo-200 text-indigo-700", dot: "#6366f1", icon: Truck },
+    SHIPPING: { label: "Đang giao", cls: "bg-indigo-50 border-indigo-200 text-indigo-700", dot: "#6366f1", icon: Truck },
     COMPLETED: { label: "Hoàn thành", cls: "bg-green-50 border-green-200 text-green-700", dot: "#16a34a", icon: CheckCircle2 },
     CANCELLED: { label: "Đã hủy", cls: "bg-red-50 border-red-200 text-red-600", dot: "#ef4444", icon: Ban },
+    RETURNED: { label: "Trả hàng", cls: "bg-orange-50 border-orange-200 text-orange-600", dot: "#f97316", icon: AlertTriangle },
 };
 
-const STEPS = ["PENDING", "CONFIRMED", "PROCESSING", "SHIPPED", "COMPLETED"] as const;
+const STEPS = ["PENDING", "CONFIRMED", "SHIPPING", "COMPLETED"] as const;
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
 const CSS = `
@@ -120,7 +120,7 @@ const formatDate = (s?: string) =>
 
 // ─── Status stepper ───────────────────────────────────────────────────────────
 function StatusStepper({ status }: { status: string }) {
-    if (status === "CANCELLED") return null;
+    if (status === "CANCELLED" || status === "RETURNED") return null;
     const idx = STEPS.indexOf(status as typeof STEPS[number]);
 
     return (
@@ -233,7 +233,7 @@ export default function OrderDetailPage() {
                 </div>
 
                 {/* ── Status stepper ── */}
-                {statusKey !== "CANCELLED" && (
+                {statusKey !== "CANCELLED" && statusKey !== "RETURNED" && (
                     <div className="od-e2 bg-white rounded-2xl border border-gray-100 shadow-sm px-6 py-5">
                         <p className="text-xs font-bold text-gray-400 tracking-widest uppercase mb-5">Trạng thái đơn hàng</p>
                         <StatusStepper status={statusKey} />

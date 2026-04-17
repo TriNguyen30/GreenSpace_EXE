@@ -4,37 +4,44 @@ import { RefreshCw, Search } from "lucide-react";
 import { getAllOrders, updateOrderStatus } from "@/services/order.service";
 import type { Order, OrderStatus } from "@/types/order";
 
-const STATUS_LABELS: Record<OrderStatus, string> = {
-  PENDING: "Chờ xác nhận",
-  CONFIRMED: "Đã xác nhận",
-  PROCESSING: "Đang xử lý",
-  SHIPPED: "Đang giao",
-  COMPLETED: "Hoàn thành",
-  CANCELLED: "Đã hủy",
+const STATUS_LABELS: Record<string, string> = {
   Pending: "Chờ xác nhận",
   Confirmed: "Đã xác nhận",
-  Processing: "Đang xử lý",
-  Shipped: "Đang giao",
+  Shipping: "Đang giao",
   Completed: "Hoàn thành",
   Cancelled: "Đã hủy",
+  Returned: "Trả hàng",
+  // Backup capital letters
+  PENDING: "Chờ xác nhận",
+  CONFIRMED: "Đã xác nhận",
+  SHIPPING: "Đang giao",
+  COMPLETED: "Hoàn thành",
+  CANCELLED: "Đã hủy",
+  RETURNED: "Trả hàng",
 };
 
 const STATUS_OPTIONS: OrderStatus[] = [
-  "PENDING",
-  "CONFIRMED",
-  "PROCESSING",
-  "SHIPPED",
-  "COMPLETED",
-  "CANCELLED",
+  "Pending",
+  "Confirmed",
+  "Shipping",
+  "Completed",
+  "Cancelled",
+  "Returned",
 ];
 
 const STATUS_BADGE_CLASS: Record<string, string> = {
+  Pending: "bg-yellow-100 text-yellow-800",
+  Confirmed: "bg-blue-100 text-blue-800",
+  Shipping: "bg-indigo-100 text-indigo-800",
+  Completed: "bg-green-100 text-green-800",
+  Cancelled: "bg-red-100 text-red-800",
+  Returned: "bg-orange-100 text-orange-800",
   PENDING: "bg-yellow-100 text-yellow-800",
   CONFIRMED: "bg-blue-100 text-blue-800",
-  PROCESSING: "bg-violet-100 text-violet-800",
-  SHIPPED: "bg-indigo-100 text-indigo-800",
+  SHIPPING: "bg-indigo-100 text-indigo-800",
   COMPLETED: "bg-green-100 text-green-800",
   CANCELLED: "bg-red-100 text-red-800",
+  RETURNED: "bg-orange-100 text-orange-800",
 };
 
 export default function OrderManagement() {
