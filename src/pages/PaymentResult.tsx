@@ -16,9 +16,8 @@ import { updateOrderStatus } from "@/services/order.service";
 type PaymentStatus = "success" | "failed" | "cancelled" | "pending";
 
 export default function PaymentResultPage() {
-    const navigate = useNavigate();
     const dispatch = useAppDispatch();
-    const { clearCart } = useCart();
+    const { clearCart, removeFromCart } = useCart();
     const [params] = useSearchParams();
 
     const orderId = params.get("orderId");
@@ -49,17 +48,29 @@ export default function PaymentResultPage() {
                 const isCancelled = paymentStatus === "CANCELLED";
                 const isPending = paymentStatus === "PENDING";
 
-                if (isPaid) {
-                    try {
-                        await updateOrderStatus(orderId, { status: "Confirmed" });
-                    } catch {
-                        // ignore status update error, still treat as paid
-                    }
+                    if (isPaid) {
+                        try {
+                            await updateOrderStatus(orderId, { status: "Confirmed" });
+                        } catch {
+                            // ignore status update error, still treat as paid
+                        }
 
-                    clearCart();
-                    setOrderStatus("success");
-                    return;
-                }
+                        try {
+                            const pendingStr = localStorage.getItem("pending_checkout_items");
+                            if (pendingStr) {
+                                const ids = JSON.parse(pendingStr) as number[];
+                                ids.forEach(id => removeFromCart(id));
+                                localStorage.removeItem("pending_checkout_items");
+                            } else {
+                                clearCart();
+                            }
+                        } catch {
+                            clearCart();
+                        }
+
+                        setOrderStatus("success");
+                        return;
+                    }
 
                 if (isCancelled) {
                     setOrderStatus("cancelled");
@@ -82,7 +93,7 @@ export default function PaymentResultPage() {
 
 
         loadOrder();
-    }, [dispatch, orderId, clearCart]);
+    }, [dispatch, orderId, clearCart, removeFromCart]);
 
     /* ================= Auto Redirect ================= */
 

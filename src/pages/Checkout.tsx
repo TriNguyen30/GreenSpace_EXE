@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   ArrowLeft, CreditCard, Truck, MapPin,
   CheckCircle, ShoppingBag, User, Tag, Loader2,
@@ -166,8 +166,9 @@ export default function CheckoutPage() {
   injectCheckoutStyles();
 
   const navigate = useNavigate();
+  const location = useLocation();
   const dispatch = useAppDispatch();
-  const { items, getTotalPrice, clearCart } = useCart();
+  const { items: cartItems, removeFromCart, clearCart } = useCart();
   const { loading } = useAppSelector((s) => s.orders);
   const authUser = useAppSelector((s) => s.auth.user);
 
@@ -192,7 +193,12 @@ export default function CheckoutPage() {
     getActivePromotions().then(setPromotions).catch(console.error);
   }, []);
 
-  const totalPrice = getTotalPrice();
+  const items = location.state?.selectedItems || cartItems;
+
+  const totalPrice = items.reduce((acc: number, item: any) => {
+    const p = Number(item.price.replace(/[^.\d]/g, "").replace(/\./g, "")) || 0;
+    return acc + p * item.quantity;
+  }, 0);
   const shippingFee = totalPrice > 500_000 ? 0 : 30_000;
 
   const calcDiscount = (promo: Promotion, total: number) => {
@@ -280,10 +286,18 @@ export default function CheckoutPage() {
         paymentMethod,
         voucherCode: discountAmount > 0 && selectedPromotion ? selectedPromotion.code : undefined,
         note: formData.note,
-        items: items.map((i) => ({ variantId: i.variantId, quantity: i.quantity })),
+        items: items.map((i: any) => ({ variantId: i.variantId, quantity: i.quantity })),
       };
       const order = await dispatch(createOrderThunk(payload)).unwrap();
-      if (paymentMethod === "COD") { clearCart(); navigate(`/orders/${order.orderId}`); return; }
+      
+      if (paymentMethod === "COD") { 
+        items.forEach((i: any) => removeFromCart(i.id));
+        navigate(`/orders/${order.orderId}`); 
+        return; 
+      }
+      
+      localStorage.setItem("pending_checkout_items", JSON.stringify(items.map((i: any) => i.id)));
+      
       const payRes = await createPayOSPayment({ orderId: order.orderId });
       if (!payRes.paymentUrl) throw new Error("Không nhận được URL thanh toán");
       window.location.href = payRes.paymentUrl;
