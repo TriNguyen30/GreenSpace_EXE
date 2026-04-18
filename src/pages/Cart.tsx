@@ -1,4 +1,5 @@
 import { useState } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Trash2, Plus, Minus, ArrowLeft, ShoppingBag,
@@ -158,8 +159,16 @@ export default function CartPage() {
   const [clearAllModalOpen, setClearAllModalOpen] = useState(false);
   const [removingIds, setRemovingIds] = useState<Set<number>>(new Set());
 
-  const totalPrice = getTotalPrice();
-  const shippingFee = totalPrice > 500000 ? 0 : 30000;
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(() => new Set());
+
+  const selectedItems = items.filter((item) => selectedIds.has(item.id));
+  
+  const totalPrice = selectedItems.reduce((acc, item) => {
+    const p = Number(item.price.replace(/[^.\d]/g, "").replace(/\./g, "")) || 0;
+    return acc + p * item.quantity;
+  }, 0);
+
+  const shippingFee = totalPrice > 0 && totalPrice <= 500000 ? 30000 : 0;
   const discount = 0;
   const finalTotal = totalPrice + shippingFee - discount;
   const shipProgress = Math.min(100, (totalPrice / 500000) * 100);
@@ -174,8 +183,11 @@ export default function CartPage() {
   }
 
   function handleCheckout() {
-    if (items.length === 0) return;
-    navigate("/checkout");
+    if (selectedItems.length === 0) {
+      alert("Vui lòng chọn ít nhất một sản phẩm để thanh toán.");
+      return;
+    }
+    navigate("/checkout", { state: { selectedItems } });
   }
 
   return (
@@ -214,13 +226,27 @@ export default function CartPage() {
               </p>
             </div>
             {items.length > 0 && (
-              <button
-                onClick={() => setClearAllModalOpen(true)}
-                className="cp-clear-btn inline-flex items-center gap-1.5 text-sm font-medium text-gray-400 cursor-pointer"
-              >
-                <Trash2 className="w-4 h-4" />
-                Xóa tất cả
-              </button>
+              <div className="flex items-center gap-6">
+                <label className="flex items-center gap-2 cursor-pointer text-sm font-medium text-gray-700 select-none">
+                  <input
+                    type="checkbox"
+                    checked={selectedIds.size === items.length && items.length > 0}
+                    onChange={(e) => {
+                      if (e.target.checked) setSelectedIds(new Set(items.map((i) => i.id)));
+                      else setSelectedIds(new Set());
+                    }}
+                    className="w-[18px] h-[18px] accent-green-600 cursor-pointer rounded border-gray-300"
+                  />
+                  Chọn tất cả
+                </label>
+                <button
+                  onClick={() => setClearAllModalOpen(true)}
+                  className="cp-clear-btn inline-flex items-center gap-1.5 text-sm font-medium text-gray-400 cursor-pointer"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  Xóa tất cả
+                </button>
+              </div>
             )}
           </div>
         </div>
@@ -259,9 +285,24 @@ export default function CartPage() {
                     className={`cp-item cp-card bg-white rounded-2xl border border-gray-100 p-5 ${isRemoving ? "cp-item-removing" : ""}`}
                     style={{ animationDelay: `${0.1 + idx * 0.06}s` }}
                   >
-                    <div className="flex gap-5">
+                    <div className="flex gap-4 sm:gap-5 items-stretch">
+                      {/* Checkbox */}
+                      <div className="flex-shrink-0 flex items-center px-1">
+                        <input
+                          type="checkbox"
+                          checked={selectedIds.has(item.id)}
+                          onChange={(e) => {
+                            const n = new Set(selectedIds);
+                            if (e.target.checked) n.add(item.id);
+                            else n.delete(item.id);
+                            setSelectedIds(n);
+                          }}
+                          className="w-[20px] h-[20px] text-green-600 rounded border-gray-300 focus:ring-green-500 cursor-pointer accent-green-600"
+                        />
+                      </div>
+
                       {/* Image */}
-                      <div className="flex-shrink-0 w-28 h-28 rounded-xl overflow-hidden bg-gray-50">
+                      <div className="flex-shrink-0 w-24 h-24 sm:w-28 sm:h-28 rounded-xl overflow-hidden bg-gray-50">
                         <img
                           src={item.image}
                           alt={item.name}
@@ -293,8 +334,12 @@ export default function CartPage() {
                         {/* Price row */}
                         <div className="flex items-end justify-between gap-4 mt-3">
                           <div>
-                            <p className="text-xs text-gray-400 mb-0.5">Đơn giá</p>
-                            <p className="text-base font-bold text-green-700">{item.price}</p>
+                            <p className="text-xs text-gray-400 mb-0.5">
+                              Đơn giá
+                            </p>
+                            <p className="text-base font-bold text-green-700">
+                              {item.price}
+                            </p>
                           </div>
 
                           {/* Qty control */}
@@ -303,9 +348,12 @@ export default function CartPage() {
                               onClick={() => {
                                 const n = Math.max(1, item.quantity - 1);
                                 updateQuantity(item.id, n);
-                                setQuantityInputs((p) => ({ ...p, [item.id]: String(n) }));
+                                setQuantityInputs((p) => ({
+                                  ...p,
+                                  [item.id]: String(n),
+                                }));
                               }}
-                              className="cp-qty-btn px-3 py-2 text-gray-400"
+                              className="cp-qty-btn px-3 py-2 text-gray-400 cursor-pointer"
                               aria-label="Giảm"
                             >
                               <Minus className="w-3.5 h-3.5" />
@@ -313,11 +361,16 @@ export default function CartPage() {
                             <input
                               type="number"
                               min={1}
-                              value={quantityInputs[item.id] ?? String(item.quantity)}
+                              value={
+                                quantityInputs[item.id] ?? String(item.quantity)
+                              }
                               onChange={(e) => {
                                 const r = e.target.value;
                                 if (!/^\d*$/.test(r)) return;
-                                setQuantityInputs((p) => ({ ...p, [item.id]: r }));
+                                setQuantityInputs((p) => ({
+                                  ...p,
+                                  [item.id]: r,
+                                }));
                                 if (!r) return;
                                 const n = Number(r);
                                 if (isNaN(n)) return;
@@ -326,7 +379,14 @@ export default function CartPage() {
                               onBlur={() =>
                                 setQuantityInputs((p) => {
                                   const c = p[item.id];
-                                  return c && Number(c) >= 1 ? p : { ...p, [item.id]: String(Math.max(1, item.quantity)) };
+                                  return c && Number(c) >= 1
+                                    ? p
+                                    : {
+                                        ...p,
+                                        [item.id]: String(
+                                          Math.max(1, item.quantity),
+                                        ),
+                                      };
                                 })
                               }
                               className="w-12 py-2 bg-gray-50 text-sm font-bold text-center border-0 outline-none [-moz-appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
@@ -335,9 +395,12 @@ export default function CartPage() {
                               onClick={() => {
                                 const n = item.quantity + 1;
                                 updateQuantity(item.id, n);
-                                setQuantityInputs((p) => ({ ...p, [item.id]: String(n) }));
+                                setQuantityInputs((p) => ({
+                                  ...p,
+                                  [item.id]: String(n),
+                                }));
                               }}
-                              className="cp-qty-btn px-3 py-2 text-gray-400"
+                              className="cp-qty-btn px-3 py-2 text-gray-400 cursor-pointer"
                               aria-label="Tăng"
                             >
                               <Plus className="w-3.5 h-3.5" />
@@ -347,8 +410,12 @@ export default function CartPage() {
 
                         {/* Subtotal */}
                         <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
-                          <span className="text-xs text-gray-400">Tạm tính</span>
-                          <span className="text-sm font-bold text-gray-800">{formatPrice(subtotal)}</span>
+                          <span className="text-xs text-gray-400">
+                            Tạm tính
+                          </span>
+                          <span className="text-sm font-bold text-gray-800">
+                            {formatPrice(subtotal)}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -368,15 +435,15 @@ export default function CartPage() {
                 {/* Breakdown */}
                 <div className="space-y-3 mb-5 pb-5 border-b border-gray-100 text-sm">
                   <div className="flex justify-between text-gray-600">
-                    <span>Tạm tính ({items.length} sp)</span>
+                    <span>Tạm tính ({selectedItems.length} sp)</span>
                     <span className="font-semibold text-gray-800">{formatPrice(totalPrice)}</span>
                   </div>
                   <div className="flex justify-between text-gray-600">
                     <span className="flex items-center gap-1.5">
                       <Truck className="w-3.5 h-3.5" /> Vận chuyển
                     </span>
-                    <span className={`font-semibold ${shippingFee === 0 ? "text-green-600" : "text-gray-800"}`}>
-                      {shippingFee === 0 ? "Miễn phí" : formatPrice(shippingFee)}
+                    <span className={`font-semibold ${shippingFee === 0 && totalPrice > 0 ? "text-green-600" : "text-gray-800"}`}>
+                      {shippingFee === 0 && totalPrice > 0 ? "Miễn phí" : shippingFee === 0 && totalPrice === 0 ? "0 ₫" : formatPrice(shippingFee)}
                     </span>
                   </div>
                   {discount > 0 && (
@@ -394,7 +461,7 @@ export default function CartPage() {
                 </div>
 
                 {/* Free shipping nudge */}
-                {totalPrice < 500000 && (
+                {totalPrice > 0 && totalPrice < 500000 && (
                   <div className="bg-blue-50 border border-blue-100 rounded-xl p-3.5 mb-5">
                     <div className="flex items-start gap-2.5">
                       <Truck className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />
@@ -414,7 +481,15 @@ export default function CartPage() {
                 )}
 
                 {/* CTAs */}
-                <button onClick={handleCheckout} className="cp-checkout-btn w-full text-white py-3.5 rounded-xl font-bold text-sm mb-3 cursor-pointer">
+                <button 
+                  onClick={handleCheckout} 
+                  disabled={selectedItems.length === 0}
+                  className={`w-full py-3.5 rounded-xl font-bold text-sm mb-3 transition-all ${
+                    selectedItems.length > 0 
+                      ? "cp-checkout-btn text-white cursor-pointer" 
+                      : "bg-gray-200 text-gray-400 cursor-not-allowed"
+                  }`}
+                >
                   Tiến hành thanh toán →
                 </button>
                 <button onClick={() => navigate("/product")} className="cp-continue-btn w-full border-2 border-gray-200 text-gray-600 py-3 rounded-xl font-semibold text-sm transition-colors cursor-pointer">
